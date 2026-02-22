@@ -19,6 +19,7 @@ export class UsersService {
     }
 
   async applyInstructor(userId: string) {
+    console.log("user id", userId)
     const user = await this.userModel.findById(userId);
 
   if (!user) {

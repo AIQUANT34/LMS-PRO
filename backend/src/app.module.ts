@@ -9,6 +9,8 @@ import { User } from './users/schemas/user.schema';
 import { UsersModule } from './users/users.module';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { UploadModule } from './upload/upload.module';
+import { LearningModule } from './learning/learning.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     UsersModule,
     CoursesModule,
     EnrollmentsModule,
+    UploadModule,
+    LearningModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -15,6 +15,6 @@ import { Enrollment, EnrollmentSchema } from './schemas/enrollment.schema';
   providers: [EnrollmentsService],
   controllers: [EnrollmentsController],
 
-  exports: [EnrollmentsService],
+  exports: [EnrollmentsService, MongooseModule],
 })
 export class EnrollmentsModule {}

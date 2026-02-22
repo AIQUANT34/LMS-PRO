@@ -13,6 +13,7 @@ import { Course, CourseSchema } from './schemas/course.schema';
     ]),
   ],
   providers: [CoursesService],
-  controllers: [CoursesController]
+  controllers: [CoursesController],
+  exports: [CoursesService, MongooseModule],
 })
 export class CoursesModule {}

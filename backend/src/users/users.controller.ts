@@ -19,7 +19,7 @@ export class UsersController {
     @Post('apply-instructor')
     @UseGuards(JwtGuard)
     async applyInstructor(@Req() req){
-        return this.usersService.applyInstructor(req.user._id)
+        return this.usersService.applyInstructor(req.user.userId)
     }
 
 }

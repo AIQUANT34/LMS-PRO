@@ -106,7 +106,7 @@ export class AuthService {
         token,
         
         user: {
-            sub: user._id,
+            id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
