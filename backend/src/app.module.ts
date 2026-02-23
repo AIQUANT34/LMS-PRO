@@ -11,6 +11,9 @@ import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { UploadModule } from './upload/upload.module';
 import { LearningModule } from './learning/learning.module';
+import { AssessmentsModule } from './assessments/assessments.module';
+import { SubmissionModule } from './submission/submission.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { LearningModule } from './learning/learning.module';
     EnrollmentsModule,
     UploadModule,
     LearningModule,
+    AssessmentsModule,
+    SubmissionModule,
+    CertificatesModule
   ],
   controllers: [AppController],
   providers: [AppService],

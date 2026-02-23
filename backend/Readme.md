@@ -32,3 +32,42 @@ Frontend integration and UI improvement
 In the next phase, my focus will be on improving user experience and adding analytics features.
 
 I will continue sharing regular updates and welcome any feedback or suggestions. Thank you.”
+
+
+
+
+To made file via terminal :
+nest g module folder_name
+
+ex: nest g module certificates
+nest g service certificates
+nest g controller certificates
+
+
+
+To generate a real pdf certificate dynamically 
+Install required lib's:
+
+npm install pdf-lib qrcode fs-extra
+
+What each library does:
+
+pdf-lib → writes student name, course, etc. on certificate
+qrcode → generates verification QR code
+fs-extra → saves certificate file
+
+-> for certificate we first implement a core engine that generates certifictae pdf( Implement certificate.service.ts file)
+
+-> In cert.services.ts file: implement cert generator service
+
+when it calls, it will:
+- Load template of cert.
+- write student name
+- write course name
+- write date
+- write certId
+- generate QR code
+- save pdf in /certificates folder
+- save cert reccord in mongodb
+
+
