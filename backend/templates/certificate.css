@@ -1,0 +1,71 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.certificate {
+  width: 1123px;
+  height: 794px;
+  position: relative;
+  font-family: 'Georgia', serif;
+}
+
+/* Center Name */
+.student-name {
+  position: absolute;
+  top: 365px;
+  width: 100%;
+  text-align: center;
+  font-size: 40px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Course Name */
+.course-name {
+  position: absolute;
+  top: 495px;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: #2c3e50;
+}
+
+/* Instructor */
+.instructor {
+  position: absolute;
+  bottom: 95px;
+  left: 180px;
+  width: 200px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* Date */
+.date {
+  position: absolute;
+  bottom: 95px;
+  left: 466px;
+  width: 200px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* Certificate ID */
+.certificate-id {
+  position: absolute;
+  bottom: 95px;
+  left: 690px;
+  width: 200px;
+  text-align:center;
+  font-size: 18px;
+}
+
+
+.qr-code {
+  position: absolute;
+  left: 930px;
+  top: 580px;
+  width: 130px;
+  height: 130px;
+}

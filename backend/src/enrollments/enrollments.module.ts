@@ -3,10 +3,12 @@ import { EnrollmentsService } from './enrollments.service';
 import { EnrollmentsController } from './enrollments.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Enrollment, EnrollmentSchema } from './schemas/enrollment.schema';
+import { CertificatesModule } from 'src/certificates/certificates.module';
 
 @Module({
 
   imports: [
+        CertificatesModule,
         MongooseModule.forFeature([
           {name: Enrollment.name, schema: EnrollmentSchema},
         ]),

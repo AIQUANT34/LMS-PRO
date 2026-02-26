@@ -24,11 +24,26 @@ export class Certificate {
   @Prop({ required: true })
   completionDate: Date;
 
+  @Prop({ required: true })
+  InstructorName: string;
+
   @Prop()
   certificateUrl: string;
 
   @Prop()
   qrCodeUrl: string;
+
+  @Prop({ unique: true })
+  certificateReference: string;
+
+  @Prop({ default: false })
+  isApproved: boolean;
+  
+  @Prop()
+  blockchainTxId: string;
+
+  @Prop()
+  completionHash: string;
 }
 
 export const CertificateSchema =

@@ -8,6 +8,7 @@ import { VideoHistory, VideoHistorySchema } from './schemas/video-history.schema
 import { Certificate, CertificateSchema } from './schemas/certificate.schema';
 import { EnrollmentsModule } from '../enrollments/enrollments.module';
 import { CoursesModule } from '../courses/courses.module';
+import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CoursesModule } from '../courses/courses.module';
       { name: Progress.name, schema: ProgressSchema },
       { name: VideoHistory.name, schema: VideoHistorySchema },
       { name: Certificate.name, schema: CertificateSchema },
+      { name: Course.name, schema: CourseSchema },
     ]),
     EnrollmentsModule,
     CoursesModule,

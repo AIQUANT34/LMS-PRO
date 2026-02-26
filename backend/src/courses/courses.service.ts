@@ -21,9 +21,9 @@ export class CoursesService {
     //instructor control logic: check if user is trainer for a course
     async isInstructor(courseId: string, user: any): Promise<boolean> {
         const course = await this.courseModel.findById(courseId);
-        if (!course) return false;
+        if (!course || course.isDeleted) return false;
         // For now, instructor is the trainer. Extend logic if needed.
-        return course.instructorId.toString() === user.userId;
+        return course.instructorId.toString() === user.userId || user.role === 'admin'
     }
 
 
@@ -32,10 +32,10 @@ export class CoursesService {
         if (!course) {
             throw new NotFoundException('Course not found');
         }
-        if (course.instructorId.toString() !== user.userId && user.role !== 'admin') {
+        if (course.instructorId.toString() !== user.userId && user.role !== 'admin') { 
             throw new ForbiddenException('You can only move your own courses to draft');
         }
-        if (course.status !== 'published') {
+        if (course.status !== 'published' && course.status !== 'rejected') {
             throw new BadRequestException('Only published courses can be moved to draft');
         }
         course.status = 'draft';
@@ -139,7 +139,7 @@ export class CoursesService {
         await course.save();
 
         return {
-            message: `Course ${decision}d successfully`,
+            message: `Course ${decision === 'approve' ? 'approved' : 'rejected'} successfully`,
             course,
         };
     }

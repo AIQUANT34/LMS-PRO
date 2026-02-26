@@ -1,22 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-
 import {
   Certificate,
   CertificateDocument,
 } from './schemas/certificate.schema';
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import * as fs from 'fs-extra';
+import * as QRCode from 'qrcode'
+import * as fs from 'fs';
 import * as path from 'path';
-import * as QRCode from 'qrcode';
+import * as puppeteer from 'puppeteer';
+
+import * as crypto from 'crypto'
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 @Injectable()
 export class CertificatesService {
   constructor(
     @InjectModel(Certificate.name)
     private certificateModel: Model<CertificateDocument>,
+
+    private blockchainService: BlockchainService,
   ) {}
 
   async generateCertificate(data: {
@@ -24,114 +28,197 @@ export class CertificatesService {
     courseId: string;
     studentName: string;
     courseName: string;
+    InstructorName: string;
   }) {
-    const certificateId = this.generateCertificateId();
+    const certificateReference = this.generateCertificateReference();
+    //instead of hard code use env var
+    // const verifyUrl = `${process.env.FRONTEND_URL}/verify/${certificateId}`;
+    const verifyUrl = `${process.env.BACKEND_URL}/certificates/verify/${certificateReference}`;
+    const qrBase64 = await QRCode.toDataURL(verifyUrl);
 
+    const outputDir = path.join(process.cwd(), 'certificates');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+
+    const outputPath = path.join(
+      outputDir,
+      `${certificateReference}.pdf`,
+    );
+
+    //Load HTML template
     const templatePath = path.join(
       process.cwd(),
-      'assets',
+      'templates',
+      'certificate.template.html',
+    );
+
+    let html = fs.readFileSync(templatePath, 'utf-8');
+
+    const date = new Date().toDateString();
+
+    //Replace dynamic values
+    html = html
+      .replace('{{studentName}}', data.studentName)
+      .replace('{{courseName}}', data.courseName)
+      .replace('{{instructorName}}', data.InstructorName)
+      .replace('{{date}}', date)
+      .replace('{{certificateReference}}', certificateReference);
+      
+    html = html.replace(
+  '</body>',
+  `<img src="${qrBase64}" class="qr-code" /></body>`
+    ); 
+    
+    
+    //Convert background image to Base64
+    const imagePath = path.join(
+      process.cwd(),
+      'templates',
       'certificate-template.png',
     );
 
-    const outputPath = path.join(
-      process.cwd(),
-      'certificates',
-      `${certificateId}.pdf`,
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString('base64');
+
+    //Inject background directly into HTML
+    html = html.replace(
+      '</head>',
+      `<style>
+        .certificate {
+          width: 1123px;
+          height: 794px;
+          background: url("data:image/png;base64,${base64Image}") no-repeat center;
+          background-size: cover;
+          position: relative;
+          font-family: 'Georgia', serif;
+        }
+
+    .qr-code {
+      position: absolute;
+      right: 120px;
+      bottom: 80px;
+      width: 120px;
+      height: 120px;
+    }
+
+      </style>
+      </head>`
     );
 
-    // Load template image
-    const templateBytes = await fs.readFile(templatePath);
-
-    const pdfDoc = await PDFDocument.create();
-
-    const page = pdfDoc.addPage([842, 595]);
-
-    const image = await pdfDoc.embedPng(templateBytes);
-
-    page.drawImage(image, {
-      x: 0,
-      y: 0,
-      width: 842,
-      height: 595,
+    // Launch Puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
     });
 
-    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const page = await browser.newPage();
 
-    // Student Name
-    page.drawText(data.studentName, {
-      x: 280,
-      y: 300,
-      size: 36,
-      font,
-      color: rgb(0.1, 0.2, 0.4),
+    await page.setContent(html, {
+      waitUntil: 'networkidle0',
     });
 
-    // Course Name
-    page.drawText(data.courseName, {
-      x: 250,
-      y: 240,
-      size: 24,
-      font,
-      color: rgb(0.1, 0.2, 0.4),
+    // Load only positioning CSS (NO background inside CSS file)
+    await page.addStyleTag({
+      path: path.join(
+        process.cwd(),
+        'templates',
+        'certificate.css',
+      ),
     });
 
-    // Date
-    const date = new Date().toDateString();
-
-    page.drawText(date, {
-      x: 360,
-      y: 140,
-      size: 16,
-      font,
+    // Generate PDF
+    await page.pdf({
+      path: outputPath,
+      width: '1123px',
+      height: '794px',
+      printBackground: true,
     });
 
-    // Certificate ID
-    page.drawText(certificateId, {
-      x: 600,
-      y: 140,
-      size: 14,
-      font,
-    });
-
-    // Generate QR
-    const verifyUrl = `https://protrain.com/verify/${certificateId}`;
-
-    const qrImage = await QRCode.toDataURL(verifyUrl);
-
-    const qrImageBytes = Buffer.from(
-      qrImage.split(',')[1],
-      'base64',
-    );
-
-    const qr = await pdfDoc.embedPng(qrImageBytes);
-
-    page.drawImage(qr, {
-      x: 700,
-      y: 60,
-      width: 80,
-      height: 80,
-    });
-
-    const pdfBytes = await pdfDoc.save();
-
-    await fs.writeFile(outputPath, pdfBytes);
+    await browser.close();
 
     // Save in DB
     const certificate = await this.certificateModel.create({
-      certificateId,
+      certificateReference,
       userId: data.userId,
       courseId: data.courseId,
       studentName: data.studentName,
       courseName: data.courseName,
+      InstructorName: data.InstructorName,
       completionDate: new Date(),
-      certificateUrl: `/certificates/${certificateId}.pdf`,
+      certificateUrl: `/certificates/${certificateReference}.pdf`,
     });
 
-    return certificate;
+    return {
+      certificateReference,
+      certificateUrl: `/certificates/${certificateReference}.pdf`,
+    }
   }
 
-  private generateCertificateId(): string {
-    const random = Math.floor(100000 + Math.random() * 900000);
-    return `PTR-${new Date().getFullYear()}-${random}`;
+  private generateCertificateReference(): string {
+  const random = Math.floor(100000 + Math.random() * 900000);
+  return `CERT-${new Date().getFullYear()}-${random}`;
+}
+
+  async approveCertificate(certificateId: string) {
+  const certificate = await this.certificateModel.findById(certificateId);
+
+  if (!certificate) {
+    throw new Error('Certificate not found');
   }
+
+  if (certificate.isApproved) {
+    return { message: 'Certificate already approved' };
+  }
+
+ 
+  // Create completion record (NO personal sensitive data)
+const completionRecord = {
+  certificateReference: certificate.certificateReference,
+  courseId: certificate.courseId.toString(),
+  completionDate: certificate.completionDate,
+};
+
+// Generate SHA256 hash
+const hash = crypto
+  .createHash('sha256')
+  .update(JSON.stringify(completionRecord))
+  .digest('hex');
+
+  certificate.isApproved = true;
+  certificate.completionHash = hash;
+
+  // Submit hash to blockchain (Cardano testnet simulation)
+  const txId = await this.blockchainService.submitHashToCardano(hash);
+  
+  certificate.blockchainTxId = txId;
+
+  await certificate.save();
+
+  return {
+    message: 'Certificate approved successfully',
+    certificateReference: certificate.certificateReference,
+  };
+}
+
+
+
+  async verifyCertificate(reference: string){
+    const certificate = await this.certificateModel.findOne({
+      certificateReference: reference,
+    })
+
+    if(!certificate) {
+      throw new Error('ceritficate not found')
+    }
+
+    return {
+      certificateReference: certificate.certificateReference,
+      studentName: certificate.studentName,
+      courseName: certificate.courseName,
+      completionDate: certificate.completionDate,
+      isApproved: certificate.isApproved,
+      blockchainTxId: certificate.blockchainTxId,
+    }
+  }
+
 }

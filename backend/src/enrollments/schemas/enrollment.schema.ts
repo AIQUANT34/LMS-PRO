@@ -31,9 +31,6 @@ export class Enrollment {
     @Prop()
     paymentDetails: string;
 
-    //completed or not
-    @Prop({default: false})
-    isCompleted: boolean;
 }
 
 export const EnrollmentSchema = SchemaFactory.createForClass(Enrollment);

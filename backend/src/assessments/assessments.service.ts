@@ -97,6 +97,27 @@ export class AssessmentsService {
 }
 
 
+async getMySubmission(
+    assessmentId: string,
+    user: any
+){
+    const submission = await this.submissionModel.findOne({
+        assessmentId,
+        studentId: user.userId
+    })
+
+    if(!submission){
+        return {
+            submission: null,
+            message: 'No submission yet'
+        }
+    }
+    return {
+        submission
+    }
+}
+
+
 async reviewSubmission(
   submissionId: string,
   dto: ReviewSubmissionDto,
@@ -139,5 +160,34 @@ const submission = await this.submissionModel.findById(submissionId)
   };
 
 }
+
+ async getAssessmentSubmissions(
+  assessmentId: string,
+  user: any
+) {
+
+  const assessment = await this.assessmentModel.findById(assessmentId);
+
+  if (!assessment) {
+    throw new NotFoundException('Assessment not found');
+  }
+
+  // Only instructor can view submissions
+  if (assessment.instructorId.toString() !== user.userId) {
+    throw new ForbiddenException('Only instructor can view submissions');
+  }
+
+  const submissions = await this.submissionModel
+    .find({ assessmentId })
+    .populate('studentId', 'name email')
+    .sort({ createdAt: -1 });
+
+  return {
+    submissions,
+    count: submissions.length
+  };
+
+}
+
 
 }

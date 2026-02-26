@@ -1,3 +1,6 @@
+import * as express from 'express'
+import * as path from 'path'
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -7,6 +10,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.useStaticAssets(join(process.cwd(), 'certificates'), {
+    prefix: '/certificates/',
+  });
+   
   // Enable global validation
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

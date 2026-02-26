@@ -14,6 +14,9 @@ import { LearningModule } from './learning/learning.module';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { SubmissionModule } from './submission/submission.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { AiModule } from './ai/ai.module';
+import { BlockchainService } from './blockchain/blockchain.service';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -29,9 +32,11 @@ import { CertificatesModule } from './certificates/certificates.module';
     LearningModule,
     AssessmentsModule,
     SubmissionModule,
-    CertificatesModule
+    CertificatesModule,
+    AiModule,
+    BlockchainModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, BlockchainService],
 })
 export class AppModule {}

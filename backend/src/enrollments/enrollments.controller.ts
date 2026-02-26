@@ -1,4 +1,4 @@
-import { Controller, Param, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Param, Get, Post, Req, UseGuards, Body } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 import { JwtGuard } from 'src/auth/jwt/jwt.guard';
 
@@ -8,26 +8,33 @@ export class EnrollmentsController {
         private readonly enrollmentsService: EnrollmentsService,
     ){}
 
-    //student enroll in course
-    @Post(':courseId')
-    //it protect route with jwt
+    // COMPLETE COURSE FIRST (static route first)
+    @Post('complete')
     @UseGuards(JwtGuard)
-    
+    async completeCourse(
+        @Req() req,
+        @Body('userId') userId: string,
+        @Body('courseId') courseId: string,
+    ) {
+        return this.enrollmentsService.completeCourse(req.user.userId, courseId);
+    }
+
+    // THEN dynamic route
+    @Post(':courseId')
+    @UseGuards(JwtGuard)
     async enroll(
         @Param('courseId') courseId: string,
         @Req() req,
     ){
         return this.enrollmentsService.enrollCourse(
-            req.user._id,
+            req.user.userId,
             courseId,
         )
     }
 
-    //get logged-in user's enrollments
     @Get('my-courses')
+    @UseGuards(JwtGuard)
     async getMyCourses(@Req() req){
-        const userId = req.user._id;
-
-        return this.enrollmentsService.getMyEnrollments(userId)
+        return this.enrollmentsService.getMyEnrollments(req.user.userId)
     }
 }
