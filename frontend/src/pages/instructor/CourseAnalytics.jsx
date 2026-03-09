@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ChartBarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   UsersIcon,
   BookOpenIcon,
   CurrencyDollarIcon,
@@ -36,8 +36,6 @@ import {
   MusicalNoteIcon,
   CodeBracketIcon,
   DocumentIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   GlobeAltIcon,
   ServerIcon,
   FolderIcon,
@@ -46,7 +44,7 @@ import {
   FlagIcon,
   HeartIcon,
   BellIcon,
-  Cog6TootIcon,
+  CogIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
   ArrowRightIcon as ArrowRightIconOutline,

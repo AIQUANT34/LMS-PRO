@@ -111,9 +111,9 @@ export default {
         'premium-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
       },
       borderRadius: {
-        'premium': '0.75rem',
-        'premium-lg': '1rem',
-        'premium-xl': '1.5rem',
+        'premium': '0.375rem',
+        'premium-lg': '0.5rem',
+        'premium-xl': '0.75rem',
       },
     },
   },

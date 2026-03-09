@@ -17,19 +17,19 @@ import {
   PencilIcon,
   TrashIcon,
   ArrowRightIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   StarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  FilterIcon,
-  SearchIcon,
   FunnelIcon,
-  UploadIcon,
-  DownloadIcon,
+  MagnifyingGlassIcon,
+  ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
   ShareIcon,
   BellIcon,
-  Cog6TootIcon,
+  CogIcon,
   ArrowPathIcon,
   Squares2X2Icon,
   CreditCardIcon,
@@ -226,7 +226,7 @@ const InstructorDashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-green-600">
-          <TrendingUpIcon className="h-4 w-4" />
+          <ArrowTrendingUpIcon className="h-4 w-4" />
           <span>+{stats.draftCourses} this month</span>
         </div>
       </div>
@@ -242,7 +242,7 @@ const InstructorDashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-blue-600">
-          <TrendingUpIcon className="h-4 w-4" />
+          <ArrowTrendingUpIcon className="h-4 w-4" />
           <span>+{stats.draftCourses} pending review</span>
         </div>
       </div>
@@ -258,7 +258,7 @@ const InstructorDashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-green-600">
-          <TrendingUpIcon className="h-4 w-4" />
+          <ArrowTrendingUpIcon className="h-4 w-4" />
           <span>+{Math.floor(stats.totalStudents * 0.05)} this month</span>
         </div>
       </div>
@@ -274,7 +274,7 @@ const InstructorDashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-green-600">
-          <TrendingUpIcon className="h-4 w-4" />
+          <ArrowTrendingUpIcon className="h-4 w-4" />
           <span>+${stats.thisMonthRevenue.toLocaleString()} this month</span>
         </div>
       </div>
@@ -315,7 +315,7 @@ const InstructorDashboard = () => {
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
@@ -453,7 +453,7 @@ const InstructorDashboard = () => {
                     }`}
                   >
                     {course.status === 'draft' ? (
-                      <UploadIcon className="h-4 w-4" />
+                      <ArrowUpTrayIcon className="h-4 w-4" />
                     ) : (
                       <TrashIcon className="h-4 w-4" />
                     )}
@@ -484,7 +484,7 @@ const InstructorDashboard = () => {
                 <span className="absolute -top-1 -right-1 w-2 h-2 w-2 bg-red-500 rounded-full"></span>
               </button>
               <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                <Cog6TootIcon className="h-5 w-5" />
+                <CogIcon className="h-5 w-5" />
               </button>
             </div>
           </div>

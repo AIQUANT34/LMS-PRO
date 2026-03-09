@@ -58,7 +58,7 @@ import {
   PhoneIcon,
   MapPinIcon,
   BriefcaseIcon,
-  Cog6TootIcon,
+  CogIcon,
   ArrowLeftIcon,
   ArrowRightIcon as ArrowRightIconOutline,
   EyeIcon,
@@ -74,8 +74,6 @@ import {
   FolderIcon,
   FunnelIcon,
   ArrowRightIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   XCircleIcon,
   EnvelopeIcon,
   ShieldCheckIcon,
@@ -88,7 +86,8 @@ import {
   VideoCameraIcon,
   SpeakerXMarkIcon,
   VolumeOffIcon,
-  VolumeUpIcon
+  VolumeUpIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
@@ -552,7 +551,7 @@ const AIAssistant = () => {
               onClick={() => setShowSettings(true)}
               className="p-2 text-gray-600 hover:text-gray-900"
             >
-              <Cog6TootIcon className="h-5 w-5" />
+              <CogIcon className="h-5 w-5" />
             </button>
           </div>
         </div>

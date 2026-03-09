@@ -16,7 +16,10 @@ const useUIStore = create((set) => ({
   setLoading: (loading) => set({ loading }),
 
   // Notifications
-  notifications: [],
+  notifications: [
+    { id: 1, type: 'info', title: 'Welcome!', message: 'Explore our courses and start learning today.' },
+    { id: 2, type: 'success', title: 'New Course Available', message: 'Check out our latest Web Development course.' }
+  ],
   addNotification: (notification) => 
     set((state) => ({
       notifications: [...state.notifications, { ...notification, id: Date.now() }]

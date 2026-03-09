@@ -3,19 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   BookOpenIcon,
-  PlayIcon,
+  ArrowUpTrayIcon,
   ChartBarIcon,
   ClockIcon,
-  StarIcon,
+  TrophyIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   PlusIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  ArrowRightIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
@@ -31,7 +30,6 @@ import {
   QuestionMarkCircleIcon,
   DocumentDuplicateIcon,
   ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
   PrinterIcon,
   ShareIcon,
   LinkIcon,
@@ -41,8 +39,6 @@ import {
   MusicalNoteIcon,
   CodeBracketIcon,
   DocumentIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   UsersIcon,
   BuildingOfficeIcon,
   TruckIcon,
@@ -61,10 +57,13 @@ import {
   MapPinIcon,
   BriefcaseIcon,
   BellIcon,
-  Cog6TootIcon,
+  CogIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
   ArrowRightIcon as ArrowRightIconOutline,
+  PlayIcon,
+  PauseIcon,
+  StopIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
@@ -263,10 +262,10 @@ const EditCourse = () => {
 
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: BookOpenIcon },
-    { id: 'content', label: 'Course Content', icon: DocumentTextIcon },
+    { id: 'content', label: 'Course Content', icon: DocumentIcon },
     { id: 'media', label: 'Media', icon: VideoCameraIcon },
     { id: 'pricing', label: 'Pricing', icon: CurrencyDollarIcon },
-    { id: 'settings', label: 'Settings', icon: Cog6TootIcon }
+    { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
 
   const BasicInfoTab = () => (

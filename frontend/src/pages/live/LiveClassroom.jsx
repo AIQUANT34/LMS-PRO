@@ -57,7 +57,7 @@ import {
   PhoneIcon,
   MapPinIcon,
   BriefcaseIcon,
-  Cog6TootIcon,
+  CogIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
   ArrowRightIcon as ArrowRightIconOutline,
@@ -77,12 +77,10 @@ import {
   FolderIcon,
   FunnelIcon,
   ArrowRightIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-  CheckCircleIcon as CheckCircleIconOutline,
   XCircleIcon,
   EnvelopeIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
@@ -460,7 +458,7 @@ const LiveClassroom = () => {
         onClick={() => setShowSettingsModal(true)}
         className="p-3 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition-colors"
       >
-        <Cog6TootIcon className="h-5 w-5" />
+        <CogIcon className="h-5 w-5" />
       </button>
       
       <button

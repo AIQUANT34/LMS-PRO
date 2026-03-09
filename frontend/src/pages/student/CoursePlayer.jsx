@@ -603,7 +603,7 @@ const CoursePlayer = () => {
                     </div>
                   </div>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <DownloadIcon className="h-4 w-4 text-gray-600" />
+                    <ArrowDownTrayIcon className="h-4 w-4 text-gray-600" />
                   </button>
                 </div>
               ))}

@@ -19,7 +19,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  UploadIcon,
+  ArrowUpTrayIcon,
   ClockIcon,
   StarIcon,
   UserGroupIcon,

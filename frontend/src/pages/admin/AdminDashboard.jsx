@@ -8,13 +8,13 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   AcademicCapIcon,
-  Cog6TootIcon,
+  CogIcon,
   BellIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowRightIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
@@ -56,8 +56,6 @@ import {
   MusicalNoteIcon,
   CodeBracketIcon,
   DocumentIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   CurrencyDollarIcon as CurrencyDollarIconOutline,
   UsersIcon,
   BuildingOfficeIcon,
@@ -76,7 +74,8 @@ import {
   PaperAirplaneIcon,
   PhoneIcon,
   MapPinIcon,
-  BriefcaseIcon
+  BriefcaseIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
@@ -530,7 +529,7 @@ const AdminDashboard = () => {
               </button>
               
               <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                <Cog6TootIcon className="h-5 w-5" />
+                <CogIcon className="h-5 w-5" />
               </button>
             </div>
           </div>

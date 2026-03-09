@@ -19,7 +19,7 @@ import {
   ArrowPathIcon,
   StarIcon,
   ChartBarIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   ShareIcon,
   EyeIcon,
   EyeSlashIcon,

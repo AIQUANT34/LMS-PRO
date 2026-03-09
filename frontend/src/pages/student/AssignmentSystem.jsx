@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
 import { 
   DocumentTextIcon,
-  UploadIcon,
+  ArrowUpTrayIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
@@ -11,7 +11,7 @@ import {
   UserIcon,
   StarIcon,
   PaperClipIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   EyeIcon,
   TrashIcon,
   PencilIcon,
@@ -365,7 +365,7 @@ const AssignmentSystem = () => {
                   />
                   
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <UploadIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <ArrowUpTrayIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="btn-premium-outline"
@@ -482,7 +482,7 @@ const AssignmentSystem = () => {
                             <EyeIcon className="h-4 w-4" />
                           </button>
                           <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <DownloadIcon className="h-4 w-4" />
+                            <ArrowDownTrayIcon className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
