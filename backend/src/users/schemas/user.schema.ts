@@ -21,6 +21,15 @@ export class User {
     default: 'student',
   })
   role: string;
+
+  @Prop({ default: false })
+  isVerifiedInstructor: boolean;
+
+  @Prop({
+    enum: ['none', 'pending', 'approved', 'rejected'],
+    default: 'none',
+  })
+  instructorRequest: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
