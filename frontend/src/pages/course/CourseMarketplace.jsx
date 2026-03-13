@@ -1,25 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  StarIcon,
+import { Link, useNavigate } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import {
+  BookOpenIcon,
+  PlayIcon,
   ClockIcon,
   UserGroupIcon,
-  AcademicCapIcon,
-  HeartIcon,
-  PlayIcon,
-  CurrencyDollarIcon,
-  SparklesIcon,
+  StarIcon,
   FireIcon,
+  DocumentTextIcon,
+  CheckCircleIcon,
+  TrophyIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  BriefcaseIcon,
+  HeartIcon,
   ChartBarIcon,
-  BookOpenIcon,
+  CurrencyDollarIcon,
   VideoCameraIcon,
-  DocumentTextIcon
+  SparklesIcon
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+
+import {
+  StarIcon as StarIconSolid
+} from '@heroicons/react/24/solid';
+import { useAuthStore } from '../../store/authStore';
+import { useEnrollmentStore } from '../../store/enrollmentStore';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 
 const CourseMarketplace = () => {
+  const { user, isAuthenticated } = useAuthStore();
+  const { 
+    fetchEnrollments, 
+    enroll, 
+    isEnrolled, 
+    isLoading,
+    enrolledCourses 
+  } = useEnrollmentStore();
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
@@ -27,135 +49,165 @@ const CourseMarketplace = () => {
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
   const [wishlist, setWishlist] = useState(new Set());
+  const [enrollingPrograms, setEnrollingPrograms] = useState(new Set());
 
-  // Mock course data
-  const courses = [
-    {
-      id: 1,
-      title: 'Complete React Development Course - 2024',
-      description: 'Master React from scratch to advanced concepts including Redux, Next.js, and deployment',
-      instructor: 'John Doe',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.8,
-      reviews: 2341,
-      students: 15234,
-      price: 89.99,
-      originalPrice: 199.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'development',
-      level: 'intermediate',
-      duration: '42 hours',
-      lessons: 234,
-      language: 'English',
-      lastUpdated: '2024-01-15',
-      bestseller: true,
-      hot: true,
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Advanced JavaScript Concepts & ES6+',
-      description: 'Deep dive into JavaScript advanced concepts, async programming, and modern ES6+ features',
-      instructor: 'Jane Smith',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.9,
-      reviews: 1876,
-      students: 12456,
-      price: 79.99,
-      originalPrice: 179.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'development',
-      level: 'advanced',
-      duration: '38 hours',
-      lessons: 198,
-      language: 'English',
-      lastUpdated: '2024-01-20',
-      bestseller: true
-    },
-    {
-      id: 3,
-      title: 'UI/UX Design Fundamentals',
-      description: 'Learn the principles of user interface and user experience design from industry experts',
-      instructor: 'Mike Johnson',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.7,
-      reviews: 987,
-      students: 8234,
-      price: 69.99,
-      originalPrice: 149.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'design',
-      level: 'beginner',
-      duration: '28 hours',
-      lessons: 156,
-      language: 'English',
-      lastUpdated: '2024-01-10'
-    },
-    {
-      id: 4,
-      title: 'Node.js Backend Development',
-      description: 'Build scalable backend applications with Node.js, Express, MongoDB and REST APIs',
-      instructor: 'Sarah Wilson',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.6,
-      reviews: 1456,
-      students: 9876,
-      price: 94.99,
-      originalPrice: 199.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'development',
-      level: 'intermediate',
-      duration: '45 hours',
-      lessons: 267,
-      language: 'English',
-      lastUpdated: '2024-01-18',
-      hot: true
-    },
-    {
-      id: 5,
-      title: 'Digital Marketing Masterclass',
-      description: 'Complete guide to digital marketing including SEO, social media, and content marketing',
-      instructor: 'David Brown',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.5,
-      reviews: 789,
-      students: 6789,
-      price: 59.99,
-      originalPrice: 129.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'marketing',
-      level: 'beginner',
-      duration: '32 hours',
-      lessons: 189,
-      language: 'English',
-      lastUpdated: '2024-01-12'
-    },
-    {
-      id: 6,
-      title: 'Python for Data Science',
-      description: 'Learn Python programming with focus on data science, machine learning, and data analysis',
-      instructor: 'Emily Davis',
-      instructorAvatar: 'https://via.placeholder.com/40x40',
-      rating: 4.8,
-      reviews: 2134,
-      students: 18765,
-      price: 99.99,
-      originalPrice: 219.99,
-      image: 'https://via.placeholder.com/400x250',
-      category: 'data-science',
-      level: 'intermediate',
-      duration: '56 hours',
-      lessons: 312,
-      language: 'English',
-      lastUpdated: '2024-01-22',
-      bestseller: true,
-      featured: true
-    }
-  ];
+  // Fetch training programs from API
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        setLoading(true);
+        
+        // Try to fetch from backend, fallback to mock data if API fails
+        let response;
+        try {
+          response = await apiService.get('/api/courses/public');
+        } catch (apiError) {
+          console.log('Backend API not available, using mock data:', apiError.message);
+          // Mock data for demonstration
+          response = {
+            courses: [
+              {
+                _id: '1',
+                title: 'Complete React Developer Course',
+                description: 'Master React from basics to advanced concepts including hooks, context, and best practices.',
+                category: 'development',
+                level: 'intermediate',
+                instructorId: { 
+                  name: 'John Smith',
+                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EJS%3C/text%3E%3C/svg%3E'
+                },
+                ratings: { average: 4.8, count: 1250 },
+                enrollmentCount: 1250,
+                originalPrice: 89.99,
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EReact Course%3C/text%3E%3C/svg%3E',
+                duration: '12 hours',
+                totalLessons: 48,
+                updatedAt: '2024-03-01'
+              },
+              {
+                _id: '2',
+                title: 'UI/UX Design Fundamentals',
+                description: 'Learn the principles of user interface and user experience design from scratch.',
+                category: 'design',
+                level: 'beginner',
+                instructorId: { 
+                  name: 'Sarah Johnson',
+                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EUX%3C/text%3E%3C/svg%3E'
+                },
+                ratings: { average: 4.9, count: 890 },
+                enrollmentCount: 890,
+                originalPrice: 69.99,
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EUI/UX Design%3C/text%3E%3C/svg%3E',
+                duration: '8 hours',
+                totalLessons: 32,
+                updatedAt: '2024-03-05'
+              },
+              {
+                _id: '3',
+                title: 'Node.js Backend Development',
+                description: 'Build scalable backend applications with Node.js, Express, and MongoDB.',
+                category: 'development',
+                level: 'advanced',
+                instructorId: { 
+                  name: 'Michael Chen',
+                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3ENode%3C/text%3E%3C/svg%3E'
+                },
+                ratings: { average: 4.7, count: 650 },
+                enrollmentCount: 650,
+                originalPrice: 99.99,
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3ENode.js Backend%3C/text%3E%3C/svg%3E',
+                duration: '16 hours',
+                totalLessons: 64,
+                updatedAt: '2024-03-10'
+              },
+              {
+                _id: '4',
+                title: 'Digital Marketing Mastery',
+                description: 'Complete guide to digital marketing including SEO, social media, and content strategy.',
+                category: 'marketing',
+                level: 'intermediate',
+                instructorId: { 
+                  name: 'Emily Davis',
+                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EMKT%3C/text%3E%3C/svg%3E'
+                },
+                ratings: { average: 4.6, count: 430 },
+                enrollmentCount: 430,
+                originalPrice: 79.99,
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EDigital Marketing%3C/text%3E%3C/svg%3E',
+                duration: '10 hours',
+                totalLessons: 40,
+                updatedAt: '2024-03-08'
+              },
+              {
+                _id: '5',
+                title: 'Python for Data Science',
+                description: 'Learn Python programming with focus on data analysis, machine learning, and visualization.',
+                category: 'data-science',
+                level: 'intermediate',
+                instructorId: { 
+                  name: 'Dr. Robert Kim',
+                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EPY%3C/text%3E%3C/svg%3E'
+                },
+                ratings: { average: 4.9, count: 780 },
+                enrollmentCount: 780,
+                originalPrice: 119.99,
+                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EPython Data Science%3C/text%3E%3C/svg%3E',
+                duration: '20 hours',
+                totalLessons: 80,
+                updatedAt: '2024-03-12'
+              }
+            ]
+          };
+        }
+        
+        // Transform backend data to frontend format
+        const transformedPrograms = (response.courses || []).map(course => ({
+          id: course._id,
+          title: course.title,
+          description: course.description,
+          category: course.category,
+          level: course.level,
+          trainer: course.instructorId?.name || 'Expert Instructor',
+          trainerAvatar: course.instructorId?.avatar || 'https://via.placeholder.com/40x40',
+          rating: course.ratings?.average || 0,
+          reviews: course.ratings?.count || 0,
+          employees: course.enrollmentCount || 0,
+          price: course.originalPrice || 0,
+          originalPrice: course.originalPrice || 0,
+          image: course.thumbnail || 'https://via.placeholder.com/400x250',
+          duration: course.duration || '10 hours',
+          lessons: course.totalLessons || 0,
+          language: 'English',
+          lastUpdated: course.updatedAt,
+          bestseller: course.enrollmentCount > 100,
+          hot: course.enrollmentCount > 50,
+          featured: course.enrollmentCount > 200
+        }));
+        setPrograms(transformedPrograms);
+        setLoading(false);
+        
+        // Fetch user enrollments to check enrollment status
+        if (isAuthenticated) {
+          try {
+            await fetchEnrollments();
+          } catch (enrollmentError) {
+            console.log('Enrollment fetch failed, continuing without enrollment data:', enrollmentError.message);
+            // Don't fail the whole course loading if enrollments fail
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load courses:', err);
+        setError('Failed to load courses');
+        setLoading(false);
+      }
+    };
+
+    fetchPrograms();
+  }, [isAuthenticated, fetchEnrollments]);
 
   const categories = [
     { id: 'all', name: 'All Categories', icon: BookOpenIcon },
-    { id: 'development', name: 'Development', icon: AcademicCapIcon },
+    { id: 'development', name: 'Development', icon: BriefcaseIcon },
     { id: 'design', name: 'Design', icon: HeartIcon },
     { id: 'marketing', name: 'Marketing', icon: ChartBarIcon },
     { id: 'data-science', name: 'Data Science', icon: ChartBarIcon },
@@ -188,38 +240,55 @@ const CourseMarketplace = () => {
     { id: 'price-high', name: 'Price: High to Low' },
   ];
 
-  const toggleWishlist = (courseId) => {
+  const toggleWishlist = (programId) => {
     setWishlist(prev => {
       const newWishlist = new Set(prev);
-      if (newWishlist.has(courseId)) {
-        newWishlist.delete(courseId);
+      if (newWishlist.has(programId)) {
+        newWishlist.delete(programId);
       } else {
-        newWishlist.add(courseId);
+        newWishlist.add(programId);
       }
       return newWishlist;
     });
   };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
-    const matchesLevel = selectedLevel === 'all' || course.level === selectedLevel;
+  const handleEnrollProgram = async (programId, programTitle) => {
+    if (!isAuthenticated) {
+      toast.error('Please login to enroll in programs');
+      return;
+    }
+
+    try {
+      await enroll(programId, programTitle);
+      
+      // Optimistic UI update - button will automatically update via store
+      
+    } catch (error) {
+      console.error('Enrollment error:', error);
+      // Error handling is done in the store
+    }
+  };
+
+  const filteredPrograms = programs.filter(program => {
+    const matchesSearch = program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         program.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         program.trainer.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || program.category === selectedCategory;
+    const matchesLevel = selectedLevel === 'all' || program.level === selectedLevel;
     const matchesPrice = selectedPrice === 'all' || 
-                        (selectedPrice === 'free' && course.price === 0) ||
-                        (selectedPrice === 'paid' && course.price > 0) ||
-                        (selectedPrice === 'under-50' && course.price < 50) ||
-                        (selectedPrice === '50-100' && course.price >= 50 && course.price <= 100) ||
-                        (selectedPrice === 'over-100' && course.price > 100);
+                        (selectedPrice === 'free' && program.price === 0) ||
+                        (selectedPrice === 'paid' && program.price > 0) ||
+                        (selectedPrice === 'under-50' && program.price < 50) ||
+                        (selectedPrice === '50-100' && program.price >= 50 && program.price <= 100) ||
+                        (selectedPrice === 'over-100' && program.price > 100);
     
     return matchesSearch && matchesCategory && matchesLevel && matchesPrice;
   });
 
-  const sortedCourses = [...filteredCourses].sort((a, b) => {
+  const sortedPrograms = [...filteredPrograms].sort((a, b) => {
     switch (sortBy) {
       case 'popular':
-        return b.students - a.students;
+        return b.employees - a.employees;
       case 'rating':
         return b.rating - a.rating;
       case 'newest':
@@ -233,7 +302,7 @@ const CourseMarketplace = () => {
     }
   });
 
-  const CourseCard = ({ course, index }) => (
+  const ProgramCard = ({ program, index }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -242,27 +311,27 @@ const CourseMarketplace = () => {
     >
       <div className="relative">
         <img 
-          src={course.image} 
-          alt={course.title}
+          src={program.image} 
+          alt={program.title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         
-        {/* Course Badges */}
+        {/* Program Badges */}
         <div className="absolute top-2 left-2 flex gap-2">
-          {course.bestseller && (
-            <span className="bg-yellow-500 text-white px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
-              <FireIcon className="h-3 w-3" />
+          {program.bestseller && (
+            <span className="bg-yellow-500 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-lg">
+              <FireIcon className="h-3 w-3 text-white" />
               Bestseller
             </span>
           )}
-          {course.hot && (
-            <span className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
-              <SparklesIcon className="h-3 w-3" />
+          {program.hot && (
+            <span className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-lg">
+              <SparklesIcon className="h-3 w-3 text-white" />
               Hot
             </span>
           )}
-          {course.featured && (
-            <span className="bg-purple-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
+          {program.featured && (
+            <span className="bg-purple-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">
               Featured
             </span>
           )}
@@ -270,11 +339,11 @@ const CourseMarketplace = () => {
 
         {/* Wishlist Button */}
         <button
-          onClick={() => toggleWishlist(course.id)}
+          onClick={() => toggleWishlist(program.id)}
           className="absolute top-2 right-2 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
         >
           <HeartIcon 
-            className={`h-4 w-4 ${wishlist.has(course.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`}
+            className={`h-4 w-4 ${wishlist.has(program.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`}
           />
         </button>
 
@@ -287,19 +356,19 @@ const CourseMarketplace = () => {
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
-          {course.title}
+        <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
+          {program.title}
         </h3>
         
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>
+        <p className="text-sm text-gray-700 mb-3 line-clamp-2">{program.description}</p>
 
         <div className="flex items-center mb-3">
           <img 
-            src={course.instructorAvatar} 
-            alt={course.instructor}
+            src={program.trainerAvatar} 
+            alt={program.trainer}
             className="w-6 h-6 rounded-full mr-2"
           />
-          <span className="text-sm text-gray-700">{course.instructor}</span>
+          <span className="text-sm font-medium text-gray-800">{program.trainer}</span>
         </div>
 
         <div className="flex items-center justify-between mb-3">
@@ -308,44 +377,67 @@ const CourseMarketplace = () => {
               {[...Array(5)].map((_, i) => (
                 <StarIconSolid
                   key={i}
-                  className={`h-4 w-4 ${i < Math.floor(course.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                  className={`h-4 w-4 ${i < Math.floor(program.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
                 />
               ))}
             </div>
             <span className="text-sm text-gray-600 ml-1">
-              {course.rating} ({course.reviews.toLocaleString()})
+              {program.rating} ({program.reviews.toLocaleString()})
             </span>
           </div>
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-600">
             <UserGroupIcon className="h-4 w-4 mr-1" />
-            {course.students.toLocaleString()}
+            {program.employees.toLocaleString()}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
           <div className="flex items-center">
             <ClockIcon className="h-4 w-4 mr-1" />
-            {course.duration}
+            {program.duration}
           </div>
           <div className="flex items-center">
             <DocumentTextIcon className="h-4 w-4 mr-1" />
-            {course.lessons} lessons
+            {program.lessons} lessons
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            {course.originalPrice > course.price && (
-              <span className="text-sm text-gray-400 line-through mr-2">
-                ${course.originalPrice}
+            {program.originalPrice > program.price && (
+              <span className="text-sm text-gray-500 line-through mr-2">
+                ${program.originalPrice}
               </span>
             )}
             <span className="text-xl font-bold text-gray-900">
-              ${course.price}
+              ${program.price}
             </span>
           </div>
-          <button className="btn-premium text-sm">
-            Enroll Now
+          <button 
+            onClick={() => handleEnrollProgram(program.id, program.title)}
+            disabled={isLoading(program.id)}
+            className={`btn-premium text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+              isEnrolled(program.id) 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : 'bg-purple-600 hover:bg-purple-700'
+            }`}
+          >
+            {isLoading(program.id) ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Enrolling...
+              </span>
+            ) : isEnrolled(program.id) ? (
+              <span className="flex items-center">
+                <CheckCircleIcon className="w-4 h-4 mr-2" />
+                Continue Learning
+              </span>
+            ) : (
+              'Enroll Now'
+            )}
           </button>
         </div>
       </div>
@@ -359,10 +451,10 @@ const CourseMarketplace = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">
-              Discover Your Next Learning Adventure
+              Discover Your Next Training Program
             </h1>
             <p className="text-xl text-primary-100 mb-8">
-              Explore {courses.length}+ courses from expert instructors
+              Explore {programs.length}+ training programs from expert trainers
             </p>
             
             {/* Search Bar */}
@@ -373,7 +465,7 @@ const CourseMarketplace = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for courses, topics, or instructors..."
+                  placeholder="Search for programs, topics, or trainers..."
                   className="w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300"
                 />
                 <button
@@ -465,10 +557,10 @@ const CourseMarketplace = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {sortedCourses.length} Courses Available
+                  {sortedPrograms.length} Training Programs Available
                 </h2>
                 <p className="text-gray-600">
-                  Find the perfect course for your learning journey
+                  Find the perfect program for your professional development
                 </p>
               </div>
               
@@ -494,18 +586,18 @@ const CourseMarketplace = () => {
               </div>
             </div>
 
-            {/* Course Grid */}
+            {/* Program Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedCourses.map((course, index) => (
-                <CourseCard key={course.id} course={course} index={index} />
+              {sortedPrograms.map((program, index) => (
+                <ProgramCard key={program.id} program={program} index={index} />
               ))}
             </div>
 
-            {sortedCourses.length === 0 && (
+            {sortedPrograms.length === 0 && (
               <div className="text-center py-12">
                 <BookOpenIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No courses found
+                  No training programs found
                 </h3>
                 <p className="text-gray-600">
                   Try adjusting your search or filters to find what you're looking for.

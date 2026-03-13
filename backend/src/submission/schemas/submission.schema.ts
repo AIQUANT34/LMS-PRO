@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Assessment } from '../../assessments/schemas/assessment.schema'
+import { Assessment } from '../../assessments/schemas/assessment.schema';
 
 export type SubmissionDocument = Submission & Document;
 
 @Schema({ timestamps: true })
 export class Submission {
-
   @Prop({ type: Types.ObjectId, ref: Assessment.name, required: true })
   assessmentId: Types.ObjectId;
 
@@ -21,19 +20,19 @@ export class Submission {
 
   @Prop({
     enum: ['submitted', 'reviewed'],
-    default: 'submitted'
+    default: 'submitted',
   })
   status: string;
 
   @Prop()
   score: number;
 
-  @Prop({default: ''})
+  @Prop({ default: '' })
   feedback?: string;
 
-  @Prop ()
+  @Prop()
   reviewedAt?: Date;
-  
+
   @Prop({ type: Types.ObjectId })
   reviewedBy: Types.ObjectId;
 }

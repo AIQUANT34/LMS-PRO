@@ -6,7 +6,6 @@ export type AssessmentDocument = Assessment & Document;
 
 @Schema({ timestamps: true })
 export class Assessment {
-
   @Prop({ type: Types.ObjectId, ref: Course.name, required: true })
   courseId: Types.ObjectId;
 
@@ -24,7 +23,7 @@ export class Assessment {
 
   @Prop({
     enum: ['draft', 'published'],
-    default: 'draft'
+    default: 'draft',
   })
   status: string;
 

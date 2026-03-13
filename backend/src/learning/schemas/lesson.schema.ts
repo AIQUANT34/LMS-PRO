@@ -5,7 +5,6 @@ export type LessonDocument = Lesson & Document;
 
 @Schema({ timestamps: true })
 export class Lesson {
-
   @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
   courseId: Types.ObjectId;
 
@@ -52,9 +51,9 @@ export class Lesson {
     type: [
       {
         title: String,
-        url: String
-      }
-    ]
+        url: String,
+      },
+    ],
   })
   resources: { title: string; url: string }[];
 
@@ -64,8 +63,8 @@ export class Lesson {
   @Prop({
     type: {
       metaTitle: String,
-      metaDescription: String
-    }
+      metaDescription: String,
+    },
   })
   seo: {
     metaTitle: string;

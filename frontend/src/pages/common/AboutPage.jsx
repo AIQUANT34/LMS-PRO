@@ -15,6 +15,7 @@ import {
   ShieldCheckIcon,
   HeartIcon,
   LightBulbIcon,
+  ClockIcon,
   ChartBarIcon,
   CpuChipIcon
 } from '@heroicons/react/24/outline';
@@ -183,7 +184,7 @@ const AboutPage = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose LMS Pro?
+              Why Choose ProTrain?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               We provide the best learning experience with expert instructors and comprehensive courses

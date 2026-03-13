@@ -43,13 +43,13 @@ import {
   UsersIcon,
   BuildingOfficeIcon,
   TruckIcon,
-  PackageIcon,
+  CubeIcon,
   ClipboardDocumentListIcon,
-  Squares2X2Icon,
+  XMarkIcon,
   ListBulletIcon,
   TableCellsIcon,
   ChartPieIcon,
-  ChartLineIcon,
+  ChartBarIcon,
   CubeIcon,
   CircleStackIcon,
   ArchiveBoxIcon,
@@ -60,7 +60,6 @@ import {
   CogIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
-  ArrowRightIcon as ArrowRightIconOutline,
   PlayIcon,
   PauseIcon,
   StopIcon,
@@ -114,7 +113,7 @@ const LiveClassroom = () => {
       id: 1,
       name: 'John Smith',
       email: 'john.smith@example.com',
-      avatar: 'https://via.placeholder.com/100x100'
+      avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3EInstructor%3C/text%3E%3C/svg%3E'
     },
     scheduledTime: '2024-03-07T18:00:00Z',
     duration: 90, // minutes
@@ -154,7 +153,7 @@ const LiveClassroom = () => {
       name: 'John Smith',
       email: 'john.smith@example.com',
       role: 'instructor',
-      avatar: 'https://via.placeholder.com/100x100',
+      avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3EInstructor%3C/text%3E%3C/svg%3E',
       joinedAt: '2024-03-07T18:00:00Z',
       isMuted: false,
       isVideoOn: true,
@@ -169,7 +168,7 @@ const LiveClassroom = () => {
       name: 'Sarah Johnson',
       email: 'sarah.johnson@example.com',
       role: 'student',
-      avatar: 'https://via.placeholder.com/100x100',
+      avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3EInstructor%3C/text%3E%3C/svg%3E',
       joinedAt: '2024-03-07T18:02:00Z',
       isMuted: true,
       isVideoOn: false,
@@ -184,7 +183,7 @@ const LiveClassroom = () => {
       name: 'Mike Wilson',
       email: 'mike.wilson@example.com',
       role: 'student',
-      avatar: 'https://via.placeholder.com/100x100',
+      avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3EInstructor%3C/text%3E%3C/svg%3E',
       joinedAt: '2024-03-07T18:05:00Z',
       isMuted: true,
       isVideoOn: true,
@@ -480,7 +479,7 @@ const LiveClassroom = () => {
         {messages.map((message) => (
           <div key={message.id} className="flex gap-3">
             <img 
-              src={`https://via.placeholder.com/40x40`}
+              src={`data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EUser%3C/text%3E%3C/svg%3E`}
               alt={message.senderName}
               className="w-8 h-8 rounded-full"
             />

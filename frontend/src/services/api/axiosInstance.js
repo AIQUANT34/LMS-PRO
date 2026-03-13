@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api'; // Use Vite proxy
 
 // Create axios instance
 const axiosInstance = axios.create({

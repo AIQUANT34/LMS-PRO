@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
 import { 
   PlayIcon,
   StarIcon,
@@ -30,10 +31,87 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 const CourseDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [expandedLesson, setExpandedLesson] = useState(null);
+  const [enrollmentStatus, setEnrollmentStatus] = useState('not-enrolled'); // 'not-enrolled', 'enrolled', 'completed'
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Get current user and check enrollment status
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = localStorage.getItem('token');
+    console.log('Current user:', currentUser);
+    console.log('Token exists:', !!token);
+    console.log('Course ID:', id);
+    
+    setUser(currentUser);
+    
+    // Check if user is enrolled in this course
+    if (token && currentUser.id) {
+      checkEnrollmentStatus();
+    }
+  }, [id]);
+
+  const checkEnrollmentStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return;
+      }
+
+      console.log('Checking enrollment status...');
+      const enrollments = await apiService.get('/api/enrollments/my-courses');
+      console.log('User enrollments:', enrollments);
+      
+      const isEnrolled = enrollments.some(enrollment => {
+        console.log('Comparing:', enrollment.course._id?.toString(), 'with:', id);
+        return enrollment.course._id?.toString() === id;
+      });
+      
+      console.log('Is enrolled in this course:', isEnrolled);
+      
+      if (isEnrolled) {
+        setEnrollmentStatus('enrolled');
+        console.log('Setting enrollment status to enrolled');
+      } else {
+        setEnrollmentStatus('not-enrolled');
+        console.log('Setting enrollment status to not-enrolled');
+      }
+    } catch (error) {
+      console.error('Error checking enrollment:', error);
+      setEnrollmentStatus('not-enrolled');
+    }
+  };
+
+  const handleEnrollCourse = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await apiService.post(`/api/enrollments/${id}`);
+      setEnrollmentStatus('enrolled');
+      alert('Enrolled successfully!');
+    } catch (error) {
+      console.error('Enrollment error:', error);
+      if (error.response?.data?.message === 'Already enrolled in this course') {
+        setEnrollmentStatus('enrolled');
+        alert('You are already enrolled in this course!');
+      } else {
+        alert(error.response?.data?.message || 'Enrollment failed');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Mock course data - in real app, fetch from API using id
   const course = {
@@ -204,8 +282,8 @@ const CourseDetail = () => {
           <UserGroupIcon className="h-5 w-5 text-blue-600" />
         </div>
         <div>
-          <div className="font-semibold text-gray-900">{course.students.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">Students</div>
+          <div className="font-semibold text-primary-dark">{course.students.toLocaleString()}</div>
+          <div className="text-sm text-muted-dark">Students</div>
         </div>
       </div>
       
@@ -214,8 +292,8 @@ const CourseDetail = () => {
           <ClockIcon className="h-5 w-5 text-green-600" />
         </div>
         <div>
-          <div className="font-semibold text-gray-900">{course.duration}</div>
-          <div className="text-sm text-gray-600">Duration</div>
+          <div className="font-semibold text-primary-dark">{course.duration}</div>
+          <div className="text-sm text-muted-dark">Duration</div>
         </div>
       </div>
       
@@ -224,8 +302,8 @@ const CourseDetail = () => {
           <DocumentTextIcon className="h-5 w-5 text-purple-600" />
         </div>
         <div>
-          <div className="font-semibold text-gray-900">{course.lessons}</div>
-          <div className="text-sm text-gray-600">Lessons</div>
+          <div className="font-semibold text-primary-dark">{course.lessons}</div>
+          <div className="text-sm text-muted-dark">Lessons</div>
         </div>
       </div>
     </div>
@@ -256,11 +334,11 @@ const CourseDetail = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               {course.originalPrice > course.price && (
-                <span className="text-sm text-gray-400 line-through">
+                <span className="text-sm text-muted-dark line-through">
                   ${course.originalPrice}
                 </span>
               )}
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-primary-dark">
                 ${course.price}
               </div>
             </div>
@@ -274,42 +352,73 @@ const CourseDetail = () => {
             </button>
           </div>
 
-          <button className="w-full btn-premium mb-4">
-            Enroll Now
-          </button>
+          {/* Enrollment Status */}
+          {enrollmentStatus === 'enrolled' && (
+            <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded-lg mb-4 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircleIcon className="h-5 w-5" />
+                <span className="font-semibold">✓ You are enrolled in this course</span>
+              </div>
+            </div>
+          )}
 
-          <div className="text-center text-sm text-gray-600 mb-6">
+          {/* Debug Info */}
+          <div className="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg mb-4 text-center">
+            <div className="text-sm">
+              <strong>Debug Info:</strong><br/>
+              Status: {enrollmentStatus}<br/>
+              Course ID: {id}<br/>
+              User: {user?.name || 'Not logged in'}
+            </div>
+          </div>}
+
+          {/* Enrollment Button */}
+          {enrollmentStatus === 'enrolled' ? (
+            <button className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg mb-4" disabled>
+              ✓ Already Enrolled
+            </button>
+          ) : (
+            <button 
+              onClick={handleEnrollCourse}
+              disabled={loading}
+              className="w-full btn-premium mb-4"
+            >
+              {loading ? 'Enrolling...' : 'Enroll Now'}
+            </button>
+          )}
+
+          <div className="text-center text-sm text-muted-dark mb-6">
             30-Day Money-Back Guarantee
           </div>
 
           {/* Course Features */}
           <div className="space-y-3 border-t border-gray-200 pt-4">
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-gray-700">{course.lessons} lessons</span>
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-medium-contrast">{course.lessons} lessons</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-gray-700">{course.duration} of video content</span>
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-medium-contrast">{course.duration} of video content</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-gray-700">{course.access} access</span>
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-medium-contrast">{course.access} access</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-gray-700">Certificate of completion</span>
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-medium-contrast">Certificate of completion</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              <span className="text-sm text-gray-700">Access on mobile and TV</span>
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-medium-contrast">Access on mobile and TV</span>
             </div>
           </div>
 
           {/* Share */}
           <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-200">
-            <ShareIcon className="h-5 w-5 text-gray-400" />
-            <span className="text-sm text-gray-600">Share this course</span>
+            <ShareIcon className="h-5 w-5 text-muted-dark" />
+            <span className="text-sm text-muted-dark">Share this course</span>
           </div>
         </div>
       </div>

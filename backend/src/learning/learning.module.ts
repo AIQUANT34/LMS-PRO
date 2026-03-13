@@ -4,7 +4,10 @@ import { LearningService } from './learning.service';
 import { LearningController } from './learning.controller';
 import { Lesson, LessonSchema } from './schemas/lesson.schema';
 import { Progress, ProgressSchema } from './schemas/progress.schema';
-import { VideoHistory, VideoHistorySchema } from './schemas/video-history.schema';
+import {
+  VideoHistory,
+  VideoHistorySchema,
+} from './schemas/video-history.schema';
 import { Certificate, CertificateSchema } from './schemas/certificate.schema';
 import { EnrollmentsModule } from '../enrollments/enrollments.module';
 import { CoursesModule } from '../courses/courses.module';

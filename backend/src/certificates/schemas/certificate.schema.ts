@@ -5,7 +5,6 @@ export type CertificateDocument = Certificate & Document;
 
 @Schema({ timestamps: true })
 export class Certificate {
-
   @Prop({ required: true, unique: true })
   certificateId: string;
 
@@ -38,7 +37,7 @@ export class Certificate {
 
   @Prop({ default: false })
   isApproved: boolean;
-  
+
   @Prop()
   blockchainTxId: string;
 
@@ -46,5 +45,4 @@ export class Certificate {
   completionHash: string;
 }
 
-export const CertificateSchema =
-  SchemaFactory.createForClass(Certificate);
+export const CertificateSchema = SchemaFactory.createForClass(Certificate);

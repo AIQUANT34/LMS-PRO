@@ -1,42 +1,65 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// import { extname } from 'path';
-// import { v4 as uuid } from 'uuid';
-import cloudinary from './cloudinary.config';
-
+import { extname } from 'path';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UploadService {
-  constructor(private configService: ConfigService) {
-    cloudinary.config({
-      cloud_name: this.configService.get('CLOUDINARY_CLOUD_NAME'),
-      api_key: this.configService.get('CLOUDINARY_API_KEY'),
-      api_secret: this.configService.get('CLOUDINARY_API_SECRET'),
-    });
-  }
-  // For now, we'll use local storage
-  // In production, integrate with S3/Cloudinary
+  constructor(private configService: ConfigService) {}
 
-  // generateFileName(originalName: string): string {
-  //   const fileExt = extname(originalName);
-  //   return `${uuid()}${fileExt}`;
-  // }
-
-  // getFileUrl(fileName: string): string {
-  //   // In production, return S3 URL
-  //   return `${process.env.BASE_URL}/uploads/${fileName}`;
-  // }
-
-    async uploadFile(file: Express.Multer.File) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        resource_type: 'auto',  //detects file type automatically
-        folder:'lms-uploads',   //stores file inside cloudinary folder
-      });
-
-      return {
-        url: result.secure_url,
-        public_id: result.public_id,
+  async uploadFile(file: Express.Multer.File) {
+    try {
+      // For now, use local storage with multer
+      // The file is already stored temporarily by multer
+      
+      // Generate a unique filename
+      const fileExt = extname(file.originalname);
+      const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExt}`;
+      
+      // Move file to permanent location
+      const fs = require('fs').promises;
+      const path = require('path');
+      
+      const uploadsDir = path.join(__dirname, '..', 'uploads');
+      
+      // Ensure uploads directory exists
+      try {
+        await fs.mkdir(uploadsDir, { recursive: true });
+      } catch (error) {
+        // Directory already exists, ignore error
       }
-    } 
-
+      
+      // Move file from temp to uploads
+      const tempPath = file.path;
+      const permanentPath = path.join(uploadsDir, uniqueName);
+      
+      console.log('Moving file from:', tempPath);
+      console.log('Moving file to:', permanentPath);
+      
+      try {
+        await fs.rename(tempPath, permanentPath);
+        console.log('File moved successfully');
+      } catch (moveError) {
+        console.error('Error moving file:', moveError);
+        // Try copy as fallback
+        await fs.copyFile(tempPath, permanentPath);
+        await fs.unlink(tempPath); // Remove temp file after copy
+        console.log('File copied successfully as fallback');
+      }
+      
+      // Return the URL that will be accessible
+      const fileUrl = `${process.env.BASE_URL || 'http://localhost:3001'}/uploads/${uniqueName}`;
+      
+      console.log('File URL generated:', fileUrl);
+      
+      return {
+        url: fileUrl,
+        public_id: uniqueName,
+        fileName: uniqueName,
+      };
+    } catch (error) {
+      console.error('Upload service error:', error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+  }
 }

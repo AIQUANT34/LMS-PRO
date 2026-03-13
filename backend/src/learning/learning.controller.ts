@@ -1,4 +1,15 @@
-import {Controller, Get, Post, Put, Param, Body, UseGuards, Req, Query, Delete} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import { LearningService } from './learning.service';
 import { JwtGuard } from '../auth/jwt/jwt.guard';
 import { RolesGuard } from '../auth/roles/roles.guard';
@@ -50,24 +61,14 @@ export class LearningController {
     @Body() data: Partial<CreateLessonDto>,
     @Req() req,
   ) {
-    return this.learningService.updateLesson(
-      lessonId,
-      data,
-      req.user,
-    );
+    return this.learningService.updateLesson(lessonId, data, req.user);
   }
 
   @Delete('lessons/:lessonId')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('instructor')
-  async deleteLesson(
-    @Param('lessonId') lessonId: string,
-    @Req() req,
-  ) {
-    return this.learningService.deleteLesson(
-      lessonId,
-      req.user,
-    );
+  async deleteLesson(@Param('lessonId') lessonId: string, @Req() req) {
+    return this.learningService.deleteLesson(lessonId, req.user);
   }
 
   /**
@@ -76,10 +77,7 @@ export class LearningController {
    */
   @Get('courses/:courseId/lessons')
   @UseGuards(JwtGuard)
-  async getCourseLessons(
-    @Param('courseId') courseId: string,
-    @Req() req,
-  ) {
+  async getCourseLessons(@Param('courseId') courseId: string, @Req() req) {
     return this.learningService.getCourseLessons(courseId, req.user);
   }
 
@@ -104,7 +102,6 @@ export class LearningController {
   }
 
   @Put('progress/incomplete/:lessonId')
-
   @UseGuards(JwtGuard)
   async markLessonIncomplete(
     @Param('lessonId') lessonId: string,
@@ -123,10 +120,7 @@ export class LearningController {
    */
   @Get('progress/course/:courseId')
   @UseGuards(JwtGuard)
-  async getCourseProgress(
-    @Param('courseId') courseId: string,
-    @Req() req,
-  ) {
+  async getCourseProgress(@Param('courseId') courseId: string, @Req() req) {
     return this.learningService.getCourseProgress(courseId, req.user);
   }
 

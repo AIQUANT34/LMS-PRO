@@ -1,9 +1,10 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AppRoutes from './routes/AppRoutes';
+import AuthInitializer from './components/AuthInitializer';
+import { ToastContainer } from 'react-toastify';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -19,9 +20,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-        </div>
+        <AuthInitializer>
+          <div className="min-h-screen bg-gray-50">
+            <AppRoutes />
+            <ToastContainer position='top-right' />
+          </div>
+        </AuthInitializer>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -47,7 +51,6 @@ function App() {
           }}
         />
       </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

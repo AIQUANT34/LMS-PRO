@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsObject, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsObject,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()

@@ -1,10 +1,55 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
 
 const RegisterPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log('RegisterPage component mounted');
     console.log('Current URL:', window.location.href);
   }, []);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await apiService.post('/api/auth/register', formData);
+      setSuccess('Registration successful! Redirecting to login...');
+      
+      // Store user data for potential auto-login
+      localStorage.setItem('tempUser', JSON.stringify(response.data));
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ 
@@ -34,22 +79,54 @@ const RegisterPage = () => {
           Create Account
         </h1>
         
+        {/* Success Message */}
+        {success && (
+          <div style={{
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            padding: '10px',
+            borderRadius: '6px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            {success}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            padding: '10px',
+            borderRadius: '6px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <p style={{ 
           color: '#6c757d', 
           marginBottom: '30px',
           textAlign: 'center'
         }}>
-          Join LMS Pro and start learning today
+          Join ProTrain and start learning today
         </p>
 
-        <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '5px', color: '#495057', fontWeight: '500' }}>
               Full Name
             </label>
             <input 
-              type="text" 
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="Enter your full name"
+              required
               style={{ 
                 width: '100%', 
                 padding: '12px', 
@@ -66,8 +143,12 @@ const RegisterPage = () => {
               Email Address
             </label>
             <input 
-              type="email" 
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
+              required
               style={{ 
                 width: '100%', 
                 padding: '12px', 
@@ -84,8 +165,13 @@ const RegisterPage = () => {
               Password
             </label>
             <input 
-              type="password" 
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="Create a password"
+              required
+              minLength="6"
               style={{ 
                 width: '100%', 
                 padding: '12px', 
@@ -99,21 +185,20 @@ const RegisterPage = () => {
 
           <button 
             type="submit"
+            disabled={loading}
             style={{ 
-              backgroundColor: '#007bff', 
+              backgroundColor: loading ? '#6c757d' : '#007bff', 
               color: 'white', 
               padding: '12px 24px', 
               border: 'none', 
               borderRadius: '6px',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               fontSize: '16px',
               fontWeight: '500',
               transition: 'background-color 0.2s'
             }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
           >
-            Sign Up
+            {loading ? 'Registering...' : 'Sign Up'}
           </button>
         </form>
 

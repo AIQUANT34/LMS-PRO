@@ -47,8 +47,9 @@ const LoginPage = () => {
         case 'student':
           navigate('/student/dashboard');
           break;
+        case 'trainer':
         case 'instructor':
-          navigate('/instructor/dashboard');
+          navigate('/trainer/dashboard');
           break;
         case 'admin':
           navigate('/admin/dashboard');
@@ -77,10 +78,10 @@ const LoginPage = () => {
             transition={{ delay: 0.2, type: 'spring' }}
             className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-accent-600 rounded-2xl shadow-lg mb-4"
           >
-            <AcademicCapIcon className="h-8 w-8 text-white" />
+            <AcademicCapIcon className="h-8 w-8 text-black" />
           </motion.div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome to <span className="text-gradient-premium">LMS Pro</span>
+            Welcome to <span className="text-gradient-premium">ProTrain</span>
           </h1>
           <p className="text-gray-600">Sign in to access your learning journey</p>
         </div>

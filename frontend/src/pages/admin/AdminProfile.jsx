@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '../../store/authStore';
+import ProfilePictureUpload from '../../components/common/ProfilePictureUpload';
 import { 
   UserIcon,
   EnvelopeIcon,
@@ -9,7 +14,7 @@ import {
   CalendarIcon,
   ClockIcon,
   ShieldCheckIcon,
-  Cog6TootIcon,
+  Cog6ToothIcon,
   BellIcon,
   KeyIcon,
   LockClosedIcon,
@@ -23,8 +28,6 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowRightIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
   PlusIcon,
   MinusIcon,
   PencilIcon,
@@ -33,7 +36,6 @@ import {
   EyeSlashIcon,
   ArrowPathIcon,
   ArrowLeftIcon,
-  ArrowRightIcon as ArrowRightIconOutline,
   PlayIcon,
   PauseIcon,
   StopIcon,
@@ -65,21 +67,20 @@ import {
   InboxIcon,
   BuildingOfficeIcon,
   TruckIcon,
-  PackageIcon,
+  CubeIcon,
   ClipboardDocumentListIcon,
-  Squares2X2Icon,
   ListBulletIcon,
   TableCellsIcon,
   ChartPieIcon,
-  ChartLineIcon,
-  CubeIcon,
   CircleStackIcon,
   BriefcaseIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 const AdminProfile = () => {
+  const { user } = useAuthStore();
   const [adminData, setAdminData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
@@ -93,132 +94,171 @@ const AdminProfile = () => {
     confirmPassword: ''
   });
 
-  // Mock admin data
-  const mockAdminData = {
-    id: 1,
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@lms-pro.com',
-    phone: '+1 (555) 123-4567',
-    avatar: 'https://via.placeholder.com/150x150',
-    bio: 'System administrator with 5+ years of experience managing educational platforms.',
-    location: 'San Francisco, CA',
-    department: 'IT Security',
-    position: 'Super Admin',
-    employeeId: 'ADM001',
-    joinDate: '2020-01-15',
-    lastLogin: '2024-03-07T14:30:00Z',
-    status: 'active',
-    role: 'super_admin',
-    permissions: [
-      'user_management',
-      'course_management',
-      'system_settings',
-      'analytics',
-      'security',
-      'billing',
-      'support'
-    ],
-    preferences: {
-      language: 'en',
-      timezone: 'America/Los_Angeles',
-      emailNotifications: true,
-      pushNotifications: true,
-      smsNotifications: false,
-      twoFactorAuth: true,
-      sessionTimeout: 30,
-      theme: 'light'
-    },
-    security: {
-      lastPasswordChange: '2024-02-15',
-      passwordExpiry: '2024-05-15',
-      failedLoginAttempts: 0,
-      accountLocked: false,
-      twoFactorEnabled: true,
-      loginMethods: ['email', 'sso'],
-      activeSessions: 3,
-      securityQuestions: [
-        {
-          question: 'What was your first pet\'s name?',
-          answer: 'encrypted_answer'
-        }
-      ]
-    },
-    activity: {
-      totalLogins: 1247,
-      averageSessionDuration: 45, // minutes
-      lastActivity: '2024-03-07T16:45:00Z',
-      devicesUsed: ['Chrome', 'Firefox', 'Mobile'],
-      loginLocations: ['San Francisco', 'New York', 'Remote'],
-      securityEvents: [
-        {
-          type: 'password_change',
-          date: '2024-02-15T10:30:00Z',
-          location: 'San Francisco',
-          device: 'Chrome on Windows'
+  useEffect(() => {
+    if(user?.id)
+       fetchAdminProfile();
+  }, [user]);
+
+  const fetchAdminProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.get(API_ENDPOINTS.USERS.GET_PROFILE(user?.id));
+      
+      // console.log("Profile response", response)
+      // Transform backend data to match frontend structure
+      const transformedAdminData = {
+        id: response._id,
+        firstName: response.name ? response.name.split(' ')[0] : 'Admin',
+        lastName: response.name ? response.name.split(' ').slice(1).join(' ') : 'User',
+        email: response.email,
+        phone: response.phone || '',
+        avatar: response.avatar || 'https://via.placeholder.com/150x150',
+        bio: response.bio || 'System administrator managing the LMS platform.',
+        location: response.location || 'Not specified',
+        department: response.department || 'IT',
+        position: response.role === 'admin' ? 'Administrator' : 'Super Admin',
+        employeeId: response.employeeId || 'ADM' + response._id?.slice(-6),
+        joinDate: response.createdAt,
+        lastLogin: response.lastLogin,
+        status: response.isActive !== false ? 'active' : 'inactive',
+        role: response.role,
+        permissions: getPermissionsForRole(response.role),
+        preferences: response.preferences || {
+          language: 'en',
+          timezone: 'UTC',
+          emailNotifications: true,
+          pushNotifications: true,
+          smsNotifications: false,
+          twoFactorAuth: false,
+          sessionTimeout: 30,
+          theme: 'light'
         },
-        {
-          type: '2fa_enabled',
-          date: '2024-01-20T14:15:00Z',
-          location: 'San Francisco',
-          device: 'Firefox on Mac'
+        security: {
+          lastPasswordChange: response.lastPasswordChange || new Date().toISOString(),
+          passwordExpiry: response.passwordExpiry || '',
+          failedLoginAttempts: response.failedLoginAttempts || 0,
+          accountLocked: response.accountLocked || false,
+          twoFactorEnabled: response.twoFactorEnabled || false,
+          loginMethods: ['email'],
+          activeSessions: 1,
+          securityQuestions: []
+        },
+        activity: {
+          totalLogins: response.totalLogins || 0,
+          averageSessionDuration: 30,
+          lastActivity: response.lastLogin || new Date().toISOString(),
+          devicesUsed: ['Web Browser'],
+          loginLocations: ['Unknown'],
+          securityEvents: []
+        },
+        stats: {
+          usersManaged: 0,
+          coursesApproved: 0,
+          supportTicketsResolved: 0,
+          systemUptime: 99.9,
+          securityIncidents: 0
         }
-      ]
-    },
-    stats: {
-      usersManaged: 45678,
-      coursesApproved: 1234,
-      supportTicketsResolved: 892,
-      systemUptime: 99.9,
-      securityIncidents: 2
+      };
+      
+      setAdminData(transformedAdminData);
+      setFormData({
+        firstName: transformedAdminData.firstName,
+        lastName: transformedAdminData.lastName,
+        email: transformedAdminData.email,
+        phone: transformedAdminData.phone,
+        bio: transformedAdminData.bio,
+        location: transformedAdminData.location,
+        department: transformedAdminData.department,
+        position: transformedAdminData.position
+      });
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+      toast.error('Failed to load admin profile');
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setAdminData(mockAdminData);
-      setFormData({
-        firstName: mockAdminData.firstName,
-        lastName: mockAdminData.lastName,
-        email: mockAdminData.email,
-        phone: mockAdminData.phone,
-        bio: mockAdminData.bio,
-        location: mockAdminData.location,
-        department: mockAdminData.department,
-        position: mockAdminData.position
-      });
-    }, 500);
-  }, []);
-
-  const handleSaveProfile = () => {
-    // Simulate API call
-    setAdminData({
-      ...adminData,
-      ...formData
-    });
-    setIsEditing(false);
+  const getPermissionsForRole = (role) => {
+    if (role === 'admin') {
+      return ['user_management', 'course_management', 'analytics', 'support'];
+    }
+    return ['user_management', 'course_management', 'system_settings', 'analytics', 'security', 'billing', 'support'];
   };
 
-  const handlePasswordChange = () => {
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // Prepare data for backend - combine first and last name
+      const updateData = {
+        ...formData,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: formData.phone,
+        bio: formData.bio,
+        location: formData.location,
+        department: formData.department
+      };
+
+      await apiService.patch(API_ENDPOINTS.USERS.UPDATE(user?.id), updateData);
+      
+      // Update local state
+      setAdminData({
+        ...adminData,
+        ...updateData
+      });
+      
+      setIsEditing(false);
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    }
+  };
+
+  const handleProfilePictureUpdate = (newImageUrl) => {
+    if (adminData) {
+      setAdminData({ ...adminData, avatar: newImageUrl });
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePasswordChange = async () => {
     // Validate passwords
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      alert('Password must be at least 8 characters');
+      toast.error('Password must be at least 8 characters long');
       return;
     }
 
-    // Simulate API call
-    setShowPasswordModal(false);
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+    try {
+      await apiService.post(API_ENDPOINTS.USERS.CHANGE_PASSWORD, {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      
+      toast.success('Password changed successfully!');
+      setShowPasswordModal(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Failed to change password');
+    }
   };
 
   const handle2FAToggle = () => {
@@ -245,16 +285,12 @@ const AdminProfile = () => {
       <div className="card-premium p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <img 
-                src={adminData?.avatar}
-                alt={`${adminData?.firstName} ${adminData?.lastName}`}
-                className="w-24 h-24 rounded-full object-cover"
-              />
-              <button className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">
-                <CameraIcon className="h-4 w-4" />
-              </button>
-            </div>
+            <ProfilePictureUpload
+              currentImage={adminData?.avatar}
+              onImageUpdate={handleProfilePictureUpdate}
+              size="large"
+              userId={user?.id}
+            />
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
                 {adminData?.firstName} {adminData?.lastName}
@@ -603,15 +639,18 @@ const AdminProfile = () => {
               </button>
             </div>
             
+            <form onSubmit={handleSaveProfile}>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                   <input
                     type="text"
+                    name="firstName"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 </div>
                 
@@ -619,9 +658,11 @@ const AdminProfile = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                   <input
                     type="text"
+                    name="lastName"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 </div>
               </div>
@@ -630,9 +671,11 @@ const AdminProfile = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
+                  name="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
               
@@ -640,8 +683,9 @@ const AdminProfile = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                 <input
                   type="tel"
+                  name="phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -649,8 +693,9 @@ const AdminProfile = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                 <textarea
+                  name="bio"
                   value={formData.bio}
-                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  onChange={handleInputChange}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -661,8 +706,9 @@ const AdminProfile = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                   <input
                     type="text"
+                    name="location"
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -671,8 +717,9 @@ const AdminProfile = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                   <input
                     type="text"
+                    name="department"
                     value={formData.department}
-                    onChange={(e) => setFormData({...formData, department: e.target.value})}
+                    onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -681,18 +728,20 @@ const AdminProfile = () => {
             
             <div className="flex gap-3 mt-6">
               <button
+                type="button"
                 onClick={() => setIsEditing(false)}
                 className="btn-premium-outline"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSaveProfile}
+                type="submit"
                 className="btn-premium"
               >
                 Save Changes
               </button>
             </div>
+            </form>
           </motion.div>
         </motion.div>
       )}
@@ -815,6 +864,18 @@ const AdminProfile = () => {
       )}
     </AnimatePresence>
   );
+
+  if (loading || !adminData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg font-semibold text-gray-700">Loading Profile...</div>
+          <div className="text-sm text-gray-500 mt-2">Please wait while we load your data</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

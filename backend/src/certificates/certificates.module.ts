@@ -6,11 +6,9 @@ import { Certificate, CertificateSchema } from './schemas/certificate.schema';
 import { BlockchainModule } from 'src/blockchain/blockchain.module';
 
 @Module({
-
   imports: [
     MongooseModule.forFeature([
-      { name: Certificate.name, schema: CertificateSchema},
-
+      { name: Certificate.name, schema: CertificateSchema },
     ]),
     BlockchainModule,
   ],

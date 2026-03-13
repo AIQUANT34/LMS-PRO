@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { HomeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Button } from '../../components/ui/Button';
 
 const NotFoundPage = () => {
   return (
@@ -18,8 +19,8 @@ const NotFoundPage = () => {
           to="/"
           className="btn-premium"
         >
-          <HomeIcon className="h-5 w-5 mr-2" />
           Go Home
+        
         </Link>
       </div>
     </div>

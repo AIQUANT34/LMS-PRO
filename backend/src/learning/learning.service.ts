@@ -12,10 +12,7 @@ import {
   VideoHistory,
   VideoHistoryDocument,
 } from './schemas/video-history.schema';
-import {
-  Certificate,
-  CertificateDocument,
-} from './schemas/certificate.schema';
+import { Certificate, CertificateDocument } from './schemas/certificate.schema';
 import {
   Enrollment,
   EnrollmentDocument,
@@ -59,16 +56,13 @@ export class LearningService {
   async createLesson(courseId: string, data: CreateLessonDto, user: any) {
     const course = await this.courseModel.findById(courseId);
 
-    if (!course)
-      throw new NotFoundException('Course not found');
+    if (!course) throw new NotFoundException('Course not found');
 
     if (
       course.instructorId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
-      throw new ForbiddenException(
-        'You can only add lessons to your courses',
-      );
+      throw new ForbiddenException('You can only add lessons to your courses');
     }
 
     const lesson = await this.lessonModel.create({
@@ -87,25 +81,17 @@ export class LearningService {
       .findById(lessonId)
       .populate('courseId');
 
-    if (!lesson)
-      throw new NotFoundException('Lesson not found');
+    if (!lesson) throw new NotFoundException('Lesson not found');
 
     const course = lesson.courseId as any;
 
-    const enrollment =
-      await this.enrollmentModel.findOne({
-        user: user.userId,
-        course: course._id,
-      });
+    const enrollment = await this.enrollmentModel.findOne({
+      user: user.userId,
+      course: course._id,
+    });
 
-    if (
-      !lesson.isFree &&
-      !enrollment &&
-      user.role === 'student'
-    ) {
-      throw new ForbiddenException(
-        'You must enroll to access this lesson',
-      );
+    if (!lesson.isFree && !enrollment && user.role === 'student') {
+      throw new ForbiddenException('You must enroll to access this lesson');
     }
 
     return lesson;
@@ -114,20 +100,17 @@ export class LearningService {
   async getCourseLessons(courseId: string, user: any) {
     const course = await this.courseModel.findById(courseId);
 
-    if (!course)
-      throw new NotFoundException('Course not found');
+    if (!course) throw new NotFoundException('Course not found');
 
-    const enrollment =
-      await this.enrollmentModel.findOne({
-        user: user.userId,
-        course: courseId,
-      });
+    const enrollment = await this.enrollmentModel.findOne({
+      user: user.userId,
+      course: courseId,
+    });
 
     if (enrollment) {
-      const lessons =
-        await this.lessonModel
-          .find({ courseId })
-          .sort({ sequence: 1 });
+      const lessons = await this.lessonModel
+        .find({ courseId })
+        .sort({ sequence: 1 });
 
       return {
         lessons,
@@ -135,10 +118,9 @@ export class LearningService {
       };
     }
 
-    const freeLessons =
-      await this.lessonModel
-        .find({ courseId, isFree: true })
-        .sort({ sequence: 1 });
+    const freeLessons = await this.lessonModel
+      .find({ courseId, isFree: true })
+      .sort({ sequence: 1 });
 
     return {
       lessons: freeLessons,
@@ -159,10 +141,7 @@ export class LearningService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    if (
-      course.instructorId.toString() !== user.userId &&
-      user.role !== 'admin'
-    )
+    if (course.instructorId.toString() !== user.userId && user.role !== 'admin')
       throw new ForbiddenException('You can only edit your lessons');
 
     Object.assign(lesson, data);
@@ -183,10 +162,7 @@ export class LearningService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    if (
-      course.instructorId.toString() !== user.userId &&
-      user.role !== 'admin'
-    )
+    if (course.instructorId.toString() !== user.userId && user.role !== 'admin')
       throw new ForbiddenException('You can only delete your lessons');
 
     await this.lessonModel.deleteOne({ _id: lessonId });
@@ -206,57 +182,40 @@ export class LearningService {
   ============================================================
   */
 
-  async markLessonComplete(
-    lessonId: string,
-    enrollmentId: string,
-    user: any,
-  ) {
-    const lesson =
-      await this.lessonModel.findById(lessonId);
+  async markLessonComplete(lessonId: string, enrollmentId: string, user: any) {
+    const lesson = await this.lessonModel.findById(lessonId);
 
-    if (!lesson)
-      throw new NotFoundException('Lesson not found');
+    if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const enrollment =
-      await this.enrollmentModel.findById(
-        enrollmentId,
-      );
+    const enrollment = await this.enrollmentModel.findById(enrollmentId);
 
-    if (!enrollment)
-      throw new NotFoundException('Enrollment not found');
+    if (!enrollment) throw new NotFoundException('Enrollment not found');
 
-    if (
-      enrollment.user.toString() !== user.userId
-    )
+    if (enrollment.user.toString() !== user.userId)
       throw new ForbiddenException('Access denied');
 
-    let progress =
-      await this.progressModel.findOne({
-        userId: user.userId,
-        lessonId,
-        enrollmentId,
-      });
+    let progress = await this.progressModel.findOne({
+      userId: user.userId,
+      lessonId,
+      enrollmentId,
+    });
 
     if (!progress) {
-      progress =
-        await this.progressModel.create({
-          userId: user.userId,
-          courseId: lesson.courseId,
-          lessonId,
-          enrollmentId,
-          isCompleted: true,
-          completedAt: new Date(),
-        });
+      progress = await this.progressModel.create({
+        userId: user.userId,
+        courseId: lesson.courseId,
+        lessonId,
+        enrollmentId,
+        isCompleted: true,
+        completedAt: new Date(),
+      });
     } else {
       progress.isCompleted = true;
       progress.completedAt = new Date();
       await progress.save();
     }
 
-    await this.calculateCourseProgress(
-      lesson.courseId.toString(),
-      user.userId,
-    );
+    await this.calculateCourseProgress(lesson.courseId.toString(), user.userId);
 
     return {
       message: 'Lesson marked complete',
@@ -273,12 +232,9 @@ export class LearningService {
 
     if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const enrollment = await this.enrollmentModel.findById(
-      enrollmentId,
-    );
+    const enrollment = await this.enrollmentModel.findById(enrollmentId);
 
-    if (!enrollment)
-      throw new NotFoundException('Enrollment not found');
+    if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     if (enrollment.user.toString() !== user.userId)
       throw new ForbiddenException('Access denied');
@@ -299,10 +255,7 @@ export class LearningService {
     progress.completedAt = undefined as any;
     await progress.save();
 
-    await this.calculateCourseProgress(
-      lesson.courseId.toString(),
-      user.userId,
-    );
+    await this.calculateCourseProgress(lesson.courseId.toString(), user.userId);
 
     return {
       message: 'Lesson marked incomplete',
@@ -322,30 +275,18 @@ export class LearningService {
     data: UpdateVideoPlaybackDto,
     user: any,
   ) {
-    const lesson =
-      await this.lessonModel.findById(lessonId);
+    const lesson = await this.lessonModel.findById(lessonId);
 
-    if (!lesson)
-      throw new NotFoundException('Lesson not found');
+    if (!lesson) throw new NotFoundException('Lesson not found');
 
-    const enrollment =
-      await this.enrollmentModel.findById(
-        enrollmentId,
-      );
+    const enrollment = await this.enrollmentModel.findById(enrollmentId);
 
-    if (
-      !enrollment ||
-      enrollment.user.toString() !== user.userId
-    )
+    if (!enrollment || enrollment.user.toString() !== user.userId)
       throw new ForbiddenException('Access denied');
 
     const watchedPercentage =
       data.duration > 0
-        ? Math.round(
-            (data.currentTime /
-              data.duration) *
-              100,
-          )
+        ? Math.round((data.currentTime / data.duration) * 100)
         : 0;
 
     /*
@@ -354,40 +295,32 @@ export class LearningService {
     ------------------------------
     */
 
-    let videoHistory =
-      await this.videoHistoryModel.findOne({
-        userId: user.userId,
-        lessonId,
-      });
+    let videoHistory = await this.videoHistoryModel.findOne({
+      userId: user.userId,
+      lessonId,
+    });
 
     if (!videoHistory) {
-      videoHistory =
-        await this.videoHistoryModel.create({
-          userId: user.userId,
-          lessonId,
-          courseId: lesson.courseId,
-          currentTime: data.currentTime,
-          videoDuration: data.duration,
-          lastWatchedAt: new Date(),
-          quality: data.quality || '720p',
-          isSubtitlesEnabled:
-            data.isSubtitlesEnabled || false,
-          watchRate: data.watchRate || 1,
-          isCompleted:
-            watchedPercentage >= 95,
-        });
+      videoHistory = await this.videoHistoryModel.create({
+        userId: user.userId,
+        lessonId,
+        courseId: lesson.courseId,
+        currentTime: data.currentTime,
+        videoDuration: data.duration,
+        lastWatchedAt: new Date(),
+        quality: data.quality || '720p',
+        isSubtitlesEnabled: data.isSubtitlesEnabled || false,
+        watchRate: data.watchRate || 1,
+        isCompleted: watchedPercentage >= 95,
+      });
     } else {
-      videoHistory.currentTime =
-        data.currentTime;
+      videoHistory.currentTime = data.currentTime;
 
-      videoHistory.videoDuration =
-        data.duration;
+      videoHistory.videoDuration = data.duration;
 
-      videoHistory.lastWatchedAt =
-        new Date();
+      videoHistory.lastWatchedAt = new Date();
 
-      videoHistory.isCompleted =
-        watchedPercentage >= 95;
+      videoHistory.isCompleted = watchedPercentage >= 95;
 
       await videoHistory.save();
     }
@@ -412,8 +345,7 @@ export class LearningService {
           enrollmentId,
 
           videoProgress: {
-            currentTime:
-              data.currentTime,
+            currentTime: data.currentTime,
             duration: data.duration,
             watchedPercentage,
             lastUpdated: new Date(),
@@ -421,13 +353,9 @@ export class LearningService {
 
           lastAccessedAt: new Date(),
 
-          isCompleted:
-            watchedPercentage >= 95,
+          isCompleted: watchedPercentage >= 95,
 
-          completedAt:
-            watchedPercentage >= 95
-              ? new Date()
-              : null,
+          completedAt: watchedPercentage >= 95 ? new Date() : null,
         },
       },
       { upsert: true },
@@ -441,21 +369,16 @@ export class LearningService {
     }
 
     return {
-      message:
-        'Video progress saved',
+      message: 'Video progress saved',
       videoHistory,
     };
   }
 
-  async getVideoProgress(
-    lessonId: string,
-    user: any,
-  ) {
-    const videoHistory =
-      await this.videoHistoryModel.findOne({
-        userId: user.userId,
-        lessonId,
-      });
+  async getVideoProgress(lessonId: string, user: any) {
+    const videoHistory = await this.videoHistoryModel.findOne({
+      userId: user.userId,
+      lessonId,
+    });
 
     if (!videoHistory) {
       return {
@@ -478,54 +401,39 @@ export class LearningService {
     data: CompleteQuizDto,
     user: any,
   ) {
-    const lesson =
-      await this.lessonModel.findById(
-        lessonId,
-      );
+    const lesson = await this.lessonModel.findById(lessonId);
 
-    if (!lesson)
-      throw new NotFoundException(
-        'Quiz not found',
-      );
+    if (!lesson) throw new NotFoundException('Quiz not found');
 
-    let progress =
-      await this.progressModel.findOne({
+    let progress = await this.progressModel.findOne({
+      userId: user.userId,
+      lessonId,
+      enrollmentId,
+    });
+
+    if (!progress) {
+      progress = await this.progressModel.create({
         userId: user.userId,
+        courseId: lesson.courseId,
         lessonId,
         enrollmentId,
       });
-
-    if (!progress) {
-      progress =
-        await this.progressModel.create({
-          userId: user.userId,
-          courseId: lesson.courseId,
-          lessonId,
-          enrollmentId,
-        });
     }
 
-    progress.quizScore =
-      data.score;
+    progress.quizScore = data.score;
 
-    progress.isQuizPassed =
-      data.score >= 70;
+    progress.isQuizPassed = data.score >= 70;
 
-    progress.quizAttempts =
-      (progress.quizAttempts || 0) + 1;
+    progress.quizAttempts = (progress.quizAttempts || 0) + 1;
 
     if (progress.isQuizPassed) {
       progress.isCompleted = true;
-      progress.completedAt =
-        new Date();
+      progress.completedAt = new Date();
     }
 
     await progress.save();
 
-    await this.calculateCourseProgress(
-      lesson.courseId.toString(),
-      user.userId,
-    );
+    await this.calculateCourseProgress(lesson.courseId.toString(), user.userId);
 
     return progress;
   }
@@ -536,8 +444,7 @@ export class LearningService {
       course: courseId,
     });
 
-    if (!enrollment)
-      throw new NotFoundException('Enrollment not found');
+    if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     // return enrollment progress and basic stats
     return {
@@ -553,16 +460,14 @@ export class LearningService {
       course: courseId,
     });
 
-    if (!enrollment)
-      throw new NotFoundException('Enrollment not found');
+    if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     const certificate = await this.certificateModel.findOne({
       courseId,
       userId: user.userId,
     });
 
-    if (!certificate)
-      throw new NotFoundException('Certificate not found');
+    if (!certificate) throw new NotFoundException('Certificate not found');
 
     return certificate;
   }
@@ -601,21 +506,16 @@ export class LearningService {
   ============================================================
   */
 
-  private async generateCertificate(
-    courseId: string,
-    userId: string,
-  ) {
-    const existing =
-      await this.certificateModel.findOne({
-        courseId,
-        userId,
-      });
+  private async generateCertificate(courseId: string, userId: string) {
+    const existing = await this.certificateModel.findOne({
+      courseId,
+      userId,
+    });
 
     if (existing) return;
 
     await this.certificateModel.create({
-      certificateId:
-        'CERT-' + Date.now(),
+      certificateId: 'CERT-' + Date.now(),
       userId,
       courseId,
       issuedAt: new Date(),
@@ -629,31 +529,16 @@ export class LearningService {
   ============================================================
   */
 
-  private async calculateCourseProgress(
-    courseId: string,
-    userId: string,
-  ) {
-    const total =
-      await this.lessonModel.countDocuments(
-        { courseId },
-      );
+  private async calculateCourseProgress(courseId: string, userId: string) {
+    const total = await this.lessonModel.countDocuments({ courseId });
 
-    const completed =
-      await this.progressModel.countDocuments(
-        {
-          courseId,
-          userId,
-          isCompleted: true,
-        },
-      );
+    const completed = await this.progressModel.countDocuments({
+      courseId,
+      userId,
+      isCompleted: true,
+    });
 
-    const percent =
-      total === 0
-        ? 0
-        : Math.round(
-            (completed / total) *
-              100,
-          );
+    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
 
     await this.enrollmentModel.updateOne(
       {
@@ -662,17 +547,10 @@ export class LearningService {
       },
       {
         progress: percent,
-        status:
-          percent === 100
-            ? 'completed'
-            : 'active',
+        status: percent === 100 ? 'completed' : 'active',
       },
     );
 
-    if (percent === 100)
-      await this.generateCertificate(
-        courseId,
-        userId,
-      );
+    if (percent === 100) await this.generateCertificate(courseId, userId);
   }
 }

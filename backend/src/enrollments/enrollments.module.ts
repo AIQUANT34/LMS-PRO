@@ -6,12 +6,11 @@ import { Enrollment, EnrollmentSchema } from './schemas/enrollment.schema';
 import { CertificatesModule } from 'src/certificates/certificates.module';
 
 @Module({
-
   imports: [
-        CertificatesModule,
-        MongooseModule.forFeature([
-          {name: Enrollment.name, schema: EnrollmentSchema},
-        ]),
+    CertificatesModule,
+    MongooseModule.forFeature([
+      { name: Enrollment.name, schema: EnrollmentSchema },
+    ]),
   ],
 
   providers: [EnrollmentsService],

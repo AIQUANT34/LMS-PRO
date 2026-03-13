@@ -20,9 +20,8 @@ export class VideoHistory {
   @Prop({ required: true })
   videoDuration: number;
 
-  @Prop({ default:Date.now })
+  @Prop({ default: Date.now })
   lastWatchedAt: Date;
-  
 
   @Prop({ default: false })
   isCompleted: boolean;
@@ -36,10 +35,10 @@ export class VideoHistory {
   @Prop({ default: 1 })
   watchRate: number; // 1x, 1.25x, 1.5x, 2x
 
-  @Prop({deafult: false })
+  @Prop({ deafult: false })
   isDeleted: boolean;
 }
 
 export const VideoHistorySchema = SchemaFactory.createForClass(VideoHistory);
 VideoHistorySchema.index({ userId: 1, lessonId: 1 }, { unique: true });
-VideoHistorySchema.index({ userId:1, courseId: 1 })
+VideoHistorySchema.index({ userId: 1, courseId: 1 });

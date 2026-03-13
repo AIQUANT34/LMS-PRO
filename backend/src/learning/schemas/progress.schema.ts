@@ -5,7 +5,6 @@ export type ProgressDocument = Progress & Document;
 
 @Schema({ timestamps: true })
 export class Progress {
-  
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId: Types.ObjectId;
 
@@ -21,9 +20,9 @@ export class Progress {
   @Prop({ default: false })
   isStarted: boolean;
 
-  @Prop({default: 0})
-  completionPercentage:number;
-  
+  @Prop({ default: 0 })
+  completionPercentage: number;
+
   @Prop({ default: false })
   isCompleted: boolean;
 
@@ -33,13 +32,15 @@ export class Progress {
   @Prop()
   lastAccessedAt: Date;
 
-  @Prop({ type: {
-    currentTime: Number,
-    duration: Number,
-    watchedPercentage: Number,
-    lastUpdated: Date
-  }, default:{}
- })
+  @Prop({
+    type: {
+      currentTime: Number,
+      duration: Number,
+      watchedPercentage: Number,
+      lastUpdated: Date,
+    },
+    default: {},
+  })
   videoProgress: {
     currentTime: number; // in seconds
     duration: number;

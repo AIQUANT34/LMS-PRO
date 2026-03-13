@@ -1,0 +1,298 @@
+/* Enhanced Accessibility and Color Contrast Styles */
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .text-gray-600 { color: #374151; }
+  .text-gray-500 { color: #4b5563; }
+  .text-gray-400 { color: #6b7280; }
+}
+
+/* Enhanced Text Contrast */
+.text-accessible-primary {
+  color: #111827 !important; /* Almost black */
+}
+
+.text-accessible-secondary {
+  color: #1f2937 !important; /* Dark gray */
+}
+
+.text-accessible-muted {
+  color: #4b5563 !important; /* Medium gray */
+}
+
+.text-accessible-light {
+  color: #6b7280 !important; /* Light gray */
+}
+
+/* Enhanced Backgrounds */
+.bg-accessible-primary {
+  background-color: #ffffff !important;
+}
+
+.bg-accessible-secondary {
+  background-color: #f9fafb !important;
+}
+
+.bg-accessible-tertiary {
+  background-color: #f3f4f6 !important;
+}
+
+/* Enhanced Button Contrast */
+.btn-accessible {
+  color: #ffffff !important;
+  background-color: #1f2937 !important;
+  border-color: #1f2937 !important;
+}
+
+.btn-accessible:hover {
+  background-color: #111827 !important;
+  border-color: #111827 !important;
+}
+
+.btn-accessible-outline {
+  color: #1f2937 !important;
+  border-color: #1f2937 !important;
+  background-color: transparent !important;
+}
+
+.btn-accessible-outline:hover {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+}
+
+/* Enhanced Badge Contrast */
+.badge-accessible-success {
+  background-color: #065f46 !important;
+  color: #ffffff !important;
+  border-color: #065f46 !important;
+}
+
+.badge-accessible-warning {
+  background-color: #92400e !important;
+  color: #ffffff !important;
+  border-color: #92400e !important;
+}
+
+.badge-accessible-error {
+  background-color: #991b1b !important;
+  color: #ffffff !important;
+  border-color: #991b1b !important;
+}
+
+.badge-accessible-info {
+  background-color: #1e40af !important;
+  color: #ffffff !important;
+  border-color: #1e40af !important;
+}
+
+/* Enhanced Card Contrast */
+.card-accessible {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+.card-accessible .text-gray-600,
+.card-accessible .text-gray-500,
+.card-accessible .text-gray-400 {
+  color: #4b5563 !important;
+}
+
+/* Enhanced Link Contrast */
+.link-accessible {
+  color: #1e40af !important;
+}
+
+.link-accessible:hover {
+  color: #1e3a8a !important;
+}
+
+.link-accessible:visited {
+  color: #3730a3 !important;
+}
+
+/* Enhanced Form Elements */
+.input-accessible {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+.input-accessible:focus {
+  border-color: #1f2937 !important;
+  box-shadow: 0 0 0 1px #1f2937 !important;
+}
+
+.input-accessible::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Enhanced Table Contrast */
+.table-accessible th {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+
+.table-accessible td {
+  color: #1f2937 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Enhanced Navigation */
+.nav-accessible {
+  color: #1f2937 !important;
+}
+
+.nav-accessible:hover {
+  color: #111827 !important;
+}
+
+.nav-accessible.active {
+  color: #111827 !important;
+  background-color: #f3f4f6 !important;
+}
+
+/* Enhanced Status Indicators */
+.status-accessible-success {
+  color: #065f46 !important;
+  background-color: #d1fae5 !important;
+}
+
+.status-accessible-warning {
+  color: #92400e !important;
+  background-color: #fed7aa !important;
+}
+
+.status-accessible-error {
+  color: #991b1b !important;
+  background-color: #fee2e2 !important;
+}
+
+.status-accessible-info {
+  color: #1e40af !important;
+  background-color: #dbeafe !important;
+}
+
+/* Focus Enhancement for Keyboard Navigation */
+.focus-accessible:focus {
+  outline: 2px solid #1f2937 !important;
+  outline-offset: 2px !important;
+}
+
+/* Enhanced Icon Contrast */
+.icon-accessible {
+  color: #4b5563 !important;
+}
+
+.icon-accessible-primary {
+  color: #1f2937 !important;
+}
+
+.icon-accessible-secondary {
+  color: #6b7280 !important;
+}
+
+/* Enhanced Rating Stars */
+.rating-accessible .filled {
+  color: #fbbf24 !important;
+}
+
+.rating-accessible .empty {
+  color: #d1d5db !important;
+}
+
+/* Enhanced Price Display */
+.price-accessible-current {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+
+.price-accessible-original {
+  color: #6b7280 !important;
+  text-decoration: line-through !important;
+}
+
+/* Enhanced Meta Information */
+.meta-accessible {
+  color: #4b5563 !important;
+}
+
+.meta-accessible-strong {
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+}
+
+/* Enhanced Sidebar */
+.sidebar-accessible {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+}
+
+.sidebar-accessible .text-gray-600,
+.sidebar-accessible .text-gray-500,
+.sidebar-accessible .text-gray-400 {
+  color: #4b5563 !important;
+}
+
+.sidebar-accessible .sidebar-link {
+  color: #1f2937 !important;
+}
+
+.sidebar-accessible .sidebar-link:hover {
+  color: #111827 !important;
+  background-color: #f3f4f6 !important;
+}
+
+.sidebar-accessible .sidebar-link-active {
+  color: #111827 !important;
+  background-color: #e5e7eb !important;
+  border-color: #1f2937 !important;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .text-accessible-primary {
+    color: #f9fafb !important;
+  }
+  
+  .text-accessible-secondary {
+    color: #e5e7eb !important;
+  }
+  
+  .text-accessible-muted {
+    color: #9ca3af !important;
+  }
+  
+  .text-accessible-light {
+    color: #6b7280 !important;
+  }
+  
+  .bg-accessible-primary {
+    background-color: #111827 !important;
+  }
+  
+  .bg-accessible-secondary {
+    background-color: #1f2937 !important;
+  }
+  
+  .bg-accessible-tertiary {
+    background-color: #374151 !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .text-accessible-primary,
+  .text-accessible-secondary,
+  .text-accessible-muted,
+  .text-accessible-light {
+    color: #000000 !important;
+  }
+  
+  .bg-accessible-primary,
+  .bg-accessible-secondary,
+  .bg-accessible-tertiary {
+    background-color: #ffffff !important;
+  }
+}

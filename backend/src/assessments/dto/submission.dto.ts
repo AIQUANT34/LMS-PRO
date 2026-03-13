@@ -1,7 +1,6 @@
 import { IsOptional, IsString, IsNumber, Min } from 'class-validator';
 
 export class SubmitAssessmentDto {
-
   @IsOptional()
   @IsString()
   fileUrl?: string;
@@ -12,7 +11,6 @@ export class SubmitAssessmentDto {
 }
 
 export class ReviewSubmissionDto {
-
   @IsNumber()
   @Min(0)
   score: number;

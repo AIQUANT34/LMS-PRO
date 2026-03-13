@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Course, CourseDocument } from '../schemas/course.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -15,22 +21,22 @@ export class CourseOwnerGuard implements CanActivate {
     const user = request.user;
     const courseId = request.params.id;
 
-    if(!courseId) return true;
+    if (!courseId) return true;
 
     const course = await this.courseModel.findById(courseId);
 
-    if(!course) {
+    if (!course) {
       throw new NotFoundException('Course not found');
     }
 
     // allow admin
-    if(user.role === 'admin'){
+    if (user.role === 'admin') {
       request.course = course;
       return true;
     }
     //allow only instructor owner
-    if(course.instructorId.toString() !== user.userId){
-      throw new ForbiddenException('only course owner can modify this course')
+    if (course.instructorId.toString() !== user.userId) {
+      throw new ForbiddenException('only course owner can modify this course');
     }
     request.course = course;
     return true;

@@ -1,41 +1,33 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import {
-  Assessment,
-  AssessmentSchema
-} from './schemas/assessment.schema';
+import { Assessment, AssessmentSchema } from './schemas/assessment.schema';
 
 import {
   Submission,
-  SubmissionSchema
+  SubmissionSchema,
 } from '../submission/schemas/submission.schema';
 
 import { AssessmentsService } from './assessments.service';
 import { AssessmentsController } from './assessments.controller';
 
 @Module({
-
   imports: [
-
     MongooseModule.forFeature([
       {
         name: Assessment.name,
-        schema: AssessmentSchema
+        schema: AssessmentSchema,
       },
 
       {
         name: Submission.name,
-        schema: SubmissionSchema
-      }
-
-    ])
-
+        schema: SubmissionSchema,
+      },
+    ]),
   ],
 
   controllers: [AssessmentsController],
 
   providers: [AssessmentsService],
-
 })
 export class AssessmentsModule {}

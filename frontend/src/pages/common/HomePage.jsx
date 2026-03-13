@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { Button } from '../../components/ui/Button'
 import { 
-  AcademicCapIcon,
+  BriefcaseIcon,
   BookOpenIcon,
   UserGroupIcon,
   ChartBarIcon,
@@ -16,31 +17,31 @@ const HomePage = () => {
   const features = [
     {
       icon: BookOpenIcon,
-      title: 'Expert-Led Courses',
-      description: 'Learn from industry experts with real-world experience',
+      title: 'Expert-Led Training',
+      description: 'Develop professional skills with industry-expert led corporate training programs',
     },
     {
       icon: UserGroupIcon,
-      title: 'Interactive Learning',
-      description: 'Engage with instructors and peers in a collaborative environment',
+      title: 'Team Collaboration',
+      description: 'Engage with trainers and colleagues in a collaborative corporate learning environment',
     },
     {
       icon: ChartBarIcon,
-      title: 'Track Progress',
-      description: 'Monitor your learning journey with detailed analytics',
+      title: 'Progress Tracking',
+      description: 'Monitor professional development with detailed analytics and reporting',
     },
     {
       icon: PlayIcon,
-      title: 'Video Lessons',
-      description: 'High-quality video content for optimal learning experience',
+      title: 'Interactive Content',
+      description: 'High-quality interactive content for optimal corporate training experience',
     },
   ];
 
   const stats = [
     { label: 'Active Learners', value: '50,000+', icon: UserGroupIcon },
-    { label: 'Expert Instructors', value: '500+', icon: AcademicCapIcon },
-    { label: 'Courses Available', value: '1,000+', icon: BookOpenIcon },
-    { label: 'Success Rate', value: '98%', icon: ChartBarIcon },
+    { label: 'Expert Trainers', value: '500+', icon: BriefcaseIcon },
+    { label: 'Training Programs', value: '1,000+', icon: BookOpenIcon },
+    { label: 'Completion Rate', value: '98%', icon: ChartBarIcon },
   ];
 
   return (
@@ -54,7 +55,7 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-accent-600 rounded-2xl shadow-lg mb-6"
             >
-              <AcademicCapIcon className="h-8 w-8 text-white" />
+              <BriefcaseIcon className="h-8 w-8 text-black" />
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -62,7 +63,7 @@ const HomePage = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6"
             >
-              Learn Without <span className="text-gradient-premium">Limits</span>
+              Develop Your <span className="text-gradient-premium">Career</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -70,7 +71,7 @@ const HomePage = () => {
               transition={{ delay: 0.2 }}
               className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto"
             >
-              Transform your career with expert-led courses, interactive learning, and personalized guidance. Join thousands of learners achieving their goals.
+              Advance your professional skills with expert-led corporate training, interactive learning, and personalized development. Join thousands of learners growing their careers.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -80,11 +81,11 @@ const HomePage = () => {
             >
               <Link to="/register" className="btn-premium">
                 <SparklesIcon className="h-5 w-5 mr-2" />
-                Get Started Free
+                Start Training
               </Link>
               <Link to="/courses" className="btn-premium-outline">
                 <BookOpenIcon className="h-5 w-5 mr-2" />
-                Browse Courses
+                Browse Programs
               </Link>
             </motion.div>
           </div>
@@ -119,10 +120,10 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose <span className="text-gradient-premium">LMS Pro</span>
+              Why Choose <span className="text-gradient-premium">Corporate LMS</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We provide everything you need to succeed in your learning journey
+              We provide everything you need to succeed in your professional development
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -149,14 +150,17 @@ const HomePage = () => {
       <section className="py-20 bg-gradient-to-r from-primary-600 to-accent-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Start Your Learning Journey?
+            Ready to Advance Your Career?
           </h2>
           <p className="text-xl text-primary-100 mb-8">
-            Join thousands of students already learning with LMS Pro
+            Join thousands of learners already training with ProTrain
           </p>
           <Link to="/register" className="btn-accent">
-            <SparklesIcon className="h-5 w-5 mr-2" />
-            Start Learning Today
+           
+            <Button size="lg">
+             Start Training Today
+            </Button>
+            
           </Link>
         </div>
       </section>

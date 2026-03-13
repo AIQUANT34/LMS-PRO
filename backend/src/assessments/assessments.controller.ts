@@ -5,36 +5,34 @@ import {
   Body,
   Param,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 
 import { AssessmentsService } from './assessments.service';
 
-import {
-  SubmitAssessmentDto,
-  ReviewSubmissionDto
-} from './dto/submission.dto';
+import { SubmitAssessmentDto, ReviewSubmissionDto } from './dto/submission.dto';
 
 import { JwtGuard } from 'src/auth/jwt/jwt.guard';
 
 @Controller('assessments')
 export class AssessmentsController {
+  constructor(private assessmentsService: AssessmentsService) {}
 
-  constructor(
-    private assessmentsService: AssessmentsService
-  ) {}
+  // Get quiz details
+  @UseGuards(JwtGuard)
+  @Get('quiz/:quizId')
+  async getQuiz(@Param('quizId') quizId: string, @Req() req: any) {
+    return this.assessmentsService.getQuiz(quizId, req.user);
+  }
 
   // Get assessments of a course (student)
   @UseGuards(JwtGuard)
   @Get('course/:courseId')
   async getAssessmentsByCourse(
     @Param('courseId') courseId: string,
-    @Req() req: any
+    @Req() req: any,
   ) {
-    return this.assessmentsService.getAssessmentsByCourse(
-      courseId,
-      req.user
-    );
+    return this.assessmentsService.getAssessmentsByCourse(courseId, req.user);
   }
 
   // Student submits assessment
@@ -43,12 +41,23 @@ export class AssessmentsController {
   async submitAssessment(
     @Param('assessmentId') assessmentId: string,
     @Body() dto: SubmitAssessmentDto,
-    @Req() req: any
+    @Req() req: any,
   ) {
     return this.assessmentsService.submitAssessment(
       assessmentId,
       dto,
-      req.user
+      req.user,
+    );
+  }
+
+  // Submit quiz (alias for submit assessment)
+  @UseGuards(JwtGuard)
+  @Post('submit')
+  async submitQuiz(@Body() submitData: any, @Req() req: any) {
+    return this.assessmentsService.submitAssessment(
+      submitData.quizId,
+      submitData,
+      req.user,
     );
   }
 
@@ -57,12 +66,16 @@ export class AssessmentsController {
   @Get(':assessmentId/my-submission')
   async getMySubmission(
     @Param('assessmentId') assessmentId: string,
-    @Req() req: any
+    @Req() req: any,
   ) {
-    return this.assessmentsService.getMySubmission(
-      assessmentId,
-      req.user
-    );
+    return this.assessmentsService.getMySubmission(assessmentId, req.user);
+  }
+
+  // Get quiz submissions (alias for my-submission)
+  @UseGuards(JwtGuard)
+  @Get('my/:quizId')
+  async getQuizSubmissions(@Param('quizId') quizId: string, @Req() req: any) {
+    return this.assessmentsService.getMySubmission(quizId, req.user);
   }
 
   // Instructor reviews submission
@@ -71,12 +84,12 @@ export class AssessmentsController {
   async reviewSubmission(
     @Param('submissionId') submissionId: string,
     @Body() dto: ReviewSubmissionDto,
-    @Req() req: any
+    @Req() req: any,
   ) {
     return this.assessmentsService.reviewSubmission(
       submissionId,
       dto,
-      req.user
+      req.user,
     );
   }
 
@@ -84,11 +97,11 @@ export class AssessmentsController {
   @Get(':assessmentId/submissions')
   async getAssessmentSubmissions(
     @Param('assessmentId') assessmentId: string,
-    @Req() req: any
-  ){
+    @Req() req: any,
+  ) {
     return this.assessmentsService.getAssessmentSubmissions(
-        assessmentId,
-        req.user
-    )
+      assessmentId,
+      req.user,
+    );
   }
 }

@@ -16,15 +16,17 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { formatCurrency } from '../../utils/helpers';
+import logo from '../../assets/images/logo.png'
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar, notifications } = useUIStore();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  // local states
+  const [isScrolled, setIsScrolled] = useState(false);  //navbar style chnges on scroll
+  const [searchQuery, setSearchQuery] = useState('');   //search i/p val
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false); //profile menu open/close
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,15 +77,13 @@ const Navbar = () => {
                 whileHover={{ scale: 1.05 }}
                 className="relative"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <AcademicCapIcon className="h-6 w-6 text-white" />
-                </div>
+                <img src={logo} alt="Logo" className='h-10 w-auto object-contain'/>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                   <HeartIcon className="h-2 w-2 text-white" />
                 </div>
               </motion.div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gradient-premium">LMS Pro</span>
+                <span className="text-xl font-bold text-gradient-premium">ProTrain</span>
                 <span className="text-xs text-gray-500 font-medium">Learn Without Limits</span>
               </div>
             </Link>
@@ -161,8 +161,16 @@ const Navbar = () => {
                       className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-50 transition-all duration-200"
                     >
                       <div className="relative">
-                        <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-600 rounded-full flex items-center justify-center shadow-lg">
-                          <UserCircleIcon className="h-5 w-5 text-white" />
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-600 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                          {user?.avatar ? (
+                            <img 
+                              src={user.avatar} 
+                              alt={user?.name || 'User'} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <UserCircleIcon className="h-5 w-5 text-white" />
+                          )}
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
                           <SparklesIcon className="h-2 w-2 text-white" />
@@ -251,12 +259,14 @@ const Navbar = () => {
               )}
 
               {/* Mobile Menu Button */}
-              <button
+              <motion.button
                 onClick={toggleSidebar}
-                className="lg:hidden p-2 rounded-xl text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-all duration-200"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="lg:hidden p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Bars3Icon className="h-6 w-6" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
@@ -266,61 +276,84 @@ const Navbar = () => {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            initial={{ opacity: 0, x: -300 }}
+            initial={{ opacity: 0, x: -320 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -300 }}
-            className="lg:hidden fixed top-0 left-0 w-64 h-full bg-white shadow-premium-xl z-50"
+            exit={{ opacity: 0, x: -320 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="lg:hidden fixed top-0 left-0 w-80 h-full bg-white shadow-2xl z-50 overflow-hidden"
           >
             <div className="p-4">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-600 rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                     <AcademicCapIcon className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-lg font-bold text-gradient-premium">LMS Pro</span>
+                  <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">LMS Pro</span>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={toggleSidebar}
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <XMarkIcon className="h-5 w-5 text-gray-600" />
-                </button>
+                </motion.button>
               </div>
 
               <nav className="space-y-2">
-                {navLinks.map((link) => (
-                  <Link
+                {navLinks.map((link, index) => (
+                  <motion.div
                     key={link.name}
-                    to={link.href}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActiveLink(link.href)
-                        ? 'bg-primary-50 text-primary-600'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                    onClick={toggleSidebar}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    <link.icon className="h-5 w-5" />
-                    <span>{link.name}</span>
-                  </Link>
+                    <Link
+                      to={link.href}
+                      className={`group relative flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                        isActiveLink(link.href)
+                          ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
+                          : 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700'
+                      }`}
+                      onClick={toggleSidebar}
+                    >
+                      <link.icon 
+                        className={`h-5 w-5 transition-colors ${
+                          isActiveLink(link.href) ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'
+                        }`} 
+                      />
+                      <span className="font-medium">{link.name}</span>
+                      {isActiveLink(link.href) && (
+                        <motion.div
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                    </Link>
+                  </motion.div>
                 ))}
               </nav>
 
               {!isAuthenticated && (
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                  <Link
-                    to="/login"
-                    className="block w-full text-center py-2 px-4 border border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
-                    onClick={toggleSidebar}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { navigate('/login'); toggleSidebar(); }}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all duration-200"
                   >
-                    Log In
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="block w-full text-center py-2 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                    onClick={toggleSidebar}
+                    <span className="font-medium">Log In</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { navigate('/register'); toggleSidebar(); }}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
                   >
-                    Get Started
-                  </Link>
+                    <span className="font-medium">Get Started</span>
+                  </motion.button>
                 </div>
               )}
             </div>

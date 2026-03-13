@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const ForgotPasswordPage = () => {

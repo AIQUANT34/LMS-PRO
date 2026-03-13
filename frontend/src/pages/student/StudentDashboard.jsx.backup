@@ -1,0 +1,751 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  BookOpenIcon,
+  TrophyIcon,
+  ClockIcon,
+  ChartBarIcon,
+  FireIcon,
+  SparklesIcon,
+  AcademicCapIcon,
+  PlayIcon,
+  QuestionMarkCircleIcon,
+  LightBulbIcon,
+  ExclamationTriangleIcon,
+  UserCircleIcon,
+  BellIcon,
+  CogIcon,
+  Bars3Icon,
+  XMarkIcon,
+  CheckCircleIcon,
+  ArrowTrendingUpIcon,
+  CalendarIcon,
+  StarIcon
+} from '@heroicons/react/24/outline';
+import { useAuthStore } from '../../store/authStore';
+import { apiService } from '../../services/apiService';
+import { aiService } from '../../services/aiService';
+
+const StudentDashboard = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiQuestion, setAiQuestion] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [progressSummary, setProgressSummary] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
+          <div className="text-lg font-semibold text-gray-700">Loading Dashboard...</div>
+          <div className="text-sm text-gray-500 mt-2">Preparing your learning space</div>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch dashboard statistics
+      const dashboardResponse = await apiService.get('/api/learning/dashboard');
+      
+      // Fetch enrolled courses
+      const enrollmentsResponse = await apiService.get('/api/enrollments/my-courses');
+      
+      // Fetch AI recommendations
+      if (user?.id) {
+        try {
+          const recommendationsResponse = await aiService.getRecommendations(user.id, 'current');
+          setRecommendations(recommendationsResponse.recommendations || []);
+          
+          // Fetch progress summary
+          const summaryResponse = await aiService.getProgressSummary(user.id, 'current');
+          setProgressSummary(summaryResponse);
+        } catch (aiError) {
+          console.log('AI services not available yet');
+        }
+      }
+      
+      setDashboardData(dashboardResponse);
+      setEnrolledCourses(enrollmentsResponse.enrollments || []);
+    } catch (err) {
+      setError(err.message);
+      console.error('Dashboard Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAIQuestion = async () => {
+    if (!aiQuestion.trim()) return;
+    
+    try {
+      setAiResponse('Thinking...');
+      const response = await aiService.askQuestion(aiQuestion, null, null, user?.id);
+      setAiResponse(response.answer || 'I apologize, but I cannot answer that question right now.');
+    } catch (error) {
+      setAiResponse('Sorry, I encountered an error. Please try again.');
+      console.error('AI Question Error:', error);
+    }
+  };
+
+  const stats = dashboardData ? {
+    enrolledCourses: enrolledCourses.length,
+    completedCourses: enrolledCourses.filter(c => c.status === 'completed').length,
+    totalHours: dashboardData.totalLearningTime || 0,
+    certificates: dashboardData.certificatesCount || 0,
+    currentStreak: dashboardData.streak || 0,
+    averageProgress: enrolledCourses.length > 0 
+      ? Math.round(enrolledCourses.reduce((sum, course) => sum + (course.progress || 0), 0) / enrolledCourses.length)
+      : 0
+  } : {
+    enrolledCourses: 0,
+    completedCourses: 0,
+    totalHours: 0,
+    certificates: 0,
+    currentStreak: 0,
+    averageProgress: 0
+  };
+
+  const achievements = [
+    { id: 1, name: 'Fast Learner', description: 'Complete 5 courses in a month', icon: FireIcon, unlocked: true },
+    { id: 2, name: 'Dedicated Student', description: '7-day training streak', icon: SparklesIcon, unlocked: stats.currentStreak >= 7 },
+    { id: 3, name: 'Knowledge Seeker', description: 'Ask 50 AI questions', icon: QuestionMarkCircleIcon, unlocked: false },
+    { id: 4, name: 'Top Performer', description: 'Maintain 90% average progress', icon: TrophyIcon, unlocked: stats.averageProgress >= 90 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-sm sticky top-0 z-20">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Bars3Icon className="h-6 w-6 text-gray-700" />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+              <p className="text-xs text-gray-500">Student Portal</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <BellIcon className="h-5 w-5 text-gray-600" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-semibold">S</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="hidden lg:block bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                <AcademicCapIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Student Dashboard</h1>
+                <p className="text-sm text-gray-600">Welcome back, {user?.name || 'Student'}!</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <BellIcon className="h-5 w-5 text-gray-600" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <CogIcon className="h-5 w-5 text-gray-600" />
+              </button>
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold">S</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      <div className={`lg:hidden fixed inset-0 z-30 ${mobileMenuOpen ? 'block' : 'hidden'}`}>
+        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}></div>
+        <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-xl transform transition-transform">
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
+                <XMarkIcon className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
+          </div>
+          <nav className="p-4 space-y-2">
+            {['overview', 'courses', 'achievements', 'ai-assistant'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 rounded-lg capitalize transition-colors ${
+                  activeTab === tab
+                    ? 'bg-purple-100 text-purple-700 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {tab.replace('-', ' ')}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Desktop Tabs */}
+        <div className="hidden lg:block mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-1">
+            <div className="flex space-x-1">
+              {['overview', 'courses', 'achievements', 'ai-assistant'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium capitalize transition-all ${
+                    activeTab === tab
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.replace('-', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {activeTab === 'overview' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Enrolled Courses', value: enrolledCourses.length || 0, icon: BookOpenIcon, color: 'purple', trend: '+2 this month' },
+                  { label: 'Completed', value: dashboardData?.completedCourses || 0, icon: CheckCircleIcon, color: 'green', trend: 'Great progress!' },
+                  { label: 'Hours Learned', value: dashboardData?.totalHours || 0, icon: ClockIcon, color: 'blue', trend: '+12h this week' },
+                  { label: 'Achievements', value: 8, icon: TrophyIcon, color: 'yellow', trend: '2 new badges' },
+                ].map((stat, index) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 bg-${stat.color}-100 rounded-lg flex items-center justify-center`}>
+                        <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                      </div>
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {stat.trend}
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                    <div className="text-sm text-gray-600">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Continue Learning */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Continue Learning</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {enrolledCourses.slice(0, 3).map((course) => (
+                    <motion.div
+                      key={course.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+                          <BookOpenIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 text-sm">{course.courseId?.title}</h4>
+                          <p className="text-xs text-gray-500">{course.progress || 0}% Complete</p>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full mb-3">
+                        <div 
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-semibold py-1 rounded-full"
+                          style={{ width: `${course.progress || 0}%` }}
+                        >
+                          {course.progress || 0}%
+                        </div>
+                      </div>
+                      <button className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                        Continue
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'courses' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">My Courses</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrolledCourses.map((course) => (
+                    <motion.div
+                      key={course.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
+                    >
+                      <div className="h-32 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                        <BookOpenIcon className="h-12 w-12 text-white opacity-50" />
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-semibold text-gray-900 mb-2">{course.courseId?.title}</h4>
+                        <p className="text-sm text-gray-600 mb-3">{course.courseId?.description}</p>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs text-gray-500">{course.progress || 0}% Complete</span>
+                          <div className="flex items-center space-x-1">
+                            <StarIcon className="h-4 w-4 text-yellow-500" />
+                            <span className="text-xs text-gray-600">4.5</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full mb-3">
+                          <div 
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-semibold py-1 rounded-full"
+                            style={{ width: `${course.progress || 0}%` }}
+                          >
+                            {course.progress || 0}%
+                          </div>
+                        </div>
+                        <button className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                          Continue Learning
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'achievements' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { name: 'First Steps', description: 'Complete your first lesson', icon: CheckCircleIcon, unlocked: true },
+                    { name: 'Week Warrior', description: '7-day learning streak', icon: FireIcon, unlocked: true },
+                    { name: 'Course Master', description: 'Complete a full course', icon: TrophyIcon, unlocked: false },
+                    { name: 'Quick Learner', description: 'Complete 5 lessons in one day', icon: SparklesIcon, unlocked: false },
+                  ].map((achievement, index) => (
+                    <motion.div
+                      key={achievement.name}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`text-center p-4 rounded-xl ${
+                        achievement.unlocked 
+                          ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200' 
+                          : 'bg-gray-50 border border-gray-200 opacity-50'
+                      }`}
+                    >
+                      <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                        achievement.unlocked 
+                          ? 'bg-gradient-to-br from-yellow-400 to-orange-400' 
+                          : 'bg-gray-300'
+                      }`}>
+                        <achievement.icon className={`h-6 w-6 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`} />
+                      </div>
+                      <h4 className={`font-semibold mb-1 ${achievement.unlocked ? 'text-gray-900' : 'text-gray-500'}`}>
+                        {achievement.name}
+                      </h4>
+                      <p className={`text-xs ${achievement.unlocked ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {achievement.description}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'ai-assistant' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Learning Assistant</h3>
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <SparklesIcon className="h-10 w-10 text-purple-600" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">Your Personal AI Tutor</h4>
+                  <p className="text-gray-600 mb-6">Get personalized help with your courses, ask questions, and receive study recommendations</p>
+                  <button 
+                    onClick={() => setAiChatOpen(true)}
+                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Start Chat with AI
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* AI Chat Modal */}
+      {aiChatOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">AI Assistant</h3>
+              <button onClick={() => setAiChatOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
+                <XMarkIcon className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="bg-gray-50 rounded-lg p-4 mb-4 h-64 overflow-y-auto">
+                <div className="text-sm text-gray-600">
+                  <div className="mb-2">
+                    <span className="font-semibold text-purple-600">AI:</span> Hello! I'm your personal learning assistant. How can I help you today?
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  placeholder="Ask me anything..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StudentDashboard;
+
+export default StudentDashboard;
+                  Ready to continue your learning journey with ProTrain? You have a {stats.currentStreak}-day training streak! 🔥
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <AcademicCapIcon className="h-24 w-24 text-primary-200" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { label: 'Enrolled Courses', value: stats.enrolledCourses, icon: BookOpenIcon, color: 'blue' },
+              { label: 'Completed', value: stats.completedCourses, icon: TrophyIcon, color: 'green' },
+              { label: 'Learning Hours', value: stats.totalHours, icon: ClockIcon, color: 'purple' },
+              { label: 'Certificates', value: stats.certificates, icon: SparklesIcon, color: 'yellow' },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="card-premium p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                  <div className={`w-12 h-12 bg-${stat.color}-100 rounded-xl flex items-center justify-center`}>
+                    <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* AI Assistant & Progress Overview */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* AI Learning Assistant */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="card-premium p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">AI Learning Assistant</h2>
+                <button
+                  onClick={() => setAiChatOpen(!aiChatOpen)}
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  {aiChatOpen ? 'Hide' : 'Show'} Chat
+                </button>
+              </div>
+              
+              {aiChatOpen && (
+                <div className="space-y-4">
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={aiQuestion}
+                      onChange={(e) => setAiQuestion(e.target.value)}
+                      placeholder="Ask anything about your courses..."
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    <button
+                      onClick={handleAIQuestion}
+                      className="btn-premium px-4 py-2"
+                    >
+                      <LightBulbIcon className="h-4 w-4 mr-2" />
+                      Ask
+                    </button>
+                  </div>
+                  
+                  {aiResponse && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-700">{aiResponse}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Progress Summary */}
+            {progressSummary && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="card-premium p-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Learning Progress Summary</h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Strengths</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {progressSummary.strengths?.map((strength, index) => (
+                        <span key={index} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                          {strength}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Areas to Improve</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {progressSummary.improvementAreas?.map((area, index) => (
+                        <span key={index} className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Next Steps</h3>
+                    <ul className="space-y-1">
+                      {progressSummary.nextSteps?.map((step, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-center">
+                          <PlayIcon className="h-4 w-4 mr-2 text-green-600" />
+                          {step}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Recommendations */}
+            {recommendations.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="card-premium p-6"
+              >
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">AI Recommendations</h2>
+                <div className="space-y-3">
+                  {recommendations.slice(0, 3).map((rec, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-shrink-0">
+                        <BookOpenIcon className="h-6 w-6 text-primary-600 mt-1" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{rec.title}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{rec.description}</p>
+                        <button className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2">
+                          Start Learning →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Recent Courses */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="card-premium p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Recent Courses</h2>
+              <button 
+                onClick={() => navigate('/student/courses')}
+                className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+              >
+                View All →
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {enrolledCourses.slice(0, 6).map((course, index) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className="card-premium overflow-hidden hover:shadow-premium-lg cursor-pointer"
+                  onClick={() => navigate(`/student/courses/${course.courseId._id}`)}
+                >
+                  <div className="relative">
+                    <img 
+                      src={course.courseId?.thumbnail || 'https://via.placeholder.com/300x200'} 
+                      alt={course.courseId?.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-lg text-xs">
+                      {course.progress || 0}% Complete
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{course.courseId?.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3">Instructor: {course.courseId?.instructorId?.name || 'Unknown'}</p>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                      <span>{course.completedLessons || 0}/{course.courseId?.totalLessons || 0} lessons</span>
+                      <span>Last accessed: {course.lastAccessed ? new Date(course.lastAccessed).toLocaleDateString() : 'Never'}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full mb-3">
+                      <div 
+                        className="bg-green-600 text-white text-xs font-semibold py-1 rounded-full"
+                        style={{ width: `${course.progress || 0}%` }}
+                      >
+                        {course.progress || 0}%
+                      </div>
+                    </div>
+                    <button className="w-full btn-premium-outline text-sm">
+                      Continue Learning
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Achievements */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="card-premium p-6"
+          >
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Achievements</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {achievements.map((achievement, index) => (
+                <motion.div
+                  key={achievement.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  className={`text-center p-4 rounded-xl ${
+                    achievement.unlocked 
+                      ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200' 
+                      : 'bg-gray-50 border border-gray-200 opacity-50'
+                  }`}
+                >
+                  <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                    achievement.unlocked 
+                      ? 'bg-gradient-to-br from-yellow-400 to-orange-400' 
+                      : 'bg-gray-300'
+                  }`}>
+                    <achievement.icon className={`h-6 w-6 ${achievement.unlocked ? 'text-white' : 'text-gray-500'}`} />
+                  </div>
+                  <h3 className={`font-semibold text-sm mb-1 ${
+                    achievement.unlocked ? 'text-gray-900' : 'text-gray-500'
+                  }`}>
+                    {achievement.name}
+                  </h3>
+                  <p className={`text-xs ${achievement.unlocked ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {achievement.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default StudentDashboard;

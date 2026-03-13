@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 const UnauthorizedPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
-          <ShieldExclamationIcon className="h-8 w-8 text-yellow-600" />
+          <ShieldCheckIcon className="h-8 w-8 text-yellow-600" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Access Denied</h1>
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Unauthorized</h2>

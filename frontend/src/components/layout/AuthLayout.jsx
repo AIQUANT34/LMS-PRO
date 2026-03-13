@@ -1,7 +1,7 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+// import { Outlet } from 'react-router-dom';
 
-const AuthLayout = () => {
+const AuthLayout = ({children}) => {
   console.log('AuthLayout rendered');
   
   return (
@@ -24,7 +24,8 @@ const AuthLayout = () => {
           borderRadius: '8px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <Outlet />
+          {/* <Outlet /> */}
+          {children}
         </div>
       </div>
     </div>

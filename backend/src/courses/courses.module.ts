@@ -1,20 +1,25 @@
 import { Module } from '@nestjs/common';
-import { CoursesService } from './courses.service';
-import { CoursesController } from './courses.controller';
-
 import { MongooseModule } from '@nestjs/mongoose';
-import { Course, CourseSchema } from './schemas/course.schema';
+import { CoursesController } from './courses.controller';
+import { TrainerController } from './trainer.controller';
+import { CoursesService } from './courses.service';
+import { CourseSchema } from './schemas/course.schema';
+import { LectureSchema } from './schemas/lecture.schema';
+import { LectureService } from './lecture.service';
+import { LectureController } from './lecture.controller';
 import { CourseOwnerGuard } from './guards/course-owner.guard';
-
+import { UploadModule } from '../upload/upload.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Course.name, schema: CourseSchema},
+      { name: 'Course', schema: CourseSchema },
+      { name: 'Lecture', schema: LectureSchema },
     ]),
+    UploadModule,
   ],
-  providers: [CoursesService, CourseOwnerGuard],
-  controllers: [CoursesController],
-  exports: [CoursesService, CourseOwnerGuard],
+  controllers: [CoursesController, TrainerController, LectureController],
+  providers: [CoursesService, LectureService, CourseOwnerGuard],
+  exports: [CoursesService, LectureService],
 })
 export class CoursesModule {}

@@ -1,27 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { aiService } from '../../services/aiService';
+import 'react-toastify/dist/ReactToastify.css';
 import { 
   SparklesIcon,
-  ChatBubbleLeftRightIcon,
-  UserGroupIcon,
-  AcademicCapIcon,
-  BookOpenIcon,
-  CalendarIcon,
-  ClockIcon,
-  BellIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
+  UserIcon,
+  BriefcaseIcon,
   PaperAirplaneIcon,
-  MicrophoneIcon,
-  SpeakerWaveIcon,
-  PlayIcon,
-  PauseIcon,
-  StopIcon,
-  ArrowPathIcon,
+  EllipsisVerticalIcon,
+  DocumentTextIcon,
+  VideoCameraIcon,
+  BookOpenIcon,
+  ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
+  ExclamationCircleIcon,
   StarIcon,
   FireIcon,
   BeakerIcon,
@@ -44,23 +36,20 @@ import {
   UsersIcon,
   BuildingOfficeIcon,
   TruckIcon,
-  PackageIcon,
+  CubeIcon,
   ClipboardDocumentListIcon,
-  Squares2X2Icon,
+  XMarkIcon,
   ListBulletIcon,
   TableCellsIcon,
   ChartPieIcon,
-  ChartLineIcon,
-  CubeIcon,
+  ChartBarIcon,
   CircleStackIcon,
   ArchiveBoxIcon,
   InboxIcon,
   PhoneIcon,
   MapPinIcon,
-  BriefcaseIcon,
   CogIcon,
   ArrowLeftIcon,
-  ArrowRightIcon as ArrowRightIconOutline,
   EyeIcon,
   PencilIcon,
   TrashIcon,
@@ -79,14 +68,9 @@ import {
   ShieldCheckIcon,
   LightBulbIcon,
   RocketLaunchIcon,
-  BrainIcon,
   CpuChipIcon,
-  ChartBarIcon,
-  DocumentTextIcon,
-  VideoCameraIcon,
-  SpeakerXMarkIcon,
-  VolumeOffIcon,
-  VolumeUpIcon,
+  SpeakerWaveIcon,
+  MicrophoneIcon,
   TrophyIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
@@ -114,8 +98,8 @@ const AIAssistant = () => {
   const mockUserProfile = {
     id: 1,
     name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'student',
+    email: 'john.doe@company.com',
+    role: 'employee',
     level: 'intermediate',
     interests: ['React', 'JavaScript', 'Node.js'],
     learningStyle: 'visual',
@@ -123,8 +107,8 @@ const AIAssistant = () => {
     preferredPace: 'medium',
     strengths: ['Problem-solving', 'Debugging'],
     weaknesses: ['CSS styling', 'Database design'],
-    completedCourses: [1, 2, 3],
-    currentCourse: 4,
+    completedPrograms: [1, 2, 3],
+    currentProgram: 4,
     progress: {
       totalLessons: 45,
       completedLessons: 23,
@@ -134,7 +118,7 @@ const AIAssistant = () => {
     }
   };
 
-  // Mock course context
+  // Mock training program context
   const mockCourseContext = {
     id: 4,
     title: 'Advanced React Patterns',
@@ -231,12 +215,12 @@ const AIAssistant = () => {
     {
       id: 1,
       type: 'ai',
-      content: 'Hello! I\'m your AI learning assistant. I can help you with React concepts, code problems, study strategies, and much more. What would you like to learn today?',
+      content: 'Hello! I\'m your AI training assistant. I can help you with React concepts, code problems, professional development strategies, and much more. What would you like to learn today?',
       timestamp: '2024-03-07T10:00:00Z',
       suggestions: [
         'Explain React hooks',
         'Help me debug my code',
-        'Create a study plan',
+        'Create a training plan',
         'Quiz me on React concepts'
       ]
     },
@@ -324,16 +308,43 @@ const AIAssistant = () => {
     setNewMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(messageText);
+    try {
+      // Call real AI service
+      const response = await aiService.askQuestion(
+        messageText, 
+        courseContext?.id, 
+        currentLesson?.id
+      );
+
+      const aiResponse = {
+        id: messages.length + 2,
+        type: 'assistant',
+        content: response.answer || response.message || 'I apologize, but I encountered an issue processing your request.',
+        timestamp: new Date().toISOString(),
+        suggestions: response.suggestions || []
+      };
+
       setMessages(prev => [...prev, aiResponse]);
-      setIsTyping(false);
 
       if (voiceEnabled) {
         speakText(aiResponse.content);
       }
-    }, 1500);
+
+    } catch (error) {
+      console.error('AI Service Error:', error);
+      
+      // Fallback to mock response if AI service fails
+      const fallbackResponse = generateAIResponse(messageText);
+      setMessages(prev => [...prev, fallbackResponse]);
+
+      toast.error('AI service unavailable, using fallback response');
+      
+      if (voiceEnabled) {
+        speakText(fallbackResponse.content);
+      }
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const generateAIResponse = (userMessage) => {
@@ -343,8 +354,8 @@ const AIAssistant = () => {
         suggestions: ['Tell me more', 'Show me examples', 'Create practice exercises', 'Explain differently']
       },
       'help': {
-        content: 'I can help you with:\n\n📚 **Learning Concepts** - Explain any programming concept\n🐛 **Debugging** - Help you find and fix errors\n📝 **Code Review** - Review your code and suggest improvements\n📊 **Study Planning** - Create personalized learning paths\n🎯 **Practice** - Generate coding exercises and quizzes\n\nWhat would you like help with?',
-        suggestions: ['Explain a concept', 'Debug my code', 'Review my code', 'Create study plan']
+        content: 'I can help you with:\n\n📚 **Learning Concepts** - Explain any programming concept\n🐛 **Debugging** - Help you find and fix errors\n📝 **Code Review** - Review your code and suggest improvements\n📊 **Training Planning** - Create personalized professional development paths\n🎯 **Practice** - Generate coding exercises and quizzes\n\nWhat would you like help with?',
+        suggestions: ['Explain a concept', 'Debug my code', 'Review my code', 'Create training plan']
       },
       'quiz': {
         content: 'Great! Let\'s test your knowledge with a quick quiz:\n\n**Question:** What is the primary purpose of the useMemo hook?\n\nA) To memoize expensive calculations\nB) To manage state\nC) To handle side effects\nD) To create refs\n\nTake your time to think about it!',
@@ -408,8 +419,8 @@ const AIAssistant = () => {
 
   const generateLearningPath = () => {
     const path = {
-      title: 'Personalized React Learning Path',
-      description: 'Based on your current progress and goals',
+      title: 'Personalized React Training Path',
+      description: 'Based on your current progress and professional goals',
       modules: [
         {
           title: 'React Fundamentals',
@@ -507,10 +518,10 @@ const AIAssistant = () => {
           Take Quiz
         </button>
         <button
-          onClick={generateLearningPath}
+          onClick={() => handleSendMessage('Training Path')}
           className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200"
         >
-          Learning Path
+          Training Path
         </button>
       </div>
       
@@ -531,8 +542,8 @@ const AIAssistant = () => {
               <SparklesIcon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">AI Learning Assistant</h1>
-              <p className="text-sm text-gray-600">Your personalized learning companion</p>
+              <h1 className="text-lg font-semibold text-gray-900">AI Training Assistant</h1>
+              <p className="text-sm text-gray-600">Your professional development companion</p>
             </div>
           </div>
           
@@ -557,12 +568,12 @@ const AIAssistant = () => {
         </div>
       </div>
 
-      {/* Course Context Bar */}
+      {/* Training Program Context Bar */}
       {courseContext && (
         <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AcademicCapIcon className="h-5 w-5 text-blue-600" />
+              <BriefcaseIcon className="h-5 w-5 text-blue-600" />
               <div>
                 <span className="text-sm font-medium text-blue-900">{courseContext.title}</span>
                 <span className="text-sm text-blue-700 ml-2">• {courseContext.lessonTitle}</span>
@@ -615,8 +626,8 @@ const AIAssistant = () => {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask me anything about your learning..."
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Ask me anything about your professional development..."
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 
@@ -660,13 +671,13 @@ const AIAssistant = () => {
         </div>
 
         {/* Side Panel */}
-        <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+        <div className="w-72 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col">
           {/* User Profile */}
           {userProfile && (
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center gap-3 mb-3">
                 <img 
-                  src={`https://via.placeholder.com/50x50`}
+                  src={`data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"%3E%3Crect fill="%23e5e7eb" width="50" height="50"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="12" font-family="Arial"%3EUser%3C/text%3E%3C/svg%3E`}
                   alt={userProfile.name}
                   className="w-12 h-12 rounded-full"
                 />
