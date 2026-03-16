@@ -172,7 +172,8 @@ const StudentQuizSystem = () => {
                 Start Quiz
               </button>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
       ) : showResults ? (
         /* Quiz Results */
         <motion.div
@@ -203,7 +204,11 @@ const StudentQuizSystem = () => {
         </motion.div>
       ) : (
         /* Quiz Active */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           {/* Quiz Questions */}
           <div className="lg:col-span-2">
             <div className="card-premium p-6">
@@ -362,7 +367,7 @@ const StudentQuizSystem = () => {
               </div>
             </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

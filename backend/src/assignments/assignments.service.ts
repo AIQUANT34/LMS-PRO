@@ -48,6 +48,19 @@ export class AssignmentsService {
     return assignments;
   }
 
+  async getTrainerAssignments(user: any) {
+    const assignments = await this.assignmentModel
+      .find({ instructorId: user.userId })
+      .populate('courseId', 'title')
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return {
+      assignments,
+      count: assignments.length,
+    };
+  }
+
   async updateAssignment(assignmentId: string, updateData: any, user: any) {
     const assignment = await this.assignmentModel.findById(assignmentId);
 

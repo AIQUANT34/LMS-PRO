@@ -9,7 +9,7 @@ import { User } from './users/schemas/user.schema';
 import { UsersModule } from './users/users.module';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
-import { InstructorsModule } from './instructors/instructors.module';
+// TrainersModule removed to avoid route conflicts - use CoursesModule for trainer operations
 import { UploadModule } from './upload/upload.module';
 import { LearningModule } from './learning/learning.module';
 import { AssessmentsModule } from './assessments/assessments.module';
@@ -32,7 +32,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     AuthModule,
     UsersModule,
     CoursesModule,
-    InstructorsModule,
+    // TrainersModule removed - trainer operations handled by CoursesModule
     EnrollmentsModule,
     UploadModule,
     LearningModule,

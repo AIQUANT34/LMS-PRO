@@ -24,7 +24,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 
-const Sidebar = ({ role }) => {
+const Sidebar = ({ role, onClose }) => {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar, closeSidebar } = useUIStore();
   const [isMobile, setIsMobile] = useState(false);
@@ -45,18 +45,14 @@ const Sidebar = ({ role }) => {
 
   const studentLinks = [
     { name: 'Dashboard', href: '/student/dashboard', icon: HomeIcon },
-    { name: 'My Courses', href: '/student/courses', icon: BookOpenIcon },
+    { name: 'Browse Courses', href: '/courses', icon: BookOpenIcon },
+    { name: 'My Courses', href: '/student/courses', icon: DocumentTextIcon },
     { name: 'Achievements', href: '/student/achievements', icon: TrophyIcon },
     { name: 'AI Assistant', href: '/student/ai-assistant', icon: SparklesIcon },
-    { name: 'Profile', href: '/student/profile', icon: UserCircleIcon },
-  ];
-
-  const employeeLinks = [
-    { name: 'Dashboard', href: '/employee/dashboard', icon: HomeIcon },
-    { name: 'My Programs', href: '/employee/courses', icon: BookOpenIcon },
     { name: 'Assignments', href: '/employee/assignments', icon: DocumentTextIcon },
     { name: 'Certificates', href: '/employee/certificates', icon: TrophyIcon },
-    { name: 'Profile', href: '/employee/profile', icon: UserCircleIcon },
+    { name: 'Profile', href: '/student/profile', icon: UserCircleIcon },
+
   ];
 
   const trainerLinks = [
@@ -82,8 +78,6 @@ const Sidebar = ({ role }) => {
     switch (role) {
       case 'student':
         return studentLinks;
-      case 'employee':
-        return employeeLinks;
       case 'trainer':
         return trainerLinks;
       case 'admin':
@@ -150,7 +144,7 @@ const Sidebar = ({ role }) => {
         variants={sidebarVariants}
         initial="hidden"
         animate={isMobile ? (sidebarOpen ? "visible" : "hidden") : "visible"}
-        className={`fixed left-0 top-0 h-full w-64 bg-white shadow-xl z-50 lg:static lg:inset-0 lg:z-auto lg:block ${
+        className={`fixed left-0 top-0 h-full w-64 bg-white shadow-xl z-50 lg:relative lg:top-0 lg:h-auto lg:flex lg:flex-shrink-0 lg:shadow-lg lg:border-r lg:border-gray-200 lg:z-auto lg:block ${
           isMobile ? 'block' : ''
         }`}
       >
@@ -168,7 +162,7 @@ const Sidebar = ({ role }) => {
             {/* Mobile Close Button */}
             {isMobile && (
               <button
-                onClick={closeSidebar}
+                onClick={onClose || closeSidebar}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
               >
                 <XMarkIcon className="h-4 w-4 text-gray-600" />
@@ -222,7 +216,7 @@ const Sidebar = ({ role }) => {
               >
                 <Link
                   to={link.href}
-                  onClick={() => isMobile && closeSidebar()}
+                  onClick={() => isMobile && (onClose || closeSidebar())}
                   className={`group relative flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                     isActiveLink(link.href)
                       ? 'bg-indigo-600 text-white shadow-md'

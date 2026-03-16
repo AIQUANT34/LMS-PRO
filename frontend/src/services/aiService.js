@@ -5,7 +5,7 @@ export const aiService = {
   // Ask AI about course content
   askQuestion: async (question, courseId = null, lessonId = null) => {
     try {
-      const response = await apiService.post('/api/ai/ask', {
+      const response = await apiService.post('/ai/ask', {
         question,
         courseId,
         lessonId,
@@ -22,7 +22,7 @@ export const aiService = {
   // Get personalized learning recommendations
   getRecommendations: async (studentId, courseId) => {
     try {
-      const response = await apiService.get(`/api/ai/recommendations/${studentId}/${courseId}`);
+      const response = await apiService.get(`/ai/recommendations/${studentId}/${courseId}`);
       return response.data;
     } catch (error) {
       console.error('AI Recommendations Error:', error);
@@ -33,7 +33,7 @@ export const aiService = {
   // Generate learning progress summary
   getProgressSummary: async (studentId, courseId) => {
     try {
-      const response = await apiService.post(`/api/ai/progress-summary/${studentId}/${courseId}`, {
+      const response = await apiService.post(`/ai/progress-summary/${studentId}/${courseId}`, {
         includeWeakAreas: true,
         includeSuggestions: true,
         includeNextSteps: true
@@ -48,7 +48,7 @@ export const aiService = {
   // Generate quiz questions from content
   generateQuiz: async (content, difficulty = 'medium', questionCount = 5) => {
     try {
-      const response = await apiService.post('/api/ai/generate-quiz', {
+      const response = await apiService.post('/ai/generate-quiz', {
         content,
         difficulty,
         questionCount,
@@ -65,7 +65,7 @@ export const aiService = {
   // Generate personalized learning path
   generateLearningPath: async (studentId, goals, currentLevel = 'beginner') => {
     try {
-      const response = await apiService.post('/api/ai/generate-path', {
+      const response = await apiService.post('/ai/generate-path', {
         goals,
         currentLevel,
         studentId,
@@ -83,7 +83,7 @@ export const aiService = {
   // Analyze learning patterns and suggest improvements
   analyzePerformance: async (studentId, timeframe = '30-days') => {
     try {
-      const response = await apiService.post('/api/ai/analyze-performance', {
+      const response = await apiService.post('/ai/analyze-performance', {
         studentId,
         timeframe,
         includeRecommendations: true,

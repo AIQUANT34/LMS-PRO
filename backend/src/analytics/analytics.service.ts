@@ -90,7 +90,7 @@ export class AnalyticsService {
     };
   }
 
-  async getInstructorAnalytics(userId: string) {
+  async getTrainerAnalytics(userId: string) {
     return {
       overview: {
         totalCoursesCreated: 15,

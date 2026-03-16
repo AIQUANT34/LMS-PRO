@@ -37,6 +37,83 @@ api.interceptors.response.use(
 
 // Generic API methods
 export const apiService = {
+  // Login method
+  login: async (credentials) => {
+    try {
+      const response = await api.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      console.error('Login Error:', error);
+      throw error;
+    }
+  },
+
+  // Get method with debugging
+  get: async (endpoint) => {
+    try {
+      console.log(`=== API GET DEBUG ===`);
+      console.log('Endpoint:', endpoint);
+      console.log('Headers:', api.defaults.headers);
+      
+      const response = await api.get(endpoint);
+      console.log('Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`GET Error for ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  // Post method with debugging
+  post: async (endpoint, data, config = {}) => {
+    try {
+      console.log(`=== API POST DEBUG ===`);
+      console.log('Endpoint:', endpoint);
+      console.log('Data:', data);
+      console.log('Config:', config);
+      
+      const response = await api.post(endpoint, data, config);
+      console.log('Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`POST Error for ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  // Register method
+  register: async (userData) => {
+    try {
+      const response = await api.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Register Error:', error);
+      throw error;
+    }
+  },
+
+  // Logout method
+  logout: async () => {
+    try {
+      const response = await api.post('/auth/logout');
+      return response.data;
+    } catch (error) {
+      console.error('Logout Error:', error);
+      throw error;
+    }
+  },
+
+  // Update profile method
+  updateProfile: async (userData) => {
+    try {
+      const response = await api.put('/auth/profile', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Profile Update Error:', error);
+      throw error;
+    }
+  },
+
   // GET request
   get: async (url, config = {}) => {
     try {

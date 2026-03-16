@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 import { 
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -56,12 +59,9 @@ import {
   TruckIcon,
   CubeIcon,
   ClipboardDocumentListIcon,
-  XMarkIcon,
   ListBulletIcon,
   TableCellsIcon,
   ChartPieIcon,
-  ChartBarIcon,
-  CubeIcon,
   CircleStackIcon,
   ArchiveBoxIcon,
   InboxIcon,
@@ -78,133 +78,61 @@ const CourseAnalytics = () => {
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock course data
-  const mockCourseData = {
-    id: courseId,
-    title: 'Advanced React Patterns',
-    description: 'Master advanced React patterns and techniques for building scalable applications',
-    instructor: {
-      id: 1,
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      avatar: 'https://via.placeholder.com/100x100'
-    },
-    category: 'Development',
-    level: 'Advanced',
-    price: 89.99,
-    originalPrice: 129.99,
-    language: 'English',
-    duration: 24, // hours
-    lessons: 45,
-    enrolledStudents: 1234,
-    completedStudents: 567,
-    rating: 4.8,
-    reviews: 234,
-    thumbnail: 'https://via.placeholder.com/400x225',
-    status: 'published',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-03-01',
-    publishedAt: '2024-01-20'
-  };
-
-  // Mock analytics data
-  const mockAnalyticsData = {
-    overview: {
-      totalRevenue: 45678.90,
-      thisMonthRevenue: 15678.90,
-      totalEnrollments: 1234,
-      thisMonthEnrollments: 156,
-      completionRate: 78.5,
-      averageRating: 4.8,
-      averageTimeToComplete: 18.5,
-      refundRate: 2.3,
-      engagementScore: 85.2
-    },
-    revenue: [
-      { month: 'Jan', revenue: 12500, enrollments: 142, avgPerStudent: 88.03 },
-      { month: 'Feb', revenue: 14500, enrollments: 167, avgPerStudent: 86.83 },
-      { month: 'Mar', revenue: 15678.90, enrollments: 156, avgPerStudent: 100.50 },
-      { month: 'Apr', revenue: 16700, enrollments: 189, avgPerStudent: 88.36 },
-      { month: 'May', revenue: 17800, enrollments: 201, avgPerStudent: 88.56 },
-      { month: 'Jun', revenue: 18900, enrollments: 223, avgPerStudent: 84.75 }
-    ],
-    enrollments: [
-      { date: '2024-03-01', enrollments: 12, completions: 3, refunds: 0 },
-      { date: '2024-03-02', enrollments: 18, completions: 5, refunds: 1 },
-      { date: '2024-03-03', enrollments: 15, completions: 7, refunds: 0 },
-      { date: '2024-03-04', enrollments: 22, completions: 9, refunds: 0 },
-      { date: '2024-03-05', enrollments: 25, completions: 11, refunds: 1 },
-      { date: '2024-03-06', enrollments: 28, completions: 14, refunds: 0 },
-      { date: '2024-03-07', enrollments: 36, completions: 18, refunds: 0 }
-    ],
-    engagement: {
-      lessonViews: 45678,
-      averageWatchTime: 12.5, // minutes
-      completionRate: 78.5,
-      dropOffPoints: [
-        { lesson: 5, dropOffRate: 15.2, reason: 'Content difficulty' },
-        { lesson: 12, dropOffRate: 12.8, reason: 'Time constraints' },
-        { lesson: 18, dropOffRate: 18.5, reason: 'Technical issues' }
-      ],
-      interactionRate: 65.3,
-      discussionPosts: 234,
-      averageResponseTime: 2.5 // hours
-    },
-    demographics: {
-      ageGroups: [
-        { range: '18-24', percentage: 35.2 },
-        { range: '25-34', percentage: 42.8 },
-        { range: '35-44', percentage: 15.6 },
-        { range: '45+', percentage: 6.4 }
-      ],
-      locations: [
-        { country: 'United States', students: 456 },
-        { country: 'United Kingdom', students: 234 },
-        { country: 'Canada', students: 123 },
-        { country: 'Australia', students: 89 },
-        { country: 'Germany', students: 67 },
-        { country: 'India', students: 156 }
-      ],
-      professions: [
-        { profession: 'Software Developer', percentage: 45.3 },
-        { profession: 'Designer', percentage: 12.8 },
-        { profession: 'Product Manager', percentage: 8.5 },
-        { profession: 'Data Scientist', percentage: 15.2 },
-        { profession: 'Student', percentage: 18.2 }
-      ]
-    },
-    feedback: {
-      averageRating: 4.8,
-      totalReviews: 234,
-      ratingDistribution: [
-        { rating: 5, count: 156 },
-        { rating: 4, count: 67 },
-        { rating: 3, count: 8 },
-        { rating: 2, count: 2 },
-        { rating: 1, count: 1 }
-      ],
-      commonThemes: [
-        { theme: 'Comprehensive content', mentions: 89 },
-        { theme: 'Expert instructor', mentions: 76 },
-        { theme: 'Practical examples', mentions: 65 },
-        { theme: 'Great support', mentions: 54 }
-      ],
-      improvementSuggestions: [
-        { suggestion: 'More advanced topics', mentions: 23 },
-        { suggestion: 'More practice exercises', mentions: 18 },
-        { suggestion: 'Better video quality', mentions: 12 }
-      ]
-    }
-  };
-
+  // Fetch real course and analytics data
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setCourseData(mockCourseData);
-      setAnalyticsData(mockAnalyticsData);
-      setIsLoading(false);
-    }, 1000);
+    const fetchCourseData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch course details
+        const courseResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_BY_ID(courseId));
+        const courseData = courseResponse.data;
+        
+        // Fetch course analytics
+        let analyticsData = null;
+        try {
+          const analyticsResponse = await apiService.get(API_ENDPOINTS.ANALYTICS.COURSE(courseId));
+          analyticsData = analyticsResponse.data;
+        } catch (analyticsError) {
+          console.warn('Analytics data not available:', analyticsError);
+          // Create basic analytics from course data
+          analyticsData = {
+            overview: {
+              totalRevenue: courseData.totalRevenue || 0,
+              thisMonthRevenue: 0,
+              totalEnrollments: courseData.enrollmentCount || 0,
+              thisMonthEnrollments: 0,
+              completionRate: 0,
+              averageRating: courseData.ratings?.average || 0,
+              averageTimeToComplete: 0,
+              refundRate: 0,
+              engagementScore: 0
+            },
+            revenue: [],
+            enrollments: [],
+            engagement: [],
+            demographics: [],
+            feedback: []
+          };
+        }
+        
+        setCourseData(courseData);
+        setAnalyticsData(analyticsData);
+      } catch (error) {
+        console.error('Failed to fetch course data:', error);
+        setError('Failed to load course analytics');
+        toast.error('Failed to load course analytics');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (courseId) {
+      fetchCourseData();
+    }
   }, [courseId]);
 
   const timeRanges = [

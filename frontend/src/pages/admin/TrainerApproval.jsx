@@ -78,7 +78,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
-const InstructorApproval = () => {
+const TrainerApproval = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
@@ -99,16 +99,16 @@ const InstructorApproval = () => {
   const applicationsPerPage = 10;
 
   useEffect(() => {
-    fetchInstructorApplications();
+    fetchTrainerApplications();
   }, []);
 
-  const fetchInstructorApplications = async () => {
+  const fetchTrainerApplications = async () => {
     try {
-      const response = await apiService.get(API_ENDPOINTS.USERS.INSTRUCTOR_APPLICATIONS);
+      const response = await apiService.get(API_ENDPOINTS.USERS.TRAINER_APPLICATIONS);
       // Transform the backend data to match the frontend structure
       const transformedApplications = response.map(app => ({
         id: app._id,
-        instructor: {
+        trainer: {
           id: app.userId?._id || app.userId,
           firstName: app.firstName,
           lastName: app.lastName,
@@ -158,27 +158,27 @@ const InstructorApproval = () => {
       setApplications(transformedApplications);
       setTotalPages(Math.ceil(transformedApplications.length / applicationsPerPage));
     } catch (error) {
-      console.error('Error fetching instructor applications:', error);
-      toast.error('Failed to load instructor applications');
+      console.error('Error fetching trainer applications:', error);
+      toast.error('Failed to load trainer applications');
     }
   };
 
   const filteredApplications = applications.filter(app => {
-    const matchesSearch = app.instructor.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         app.instructor.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         app.instructor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         app.instructor.expertise.some(exp => exp.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = app.trainer.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         app.trainer.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         app.trainer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         app.trainer.expertise.some(exp => exp.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = filterStatus === 'all' || app.application.status === filterStatus;
-    const matchesExpertise = filterExpertise === 'all' || app.instructor.expertise.includes(filterExpertise);
+    const matchesExpertise = filterExpertise === 'all' || app.trainer.expertise.includes(filterExpertise);
     return matchesSearch && matchesStatus && matchesExpertise;
   });
 
   const sortedApplications = [...filteredApplications].sort((a, b) => {
     let comparison = 0;
     if (sortBy === 'name') {
-      comparison = a.instructor.firstName.localeCompare(b.instructor.firstName);
+      comparison = a.trainer.firstName.localeCompare(b.trainer.firstName);
     } else if (sortBy === 'email') {
-      comparison = a.instructor.email.localeCompare(b.instructor.email);
+      comparison = a.trainer.email.localeCompare(b.trainer.email);
     } else if (sortBy === 'status') {
       comparison = a.application.status.localeCompare(b.application.status);
     } else if (sortBy === 'appliedAt') {
@@ -219,7 +219,7 @@ const InstructorApproval = () => {
   const handleConfirmApproval = async () => {
     if (selectedApplication) {
       try {
-        await apiService.patch(API_ENDPOINTS.USERS.REVIEW_INSTRUCTOR_APPLICATION(selectedApplication.id), {
+        await apiService.patch(API_ENDPOINTS.USERS.REVIEW_TRAINER_APPLICATION(selectedApplication.id), {
           status: 'approved',
           adminNotes: {
             strengths: ['Good profile', 'Relevant experience'],
@@ -231,7 +231,7 @@ const InstructorApproval = () => {
         toast.success('Application approved successfully!');
         setShowApprovalModal(false);
         setSelectedApplication(null);
-        fetchInstructorApplications(); // Refresh the data
+        fetchTrainerApplications(); // Refresh the data
       } catch (error) {
         console.error('Error approving application:', error);
         toast.error('Failed to approve application');
@@ -242,7 +242,7 @@ const InstructorApproval = () => {
   const handleConfirmRejection = async () => {
     if (selectedApplication && rejectionReason) {
       try {
-        await apiService.patch(API_ENDPOINTS.USERS.REVIEW_INSTRUCTOR_APPLICATION(selectedApplication.id), {
+        await apiService.patch(API_ENDPOINTS.USERS.REVIEW_TRAINER_APPLICATION(selectedApplication.id), {
           status: 'rejected',
           rejectionReason: rejectionReason,
           adminNotes: {
@@ -256,7 +256,7 @@ const InstructorApproval = () => {
         setShowRejectionModal(false);
         setSelectedApplication(null);
         setRejectionReason('');
-        fetchInstructorApplications(); // Refresh the data
+        fetchTrainerApplications(); // Refresh the data
       } catch (error) {
         console.error('Error rejecting application:', error);
         toast.error('Failed to reject application');
@@ -279,7 +279,7 @@ const InstructorApproval = () => {
     
     try {
       const promises = selectedApplicationsList.map(app => 
-        apiService.patch(API_ENDPOINTS.USERS.REVIEW_INSTRUCTOR_APPLICATION(app.id), {
+        apiService.patch(API_ENDPOINTS.USERS.REVIEW_TRAINER_APPLICATION(app.id), {
           status: action,
           rejectionReason: action === 'rejected' ? 'Bulk rejection - Please review application guidelines' : undefined,
           adminNotes: {
@@ -294,7 +294,7 @@ const InstructorApproval = () => {
       
       toast.success(`Applications ${action}d successfully!`);
       setSelectedApplications(new Set());
-      fetchInstructorApplications(); // Refresh the data
+      fetchTrainerApplications(); // Refresh the data
     } catch (error) {
       console.error(`Error in bulk ${action}:`, error);
       toast.error(`Failed to ${action} applications`);
@@ -335,14 +335,14 @@ const InstructorApproval = () => {
             className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <img 
-            src={application.instructor.avatar} 
-            alt={`${application.instructor.firstName} ${application.instructor.lastName}`}
+            src={application.trainer.avatar} 
+            alt={`${application.trainer.firstName} ${application.trainer.lastName}`}
             className="w-12 h-12 rounded-full object-cover"
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900">
-                {application.instructor.firstName} {application.instructor.lastName}
+                {application.trainer.firstName} {application.trainer.lastName}
               </h3>
               <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getStatusBg(application.application.status)}`}>
                 <span className={getStatusColor(application.application.status)}>
@@ -350,7 +350,7 @@ const InstructorApproval = () => {
                 </span>
               </span>
             </div>
-            <p className="text-sm text-gray-600">{application.instructor.email}</p>
+            <p className="text-sm text-gray-600">{application.trainer.email}</p>
           </div>
         </div>
         
@@ -361,26 +361,26 @@ const InstructorApproval = () => {
       </div>
 
       <div className="mb-4">
-        <p className="text-sm text-gray-700 line-clamp-2">{application.instructor.bio}</p>
+        <p className="text-sm text-gray-700 line-clamp-2">{application.trainer.bio}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
           <div className="text-sm text-gray-600">Expertise</div>
           <div className="flex flex-wrap gap-1">
-            {application.instructor.expertise.slice(0, 2).map((exp, idx) => (
+            {application.trainer.expertise.slice(0, 2).map((exp, idx) => (
               <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                 {exp}
               </span>
             ))}
-            {application.instructor.expertise.length > 2 && (
-              <span className="text-xs text-gray-500">+{application.instructor.expertise.length - 2} more</span>
+            {application.trainer.expertise.length > 2 && (
+              <span className="text-xs text-gray-500">+{application.trainer.expertise.length - 2} more</span>
             )}
           </div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Experience</div>
-          <div className="font-medium text-gray-900 text-sm">{application.instructor.experience.length} positions</div>
+          <div className="font-medium text-gray-900 text-sm">{application.trainer.experience.length} positions</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Proposed Courses</div>
@@ -391,15 +391,15 @@ const InstructorApproval = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
           <div className="text-sm text-gray-600">Location</div>
-          <div className="font-medium text-gray-900 text-sm">{application.instructor.location}</div>
+          <div className="font-medium text-gray-900 text-sm">{application.trainer.location}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Availability</div>
-          <div className="font-medium text-gray-900 text-sm">{application.instructor.availability}</div>
+          <div className="font-medium text-gray-900 text-sm">{application.trainer.availability}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Teaching Experience</div>
-          <div className="font-medium text-gray-900 text-sm">{application.instructor.teachingExperience}</div>
+          <div className="font-medium text-gray-900 text-sm">{application.trainer.teachingExperience}</div>
         </div>
       </div>
 
@@ -486,7 +486,7 @@ const InstructorApproval = () => {
           >
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Instructor Application Details</h2>
+                <h2 className="text-xl font-bold text-gray-900">Trainer Application Details</h2>
                 <button
                   onClick={() => setShowApplicationModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg"
@@ -501,15 +501,15 @@ const InstructorApproval = () => {
                 <div className="lg:col-span-2">
                   <div className="flex items-center gap-4 mb-6">
                     <img 
-                      src={selectedApplication.instructor.avatar} 
-                      alt={`${selectedApplication.instructor.firstName} ${selectedApplication.instructor.lastName}`}
+                      src={selectedApplication.trainer.avatar} 
+                      alt={`${selectedApplication.trainer.firstName} ${selectedApplication.trainer.lastName}`}
                       className="w-20 h-20 rounded-full object-cover"
                     />
                     <div>
                       <h3 className="text-2xl font-bold text-gray-900">
-                        {selectedApplication.instructor.firstName} {selectedApplication.instructor.lastName}
+                        {selectedApplication.trainer.firstName} {selectedApplication.trainer.lastName}
                       </h3>
-                      <p className="text-gray-600">{selectedApplication.instructor.email}</p>
+                      <p className="text-gray-600">{selectedApplication.trainer.email}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${getStatusBg(selectedApplication.application.status)}`}>
                           <span className={getStatusColor(selectedApplication.application.status)}>
@@ -525,7 +525,7 @@ const InstructorApproval = () => {
 
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Bio</h4>
-                    <p className="text-gray-700">{selectedApplication.instructor.bio}</p>
+                    <p className="text-gray-700">{selectedApplication.trainer.bio}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -534,19 +534,19 @@ const InstructorApproval = () => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <EnvelopeIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-700">{selectedApplication.instructor.email}</span>
+                          <span className="text-sm text-gray-700">{selectedApplication.trainer.email}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <PhoneIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-700">{selectedApplication.instructor.phone}</span>
+                          <span className="text-sm text-gray-700">{selectedApplication.trainer.phone}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPinIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-700">{selectedApplication.instructor.location}</span>
+                          <span className="text-sm text-gray-700">{selectedApplication.trainer.location}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <GlobeAltIcon className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-700">{selectedApplication.instructor.website}</span>
+                          <span className="text-sm text-gray-700">{selectedApplication.trainer.website}</span>
                         </div>
                       </div>
                     </div>
@@ -556,19 +556,19 @@ const InstructorApproval = () => {
                       <div className="space-y-2">
                         <div>
                           <span className="text-sm text-gray-600">Availability:</span>
-                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.instructor.availability}</span>
+                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.trainer.availability}</span>
                         </div>
                         <div>
                           <span className="text-sm text-gray-600">Timezone:</span>
-                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.instructor.timezone}</span>
+                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.trainer.timezone}</span>
                         </div>
                         <div>
                           <span className="text-sm text-gray-600">Teaching Experience:</span>
-                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.instructor.teachingExperience}</span>
+                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.trainer.teachingExperience}</span>
                         </div>
                         <div>
                           <span className="text-sm text-gray-600">Languages:</span>
-                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.instructor.languages.join(', ')}</span>
+                          <span className="text-sm text-gray-900 ml-2">{selectedApplication.trainer.languages.join(', ')}</span>
                         </div>
                       </div>
                     </div>
@@ -577,7 +577,7 @@ const InstructorApproval = () => {
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Areas of Expertise</h4>
                     <div className="flex flex-wrap gap-2">
-                      {selectedApplication.instructor.expertise.map((exp, index) => (
+                      {selectedApplication.trainer.expertise.map((exp, index) => (
                         <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
                           {exp}
                         </span>
@@ -588,7 +588,7 @@ const InstructorApproval = () => {
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Experience</h4>
                     <div className="space-y-4">
-                      {selectedApplication.instructor.experience.map((exp, index) => (
+                      {selectedApplication.trainer.experience.map((exp, index) => (
                         <div key={index} className="border-l-4 border-blue-500 pl-4">
                           <div className="flex items-center justify-between mb-1">
                             <h5 className="font-medium text-gray-900">{exp.position}</h5>
@@ -604,7 +604,7 @@ const InstructorApproval = () => {
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Education</h4>
                     <div className="space-y-3">
-                      {selectedApplication.instructor.education.map((edu, index) => (
+                      {selectedApplication.trainer.education.map((edu, index) => (
                         <div key={index} className="border-l-4 border-green-500 pl-4">
                           <h5 className="font-medium text-gray-900">{edu.degree}</h5>
                           <div className="text-sm text-gray-700">{edu.institution}</div>
@@ -617,7 +617,7 @@ const InstructorApproval = () => {
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Certifications</h4>
                     <ul className="list-disc list-inside text-gray-700 space-y-1">
-                      {selectedApplication.instructor.certifications.map((cert, index) => (
+                      {selectedApplication.trainer.certifications.map((cert, index) => (
                         <li key={index}>{cert}</li>
                       ))}
                     </ul>
@@ -803,7 +803,7 @@ const InstructorApproval = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Approve Application?</h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to approve <strong>{selectedApplication.instructor.firstName} {selectedApplication.instructor.lastName}</strong>'s application? This will grant them instructor access.
+                Are you sure you want to approve <strong>{selectedApplication.trainer.firstName} {selectedApplication.trainer.lastName}</strong>'s application? This will grant them trainer access.
               </p>
             </div>
             
@@ -896,7 +896,7 @@ const InstructorApproval = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Reject Application?</h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to reject <strong>{selectedApplication.instructor.firstName} {selectedApplication.instructor.lastName}</strong>'s application? Please provide a reason.
+                Are you sure you want to reject <strong>{selectedApplication.trainer.firstName} {selectedApplication.trainer.lastName}</strong>'s application? Please provide a reason.
               </p>
             </div>
             
@@ -941,13 +941,13 @@ const InstructorApproval = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Instructor Approval</h1>
-              <p className="text-gray-600">Review and manage instructor applications</p>
+              <h1 className="text-2xl font-bold text-gray-900">Trainer Approval</h1>
+              <p className="text-gray-600">Review and manage Trainer applications</p>
             </div>
             
             <button className="btn-premium">
               <PlusIcon className="h-4 w-4 mr-2" />
-              Invite Instructor
+              Invite Trainer
             </button>
           </div>
         </div>
@@ -1095,4 +1095,4 @@ const InstructorApproval = () => {
   );
 };
 
-export default InstructorApproval;
+export default TrainerApproval;

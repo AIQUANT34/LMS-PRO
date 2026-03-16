@@ -12,7 +12,7 @@ export class LectureService {
     private readonly awsS3Service: AwsS3Service,
   ) {}
 
-  async create(createLectureDto: CreateLectureDto, instructorId: string): Promise<Lecture> {
+  async create(createLectureDto: CreateLectureDto, trainerId: string): Promise<Lecture> {
     // Get the highest order number for this course
     const lastLecture = await this.lectureModel
       .findOne({ courseId: createLectureDto.courseId })
@@ -21,37 +21,37 @@ export class LectureService {
 
     const lecture = new this.lectureModel({
       ...createLectureDto,
-      instructorId,
+      trainerId,
       order: lastLecture ? lastLecture.order + 1 : 1,
     });
 
     return lecture.save();
   }
 
-  async findByCourse(courseId: string, instructorId?: string): Promise<Lecture[]> {
+  async findByCourse(courseId: string, trainerId?: string): Promise<Lecture[]> {
     const query: any = { courseId, isDeleted: false };
     
-    if (instructorId) {
-      query.instructorId = instructorId;
+    if (trainerId) {
+      query.trainerId = trainerId;
     }
 
     return this.lectureModel
       .find(query)
       .sort({ order: 1 })
-      .populate('instructorId', 'name email')
+      .populate('trainerId', 'name email')
       .exec();
   }
 
-  async findOne(id: string, instructorId?: string): Promise<Lecture> {
+  async findOne(id: string, trainerId?: string): Promise<Lecture> {
     const query: any = { _id: id, isDeleted: false };
     
-    if (instructorId) {
-      query.instructorId = instructorId;
+    if (trainerId) {
+      query.trainerId = trainerId;
     }
 
     const lecture = await this.lectureModel
       .findOne(query)
-      .populate('instructorId', 'name email')
+      .populate('trainerId', 'name email')
       .populate('courseId', 'title')
       .exec();
 
@@ -62,8 +62,8 @@ export class LectureService {
     return lecture;
   }
 
-  async update(id: string, updateLectureDto: UpdateLectureDto, instructorId: string): Promise<Lecture> {
-    const lecture = await this.findOne(id, instructorId);
+  async update(id: string, updateLectureDto: UpdateLectureDto, trainerId: string): Promise<Lecture> {
+    const lecture = await this.findOne(id, trainerId);
 
     // Update metrics if video is changed
     if (updateLectureDto.videoUrl && updateLectureDto.videoUrl !== lecture.videoUrl) {
@@ -85,8 +85,8 @@ export class LectureService {
     return updatedLecture;
   }
 
-  async remove(id: string, instructorId: string): Promise<void> {
-    const lecture = await this.findOne(id, instructorId);
+  async remove(id: string, trainerId: string): Promise<void> {
+    const lecture = await this.findOne(id, trainerId);
 
     // Soft delete
     await this.lectureModel
@@ -118,11 +118,11 @@ export class LectureService {
     }
   }
 
-  async reorderLectures(courseId: string, lectureOrders: Array<{ id: string; order: number }>, instructorId: string): Promise<void> {
+  async reorderLectures(courseId: string, lectureOrders: Array<{ id: string; order: number }>, trainerId: string): Promise<void> {
     // Verify instructor owns the course
     const lectures = await this.lectureModel.find({
       courseId,
-      instructorId,
+      trainerId,
       isDeleted: false,
     }).exec();
 
@@ -143,8 +143,8 @@ export class LectureService {
     url: string;
     type: string;
     size: number;
-  }, instructorId: string): Promise<Lecture> {
-    const lecture = await this.findOne(lectureId, instructorId);
+  }, trainerId: string): Promise<Lecture> {
+    const lecture = await this.findOne(lectureId, trainerId);
 
     return this.lectureModel.findByIdAndUpdate(
       lectureId,
@@ -157,8 +157,8 @@ export class LectureService {
     ).exec() as Promise<Lecture>;
   }
 
-  async removeResourceFile(lectureId: string, fileUrl: string, instructorId: string): Promise<Lecture> {
-    const lecture = await this.findOne(lectureId, instructorId);
+  async removeResourceFile(lectureId: string, fileUrl: string, trainerId: string): Promise<Lecture> {
+    const lecture = await this.findOne(lectureId, trainerId);
 
     // Delete file from S3
     const key = this.extractS3KeyFromUrl(fileUrl);
@@ -210,7 +210,7 @@ export class LectureService {
     return null;
   }
 
-  async getLectureStats(courseId: string, instructorId: string): Promise<{
+  async getLectureStats(courseId: string, trainerId: string): Promise<{
     totalLectures: number;
     totalDuration: number;
     publishedLectures: number;
@@ -218,7 +218,7 @@ export class LectureService {
   }> {
     const lectures = await this.lectureModel.find({
       courseId,
-      instructorId,
+      trainerId,
       isDeleted: false,
     }).exec();
 

@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
 import { JwtGuard } from '../auth/jwt/jwt.guard';
+import { RolesGuard } from '../auth/roles/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import {
   CreateAssignmentDto,
   SubmitAssignmentDto,

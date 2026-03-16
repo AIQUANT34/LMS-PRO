@@ -30,7 +30,7 @@ const TestAPI = () => {
     
     try {
       // Test courses endpoint through proxy
-      const response = await apiService.get('/api/courses/public');
+      const response = await apiService.get(API_ENDPOINTS.COURSES.GET_ALL);
       setData(response);
       console.log('Courses Response:', response);
     } catch (err) {

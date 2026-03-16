@@ -4,7 +4,6 @@ import { Suspense, lazy } from 'react';
 
 // Layouts
 const StudentLayout = lazy(() => import('../components/layout/StudentLayout'));
-const EmployeeLayout = lazy(() => import('../components/layout/EmployeeLayout'));
 const TrainerLayout = lazy(() => import('../components/layout/TrainerLayout'));
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout'));
 const AuthLayout = lazy(() => import('../components/layout/AuthLayout'));
@@ -26,7 +25,7 @@ const AssignmentSystem = lazy(() => import('../pages/student/AssignmentSystem'))
 const LiveClassroom = lazy(() => import('../pages/live/LiveClassroom'));
 const AIAssistant = lazy(() => import('../pages/ai/AIAssistant'));
 const GamificationSystem = lazy(() => import('../pages/gamification/GamificationSystem'));
-const InstructorApplication = lazy(() => import('../pages/student/InstructorApplication'));
+const TrainerApplication = lazy(() => import('../pages/student/TrainerApplication'));
 
 // Trainer Pages
 const TrainerDashboard = lazy(() => import('../pages/trainer/TrainerDashboard'));
@@ -62,7 +61,7 @@ const HelpCenter = lazy(() => import('../pages/common/HelpCenter'));
 const DocumentationPage = lazy(() => import('../pages/common/DocumentationPage'));
 const CommunityPage = lazy(() => import('../pages/common/CommunityPage'));
 const SystemStatusPage = lazy(() => import('../pages/common/SystemStatusPage'));
-const InstructorsPage = lazy(() => import('../pages/common/InstructorsPage'));
+const TrainersPage = lazy(() => import('../pages/common/TrainersPage'));
 
 // Course Pages
 const CourseMarketplace = lazy(() => import('../pages/course/CourseMarketplace'));
@@ -89,7 +88,7 @@ const AppRoutes = () => {
         <Route path="/courses" element={<CourseMarketplace />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/search" element={<CourseSearch />} />
-        <Route path="/instructors" element={<InstructorsPage />} />
+        <Route path="/trainers" element={<TrainersPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={
@@ -114,7 +113,7 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="courses" element={<StudentCourses />} />
           <Route path="achievements" element={<StudentAchievements />} />
-          <Route path="instructor-application" element={<InstructorApplication />} />
+          <Route path="trainer-application" element={<TrainerApplication />} />
           <Route path="courses/:courseId/lesson/:lessonId" element={<CoursePlayer />} />
           <Route path="courses/:courseId/progress" element={<CourseProgress />} />
           <Route path="courses/:id/quiz/:quizId" element={<QuizSystem />} />

@@ -9,14 +9,18 @@ import { LectureService } from './lecture.service';
 import { LectureController } from './lecture.controller';
 import { CourseOwnerGuard } from './guards/course-owner.guard';
 import { UploadModule } from '../upload/upload.module';
+import { AssignmentsModule } from '../assignments/assignments.module';
+import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Course', schema: CourseSchema },
       { name: 'Lecture', schema: LectureSchema },
+      { name: 'User', schema: UserSchema }, // Add UserModel for CoursesService
     ]),
     UploadModule,
+    AssignmentsModule,
   ],
   controllers: [CoursesController, TrainerController, LectureController],
   providers: [CoursesService, LectureService, CourseOwnerGuard],

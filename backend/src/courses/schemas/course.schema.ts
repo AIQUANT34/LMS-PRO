@@ -50,7 +50,7 @@ export class Course {
 
   //who created this course
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  instructorId: Types.ObjectId;
+  trainerId: Types.ObjectId;
 
   //Course status: draft | pending_review | published | rejected | archived
   @Prop({

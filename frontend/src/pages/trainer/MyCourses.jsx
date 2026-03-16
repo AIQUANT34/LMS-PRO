@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
+import { PLACEHOLDERS } from '../../utils/placeholders';
 import {
   BookOpenIcon,
   ArrowDownTrayIcon,
@@ -62,185 +66,174 @@ const MyCourses = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock courses data
-  const mockCourses = [
-    {
-      id: 1,
-      title: 'Advanced React Patterns',
-      description: 'Master advanced React patterns and techniques for building scalable applications',
-      instructor: {
-        id: 1,
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        avatar: 'https://via.placeholder.com/100x100'
-      },
-      category: 'Development',
-      level: 'Advanced',
-      price: 89.99,
-      originalPrice: 129.99,
-      currency: 'USD',
-      language: 'English',
-      duration: 24, // hours
-      lessons: 45,
-      enrolledStudents: 1234,
-      completedStudents: 567,
-      rating: 4.8,
-      reviews: 234,
-      thumbnail: 'https://via.placeholder.com/400x225',
-      status: 'published',
-      createdAt: '2024-01-15',
-      updatedAt: '2024-03-01',
-      publishedAt: '2024-01-20',
-      revenue: 45678.90,
-      isPublished: true,
-      isFeatured: true,
-      tags: ['React', 'JavaScript', 'Frontend', 'Advanced'],
-      requirements: ['Basic React knowledge', 'JavaScript ES6+', 'HTML/CSS'],
-      objectives: ['Master advanced patterns', 'Build scalable apps', 'Performance optimization']
-    },
-    {
-      id: 2,
-      title: 'UI/UX Design Fundamentals',
-      description: 'Learn the fundamentals of user interface and user experience design',
-      instructor: {
-        id: 2,
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@example.com',
-        avatar: 'https://via.placeholder.com/100x100'
-      },
-      category: 'Design',
-      level: 'Beginner',
-      price: 49.99,
-      originalPrice: 79.99,
-      currency: 'USD',
-      language: 'English',
-      duration: 16,
-      lessons: 32,
-      enrolledStudents: 890,
-      completedStudents: 234,
-      rating: 4.6,
-      reviews: 123,
-      thumbnail: 'https://via.placeholder.com/400x225',
-      status: 'published',
-      createdAt: '2024-02-01',
-      updatedAt: '2024-02-28',
-      publishedAt: '2024-02-05',
-      revenue: 23456.78,
-      isPublished: true,
-      isFeatured: false,
-      tags: ['UI', 'UX', 'Design', 'Figma'],
-      requirements: ['No prior experience needed'],
-      objectives: ['Learn design principles', 'Master Figma', 'Create portfolios']
-    },
-    {
-      id: 3,
-      title: 'Digital Marketing Mastery',
-      description: 'Complete guide to digital marketing strategies and techniques',
-      instructor: {
-        id: 3,
-        name: 'Mike Wilson',
-        email: 'mike.wilson@example.com',
-        avatar: 'https://via.placeholder.com/100x100'
-      },
-      category: 'Marketing',
-      level: 'Intermediate',
-      price: 69.99,
-      originalPrice: 99.99,
-      currency: 'USD',
-      language: 'English',
-      duration: 20,
-      lessons: 38,
-      enrolledStudents: 567,
-      completedStudents: 123,
-      rating: 4.5,
-      reviews: 89,
-      thumbnail: 'https://via.placeholder.com/400x225',
-      status: 'draft',
-      createdAt: '2024-03-01',
-      updatedAt: '2024-03-06',
-      publishedAt: null,
-      revenue: 0,
-      isPublished: false,
-      isFeatured: false,
-      tags: ['Marketing', 'SEO', 'Social Media', 'Analytics'],
-      requirements: ['Basic marketing knowledge'],
-      objectives: ['Master digital marketing', 'Learn SEO', 'Social media strategies']
-    },
-    {
-      id: 4,
-      title: 'Python for Data Science',
-      description: 'Learn Python programming for data science and machine learning',
-      instructor: {
-        id: 4,
-        name: 'Emily Chen',
-        email: 'emily.chen@example.com',
-        avatar: 'https://via.placeholder.com/100x100'
-      },
-      category: 'Data Science',
-      level: 'Intermediate',
-      price: 79.99,
-      originalPrice: 119.99,
-      currency: 'USD',
-      language: 'English',
-      duration: 28,
-      lessons: 52,
-      enrolledStudents: 1567,
-      completedStudents: 789,
-      rating: 4.9,
-      reviews: 345,
-      thumbnail: 'https://via.placeholder.com/400x225',
-      status: 'published',
-      createdAt: '2024-01-10',
-      updatedAt: '2024-02-20',
-      publishedAt: '2024-01-15',
-      revenue: 67890.12,
-      isPublished: true,
-      isFeatured: true,
-      tags: ['Python', 'Data Science', 'Machine Learning', 'Analytics'],
-      requirements: ['Basic Python knowledge', 'Statistics basics'],
-      objectives: ['Master data science', 'Machine learning basics', 'Data visualization']
-    }
-  ];
+  // Utility functions to eliminate duplication
+  const getCourseId = (course) => course._id || course.id;
+  
+  const getStatusStyles = (status) => {
+    const styles = {
+      published: { color: 'text-green-600', bg: 'bg-green-100' },
+      draft: { color: 'text-gray-600', bg: 'bg-gray-100' },
+      pending_review: { color: 'text-yellow-600', bg: 'bg-yellow-100' },
+      rejected: { color: 'text-red-600', bg: 'bg-red-100' },
+      archived: { color: 'text-red-600', bg: 'bg-red-100' }
+    };
+    return styles[status] || styles.draft;
+  };
 
+  const getLevelStyles = (level) => {
+    const styles = {
+      Beginner: { color: 'text-green-600', bg: 'bg-green-100' },
+      Intermediate: { color: 'text-blue-600', bg: 'bg-blue-100' },
+      Advanced: { color: 'text-red-600', bg: 'bg-red-100' }
+    };
+    return styles[level] || styles.Beginner;
+  };
+
+  const updateCourseStatus = (coursesList, courseIds, status, additionalFields = {}) => {
+    return coursesList.map(course => 
+      courseIds.has(getCourseId(course)) 
+        ? { ...course, status, ...additionalFields }
+        : course
+    );
+  };
+
+  const filterCourses = (coursesList, search, status, category) => {
+    return coursesList.filter(course => {
+      const matchesSearch = course.title.toLowerCase().includes(search.toLowerCase()) ||
+                           course.description.toLowerCase().includes(search.toLowerCase()) ||
+                           course.trainer?.name?.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = status === 'all' || course.status === status;
+      const matchesCategory = category === 'all' || course.category === category;
+      return matchesSearch && matchesStatus && matchesCategory;
+    });
+  };
+
+  const sortCourses = (coursesList, sortBy, sortOrder) => {
+    return [...coursesList].sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'createdAt':
+          comparison = new Date(a.createdAt) - new Date(b.createdAt);
+          break;
+        case 'rating':
+          comparison = (a.rating || 0) - (b.rating || 0);
+          break;
+        case 'enrollments':
+          comparison = (a.enrolledStudents || 0) - (b.enrolledStudents || 0);
+          break;
+        case 'revenue':
+          comparison = (a.revenue || 0) - (b.revenue || 0);
+          break;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  // Fetch real courses data
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setCourses(mockCourses);
-      setFilteredCourses(mockCourses);
-      setIsLoading(false);
-    }, 1000);
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        let response;
+        console.log('=== MY COURSES DEBUG ===');
+        
+        // Try trainer endpoint first (for users with 'trainer' role)
+        try {
+          console.log('Trying trainer endpoint:', API_ENDPOINTS.TRAINER.GET_COURSES);
+          response = await apiService.get(API_ENDPOINTS.TRAINER.GET_COURSES);
+          console.log('Trainer endpoint response:', response);
+        } catch (trainerError) {
+          // If trainer endpoint fails, try instructor endpoint (backward compatibility)
+          console.log('Trainer endpoint failed, trying instructor endpoint:', trainerError.message);
+          console.log('Trying instructor endpoint:', API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
+          response = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
+          console.log('Instructor endpoint response:', response);
+        }
+        
+        // Handle different response structures
+        let coursesData = [];
+        if (response && response.data && response.data.courses) {
+          coursesData = response.data.courses;
+          console.log('Using response.data.courses');
+        } else if (response && response.courses) {
+          coursesData = response.courses;
+          console.log('Using response.courses');
+        } else if (response && Array.isArray(response.data)) {
+          coursesData = response.data;
+          console.log('Using response.data as array');
+        } else if (Array.isArray(response)) {
+          coursesData = response;
+          console.log('Using response as array');
+        } else {
+          console.warn('Unexpected response structure:', response);
+          coursesData = [];
+        }
+        
+        console.log('Final courses data:', coursesData);
+        console.log('Courses data length:', coursesData.length);
+        
+        // Fetch lessons data for each course to get accurate status and lesson count
+        const coursesWithLessons = await Promise.all(
+          coursesData.map(async (course) => {
+            try {
+              const lessonsResponse = await apiService.get(API_ENDPOINTS.LEARNING.LESSONS.GET_BY_COURSE(course._id || course.id));
+              const lessons = lessonsResponse.data || lessonsResponse.lessons || [];
+              
+              // Calculate actual lesson count and determine status based on lessons
+              const lessonCount = lessons.length;
+              const hasLessons = lessonCount > 0;
+              const publishedLessons = lessons.filter(lesson => lesson.isPublished).length;
+              
+              return {
+                ...course,
+                lessons: lessonCount,
+                lessonsData: lessons,
+                // Update status based on actual lesson data
+                status: hasLessons ? (publishedLessons === lessonCount ? 'published' : 'draft') : 'draft',
+                lessonCount,
+                publishedLessons
+              };
+            } catch (lessonError) {
+              console.warn(`Failed to fetch lessons for course ${course._id || course.id}:`, lessonError);
+              return {
+                ...course,
+                lessons: course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0,
+                lessonsData: [],
+                status: course.status || 'draft'
+              };
+            }
+          })
+        );
+        
+        setCourses(coursesWithLessons);
+        setFilteredCourses(coursesWithLessons);
+      } catch (error) {
+        console.error('Failed to fetch courses:', error);
+        setError('Failed to load courses');
+        toast.error('Failed to load courses');
+        
+        // Set empty state on error
+        setCourses([]);
+        setFilteredCourses([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
   }, []);
 
   useEffect(() => {
-    // Filter courses based on search and filters
-    let filtered = courses.filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           course.instructor.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
-      const matchesCategory = filterCategory === 'all' || course.category === filterCategory;
-      return matchesSearch && matchesStatus && matchesCategory;
-    });
-
-    // Sort courses
-    const sorted = [...filtered].sort((a, b) => {
-      let comparison = 0;
-      if (sortBy === 'title') {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortBy === 'createdAt') {
-        comparison = new Date(a.createdAt) - new Date(b.createdAt);
-      } else if (sortBy === 'rating') {
-        comparison = a.rating - b.rating;
-      } else if (sortBy === 'enrollments') {
-        comparison = a.enrolledStudents - b.enrolledStudents;
-      } else if (sortBy === 'revenue') {
-        comparison = a.revenue - b.revenue;
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
+    // Filter and sort courses using utility functions
+    const filtered = filterCourses(courses, searchQuery, filterStatus, filterCategory);
+    const sorted = sortCourses(filtered, sortBy, sortOrder);
     setFilteredCourses(sorted);
   }, [courses, searchQuery, filterStatus, filterCategory, sortBy, sortOrder]);
 
@@ -251,9 +244,12 @@ const MyCourses = () => {
 
   const confirmDeleteCourse = () => {
     if (courseToDelete) {
-      setCourses(courses.filter(course => course.id !== courseToDelete.id));
+      const courseIdToDelete = getCourseId(courseToDelete);
+      setCourses(courses.filter(course => getCourseId(course) !== courseIdToDelete));
+      setFilteredCourses(prev => prev.filter(course => getCourseId(course) !== courseIdToDelete));
       setCourseToDelete(null);
       setShowDeleteModal(false);
+      toast.success('Course deleted successfully');
     }
   };
 
@@ -268,63 +264,26 @@ const MyCourses = () => {
   };
 
   const handleBulkAction = (action) => {
-    const selectedCoursesList = courses.filter(course => selectedCourses.has(course.id));
+    const selectedCourseIds = new Set(courses.filter(course => selectedCourses.has(getCourseId(course))).map(getCourseId));
     
     if (action === 'delete') {
-      setCourses(courses.filter(course => !selectedCourses.has(course.id)));
+      const updatedCourses = courses.filter(course => !selectedCourseIds.has(getCourseId(course)));
+      setCourses(updatedCourses);
+      setFilteredCourses(prev => prev.filter(course => !selectedCourseIds.has(getCourseId(course))));
       setSelectedCourses(new Set());
+      toast.success('Selected courses deleted successfully');
     } else if (action === 'publish') {
-      const updatedCourses = courses.map(course => 
-        selectedCourses.has(course.id) 
-          ? { ...course, status: 'published', publishedAt: new Date().toISOString() }
-          : course
-      );
+      const updatedCourses = updateCourseStatus(courses, selectedCourseIds, 'published', { publishedAt: new Date().toISOString() });
       setCourses(updatedCourses);
+      setFilteredCourses(prev => updateCourseStatus(prev, selectedCourseIds, 'published', { publishedAt: new Date().toISOString() }));
       setSelectedCourses(new Set());
+      toast.success('Selected courses published successfully');
     } else if (action === 'unpublish') {
-      const updatedCourses = courses.map(course => 
-        selectedCourses.has(course.id) 
-          ? { ...course, status: 'draft', publishedAt: null }
-          : course
-      );
+      const updatedCourses = updateCourseStatus(courses, selectedCourseIds, 'draft', { publishedAt: null });
       setCourses(updatedCourses);
+      setFilteredCourses(prev => updateCourseStatus(prev, selectedCourseIds, 'draft', { publishedAt: null }));
       setSelectedCourses(new Set());
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'published': return 'text-green-600';
-      case 'draft': return 'text-gray-600';
-      case 'archived': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getStatusBg = (status) => {
-    switch (status) {
-      case 'published': return 'bg-green-100';
-      case 'draft': return 'bg-gray-100';
-      case 'archived': return 'bg-red-100';
-      default: return 'bg-gray-100';
-    }
-  };
-
-  const getLevelColor = (level) => {
-    switch (level) {
-      case 'Beginner': return 'text-green-600';
-      case 'Intermediate': return 'text-blue-600';
-      case 'Advanced': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getLevelBg = (level) => {
-    switch (level) {
-      case 'Beginner': return 'bg-green-100';
-      case 'Intermediate': return 'bg-blue-100';
-      case 'Advanced': return 'bg-red-100';
-      default: return 'bg-gray-100';
+      toast.success('Selected courses unpublished successfully');
     }
   };
 
@@ -339,15 +298,29 @@ const MyCourses = () => {
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
-            checked={selectedCourses.has(course.id)}
-            onChange={() => handleToggleCourseSelection(course.id)}
+            checked={selectedCourses.has(getCourseId(course))}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleToggleCourseSelection(getCourseId(course));
+            }}
+            onClick={(e) => e.stopPropagation()}
             className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <img 
-            src={course.thumbnail} 
+            src={course.thumbnail || null} 
             alt={course.title}
             className="w-16 h-12 rounded-lg object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
           />
+          <div 
+            className="w-16 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white"
+            style={{ display: course.thumbnail ? 'none' : 'flex' }}
+          >
+            <BookOpenIcon className="h-6 w-6" />
+          </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900 line-clamp-1">{course.title}</h3>
@@ -360,13 +333,13 @@ const MyCourses = () => {
         </div>
         
         <div className="flex flex-col items-end gap-2">
-          <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getStatusBg(course.status)}`}>
-            <span className={getStatusColor(course.status)}>
+          <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getStatusStyles(course.status).bg}`}>
+            <span className={getStatusStyles(course.status).color}>
               {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
             </span>
           </span>
-          <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getLevelBg(course.level)}`}>
-            <span className={getLevelColor(course.level)}>
+          <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getLevelStyles(course.level).bg}`}>
+            <span className={getLevelStyles(course.level).color}>
               {course.level}
             </span>
           </span>
@@ -376,7 +349,7 @@ const MyCourses = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <div>
           <div className="text-sm text-gray-600">Trainer</div>
-          <div className="font-medium text-gray-900 text-sm">{course.instructor.name}</div>
+          <div className="font-medium text-gray-900 text-sm">{course.trainer?.name || 'You'}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Category</div>
@@ -393,7 +366,7 @@ const MyCourses = () => {
         </div>
         <div>
           <div className="text-sm text-gray-600">Students</div>
-          <div className="font-medium text-gray-900 text-sm">{course.enrolledStudents.toLocaleString()}</div>
+          <div className="font-medium text-gray-900 text-sm">{(course.enrolledStudents || course.enrollmentCount || 0).toLocaleString()}</div>
         </div>
       </div>
 
@@ -404,52 +377,59 @@ const MyCourses = () => {
         </div>
         <div>
           <div className="text-sm text-gray-600">Lessons</div>
-          <div className="font-medium text-gray-900 text-sm">{course.lessons}</div>
+          <div className="font-medium text-gray-900 text-sm">{course.lessons || course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Rating</div>
           <div className="flex items-center gap-1">
             <StarIcon className="h-4 w-4 text-yellow-400" />
-            <span className="font-medium text-gray-900 text-sm">{course.rating}</span>
-            <span className="text-gray-500 text-sm">({course.reviews})</span>
+            <span className="font-medium text-gray-900 text-sm">{course.rating || course.ratings?.average || '0.0'}</span>
+            <span className="text-gray-500 text-sm">({course.reviews || course.ratings?.count || 0})</span>
           </div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Revenue</div>
-          <div className="font-medium text-gray-900 text-sm">${course.revenue.toLocaleString()}</div>
+          <div className="font-medium text-gray-900 text-sm">${(course.revenue || course.totalRevenue || 0).toLocaleString()}</div>
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">
-            Created: {new Date(course.createdAt).toLocaleDateString()}
+            Created: {new Date(course.createdAt || course.created_at).toLocaleDateString()}
           </span>
-          {course.updatedAt !== course.createdAt && (
+          {(course.updatedAt || course.updated_at) !== (course.createdAt || course.created_at) && (
             <span className="text-xs text-gray-500">
-              Updated: {new Date(course.updatedAt).toLocaleDateString()}
+              Updated: {new Date(course.updatedAt || course.updated_at).toLocaleDateString()}
             </span>
           )}
         </div>
         
         <div className="flex items-center gap-2">
           <Link
-            to={`/trainer/courses/${course.id}/player`}
+            to={`/trainer/courses/${getCourseId(course)}/player`}
             className="btn-premium-outline text-sm"
+            onClick={(e) => e.stopPropagation()}
           >
             <PlayIcon className="h-4 w-4 mr-1" />
             View
           </Link>
           <Link
-            to={`/trainer/courses/${course.id}/edit`}
+            to={`/trainer/courses/${getCourseId(course)}/edit`}
             className="btn-premium-outline text-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Edit button clicked for course:', getCourseId(course));
+              console.log('Navigating to:', `/trainer/courses/${getCourseId(course)}/edit`);
+            }}
           >
             <PencilIcon className="h-4 w-4 mr-1" />
             Edit
           </Link>
           <Link
-            to={`/trainer/courses/${course.id}/analytics`}
+            to={`/trainer/courses/${getCourseId(course)}/analytics`}
             className="btn-premium-outline text-sm"
+            onClick={(e) => e.stopPropagation()}
           >
             <ChartBarIcon className="h-4 w-4 mr-1" />
             Analytics
@@ -566,6 +546,8 @@ const MyCourses = () => {
               <option value="all">All Status</option>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
+              <option value="pending_review">Pending Review</option>
+              <option value="rejected">Rejected</option>
               <option value="archived">Archived</option>
             </select>
             
@@ -633,7 +615,7 @@ const MyCourses = () => {
         {/* Course Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {filteredCourses.map((course, index) => (
-            <CourseCard key={course.id} course={course} index={index} />
+            <CourseCard key={course._id || course.id} course={course} index={index} />
           ))}
         </div>
 

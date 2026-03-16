@@ -38,7 +38,15 @@ const LoginPage = () => {
   });
 
   const onSubmit = async (data) => {
+    console.log('Login form submitted with data:', data);
+    
+    // Clear any existing auth data to prevent caching issues
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     const result = await login(data);
+    console.log('Login result from auth store:', result);
+    
     if (result.success) {
       toast.success('Welcome back! 🎉');
       
@@ -48,7 +56,6 @@ const LoginPage = () => {
           navigate('/student/dashboard');
           break;
         case 'trainer':
-        case 'instructor':
           navigate('/trainer/dashboard');
           break;
         case 'admin':
@@ -58,6 +65,7 @@ const LoginPage = () => {
           navigate('/student/dashboard');
       }
     } else {
+      console.error('Login failed with error:', result.error);
       toast.error(result.error || 'Login failed');
     }
   };
@@ -234,7 +242,7 @@ const LoginPage = () => {
               <strong>Student:</strong> student@example.com
             </div>
             <div className="bg-gray-100 px-3 py-2 rounded-lg">
-              <strong>Instructor:</strong> instructor@example.com
+              <strong>Trainer:</strong> trainer@example.com
             </div>
           </div>
         </motion.div>

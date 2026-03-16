@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, Req, UseGuards, UseInterceptors, UploadedFile, UploadedFiles, ParseFilePipeBuilder, HttpStatus } from '@nestjs/common';
+import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CoursesService } from './courses.service';
 import { JwtGuard } from 'src/auth/jwt/jwt.guard';
 import { RolesGuard } from 'src/auth/roles/roles.guard';
@@ -37,9 +38,9 @@ export class CoursesController {
           description: course.description,
           category: course.level, // Use level as category for frontend compatibility
           level: course.level,
-          instructorId: { 
-            name: course.instructorId?.name || 'Expert Instructor',
-            avatar: course.instructorId?.avatar || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDgwIDgwIj48cmVjdCBmaWxsPSIjZTVlN2ViIiB3aWR0aD0iODAgaGVpZ2h0PSI4MCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IkFyaWFsIj5JbnN0cjwvdGV4dD48L3N2Zz4='
+          trainerId: { 
+            name: course.trainerId?.name || 'Expert Trainer',
+            avatar: course.trainerId?.avatar || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDgwIDgwIj48cmVjdCBmaWxsPSIjZTVlN2ViIiB3aWR0aD0iODAgaGVpZ2h0PSI4MCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IkFyaWFsIj5UcmFpbjwvdGV4dD48L3N2Zz4=',
           },
           ratings: { 
             average: course.ratings?.average || 0, 
@@ -63,28 +64,14 @@ export class CoursesController {
     }
   }
 
-  // Create course (instructor only)
-  @Post()
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor')
-  async createCourse(@Body() body: CreateCourseDto, @Req() req) {
-    return this.coursesService.createCourse(body, req.user);
-  }
-
-  // Create course (trainer only) - NEW
-  @Post('trainer/create')
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles('trainer')
-  async createTrainerCourse(@Body() body: CreateCourseDto, @Req() req) {
-    return this.coursesService.createCourse(body, req.user);
-  }
+  // Get trainer's courses (trainer only) - NEW
 
   // Get trainer's courses (trainer only) - NEW
   @Get('trainer/courses')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('trainer')
   async getTrainerCourses(@Req() req) {
-    return this.coursesService.getInstructorCourses(req.user);
+    return this.coursesService.getTrainerCourses(req.user);
   }
 
   // Update course (owner only)
@@ -98,10 +85,10 @@ export class CoursesController {
     return this.coursesService.updateCourse(courseId, body, req.user);
   }
 
-  // Submit for review (owner only)
+  // Submit for review (trainer only)
   @Post(':id/submit-review')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor')
+  @Roles('trainer')
   async submitForReview(@Param('id') courseId: string, @Req() req) {
     return this.coursesService.submitForReview(courseId, req.user);
   }
@@ -133,7 +120,7 @@ export class CoursesController {
   // Move published course to draft (owner/admin)
   @Post(':id/move-draft')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor', 'admin')
+  @Roles('trainer', 'admin')
   async moveToDraft(@Param('id') courseId: string, @Req() req) {
     return this.coursesService.moveToDraft(courseId, req.user);
   }
@@ -143,14 +130,6 @@ export class CoursesController {
   @UseGuards(JwtGuard)
   async deleteCourse(@Param('id') courseId: string, @Req() req) {
     return this.coursesService.deleteCourse(courseId, req.user);
-  }
-
-  // Get instructor's courses (instructor/admin)
-  @Get('instructor')
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor', 'admin')
-  async getInstructorCourses(@Req() req) {
-    return this.coursesService.getInstructorCourses(req.user);
   }
 
   // Get single course details (public for published, owner for others)

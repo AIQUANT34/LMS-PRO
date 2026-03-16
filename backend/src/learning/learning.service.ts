@@ -59,7 +59,7 @@ export class LearningService {
     if (!course) throw new NotFoundException('Course not found');
 
     if (
-      course.instructorId.toString() !== user.userId &&
+      course.trainerId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
       throw new ForbiddenException('You can only add lessons to your courses');
@@ -141,7 +141,7 @@ export class LearningService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    if (course.instructorId.toString() !== user.userId && user.role !== 'admin')
+    if (course.trainerId.toString() !== user.userId && user.role !== 'admin')
       throw new ForbiddenException('You can only edit your lessons');
 
     Object.assign(lesson, data);
@@ -162,7 +162,7 @@ export class LearningService {
 
     if (!course) throw new NotFoundException('Course not found');
 
-    if (course.instructorId.toString() !== user.userId && user.role !== 'admin')
+    if (course.trainerId.toString() !== user.userId && user.role !== 'admin')
       throw new ForbiddenException('You can only delete your lessons');
 
     await this.lessonModel.deleteOne({ _id: lessonId });

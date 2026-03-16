@@ -45,7 +45,7 @@ const StudentProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiService.put('/api/auth/profile', formData);
+      const response = await apiService.put('/auth/profile', formData);
       setProfileData(response.data);
       setEditing(false);
       alert('Profile updated successfully!');

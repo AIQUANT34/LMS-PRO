@@ -21,10 +21,10 @@ export class AnalyticsController {
     return this.analyticsService.getStudentAnalytics(req.user.userId);
   }
 
-  @Get('instructor')
+  @Get('trainer')
   @UseGuards(JwtGuard)
-  async getInstructorAnalytics(@Req() req: any) {
-    return this.analyticsService.getInstructorAnalytics(req.user.userId);
+  async getTrainerAnalytics(@Req() req: any) {
+    return this.analyticsService.getTrainerAnalytics(req.user.userId);
   }
 
   @Get('system')
@@ -60,8 +60,8 @@ export class AnalyticsController {
     switch (role) {
       case 'student':
         return this.analyticsService.getStudentAnalytics(req.user.userId);
-      case 'instructor':
-        return this.analyticsService.getInstructorAnalytics(req.user.userId);
+      case 'trainer':
+        return this.analyticsService.getTrainerAnalytics(req.user.userId);
       case 'admin':
         return this.analyticsService.getSystemAnalytics();
       default:

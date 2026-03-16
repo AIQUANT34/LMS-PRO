@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 import { 
   AcademicCapIcon,
   BookOpenIcon,
@@ -54,95 +57,17 @@ const CourseBuilder = () => {
   const [showResourceModal, setShowResourceModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Mock course data
-  const mockCourse = {
-    id: courseId || 'new',
-    title: 'Complete React Development Course - 2024',
-    description: 'Master React from scratch to advanced concepts including Redux, Next.js, and deployment',
-    category: 'Development',
-    level: 'Intermediate',
-    price: 89.99,
-    originalPrice: 199.99,
-    thumbnail: 'https://via.placeholder.com/800x400',
-    status: 'draft',
-    publishedAt: null,
-    students: 0,
-    rating: 0,
-    reviews: 0,
-    revenue: 0,
-    tags: ['React', 'JavaScript', 'TypeScript', 'Next.js', 'Redux'],
-    bestseller: false,
-    hot: false,
-    featured: false
-  };
-
-  // Mock modules data
+  // Fetch real course data
   const mockModules = [
-    {
-      id: 1,
-      title: 'Introduction to React',
-      description: 'Get started with React fundamentals and core concepts',
-      order: 1,
-      duration: '2 hours 30 minutes',
-      lessons: [
-        {
-          id: 1,
-          title: 'What is React?',
-          type: 'video',
-          duration: '15:30',
-          order: 1,
-          preview: true,
-          content: {
-            videoUrl: 'https://example.com/video1.mp4',
-            transcript: 'React is a JavaScript library for building user interfaces...',
-            resources: [
-              { name: 'React Documentation.pdf', type: 'pdf', url: '#' },
-              { name: 'Setup Guide.md', type: 'md', url: '#' }
-            ]
-          }
-        },
-        {
-          id: 2,
-          title: 'Setting Up Development Environment',
-          type: 'video',
-          duration: '22:15',
-          order: 2,
-          preview: true,
-          content: {
-            videoUrl: 'https://example.com/video2.mp4',
-            transcript: 'Setting up your React development environment...',
-            resources: []
-          }
-        },
-        {
-          id: 3,
-          title: 'Your First React Component',
-          type: 'video',
-          duration: '18:45',
-          order: 3,
-          preview: false,
-          content: {
-            videoUrl: 'https://example.com/video3.mp4',
-            transcript: 'Creating your first React component...',
-            resources: []
-          }
-        }
-      ],
-      quiz: {
-        id: 1,
-        title: 'React Basics Quiz',
-        questions: 5,
-        duration: '10 minutes',
-        passingScore: 70
-      }
-    },
     {
       id: 2,
       title: 'Components and Props',
-      description: 'Deep dive into React components and how to pass data between them',
+      description: 'Deep dive into React components and props system',
       order: 2,
-      duration: '3 hours 15 minutes',
+      duration: '3 hours 30 minutes',
       lessons: [
         {
           id: 4,
@@ -150,7 +75,7 @@ const CourseBuilder = () => {
           type: 'video',
           duration: '25:30',
           order: 1,
-          preview: false,
+          preview: true,
           content: {
             videoUrl: 'https://example.com/video4.mp4',
             transcript: 'Understanding React components...',

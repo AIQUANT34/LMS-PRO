@@ -116,11 +116,11 @@ const CourseManagement = () => {
         category: course.category || 'General',
         level: course.level || 'beginner',
         status: course.isPublished ? 'published' : 'draft',
-        instructor: {
-          id: course.instructorId?._id || course.instructorId || course.instructor?.id,
-          name: course.instructorId?.name || course.instructor?.name || 'Unknown Instructor',
-          email: course.instructorId?.email || course.instructor?.email || '',
-          avatar: course.instructorId?.avatar || course.instructor?.avatar || 'https://via.placeholder.com/100x100'
+        trainer: {
+          id: course.instructorId?._id || course.instructorId || course.trainer?.id,
+          name: course.instructorId?.name || course.trainer?.name || 'Unknown Trainer',
+          email: course.instructorId?.email || course.trainer?.email || '',
+          avatar: course.instructorId?.avatar || course.trainer?.avatar || 'https://via.placeholder.com/100x100'
         },
         price: course.price || 0,
         currency: course.currency || 'USD',
@@ -219,7 +219,7 @@ const CourseManagement = () => {
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.instructor.name.toLowerCase().includes(searchQuery.toLowerCase());
+                         course.trainer.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
     const matchesCategory = filterCategory === 'all' || course.category === filterCategory;
     const matchesLevel = filterLevel === 'all' || course.level === filterLevel;
@@ -230,8 +230,8 @@ const CourseManagement = () => {
     let comparison = 0;
     if (sortBy === 'title') {
       comparison = a.title.localeCompare(b.title);
-    } else if (sortBy === 'instructor') {
-      comparison = a.instructor.name.localeCompare(b.instructor.name);
+    } else if (sortBy === 'trainer') {
+      comparison = a.trainer.name.localeCompare(b.trainer.name);
     } else if (sortBy === 'category') {
       comparison = a.category.localeCompare(b.category);
     } else if (sortBy === 'level') {
@@ -340,7 +340,7 @@ const CourseManagement = () => {
               >
                 <option value="title-asc">Title (A-Z)</option>
                 <option value="title-desc">Title (Z-A)</option>
-                <option value="instructor-asc">Instructor (A-Z)</option>
+                <option value="trainer-asc">Trainer (A-Z)</option>
                 <option value="enrolledStudents-desc">Students (High-Low)</option>
                 <option value="rating-desc">Rating (High-Low)</option>
                 <option value="createdAt-desc">Created (Newest)</option>
@@ -372,11 +372,11 @@ const CourseManagement = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <img 
-                      src={course.instructor.avatar} 
-                      alt={course.instructor.name}
+                      src={course.trainer.avatar} 
+                      alt={course.trainer.name}
                       className="w-6 h-6 rounded-full mr-2"
                     />
-                    <span className="text-sm text-gray-700">{course.instructor.name}</span>
+                    <span className="text-sm text-gray-700">{course.trainer.name}</span>
                   </div>
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(course.level)}`}>
                     {course.level}
@@ -497,14 +497,14 @@ const CourseManagement = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h4 className="font-semibold text-gray-900">Instructor</h4>
+                      <h4 className="font-semibold text-gray-900">Trainer</h4>
                       <div className="flex items-center mt-1">
                         <img
-                          src={selectedCourse.instructor.avatar}
-                          alt={selectedCourse.instructor.name}
+                          src={selectedCourse.trainer.avatar}
+                          alt={selectedCourse.trainer.name}
                           className="w-8 h-8 rounded-full mr-2"
                         />
-                        <span>{selectedCourse.instructor.name}</span>
+                        <span>{selectedCourse.trainer.name}</span>
                       </div>
                     </div>
                     <div>

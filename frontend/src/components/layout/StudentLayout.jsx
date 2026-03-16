@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
@@ -8,19 +8,34 @@ import { useUIStore } from '../../store/uiStore';
 
 const StudentLayout = () => {
   const { user } = useAuthStore();
-  const { sidebarOpen } = useUIStore();
+  const { sidebarOpen, setSidebarOpen } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Global Navbar */}
       <Navbar />
+      
       <div className="flex flex-1 pt-16">
-        <Sidebar role="student" />
-        <main className="flex-1 lg:ml-64">
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 lg:hidden bg-black bg-opacity-50"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar - Full height */}
+        <Sidebar role="student" onClose={() => setSidebarOpen(false)} />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <Outlet />
           </div>
         </main>
       </div>
+      
+      {/* Global Footer - Always at Bottom */}
       <Footer />
     </div>
   );

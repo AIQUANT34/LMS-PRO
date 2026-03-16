@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
+import { PLACEHOLDERS } from '../../utils/placeholders';
 import { 
   PlayIcon,
   StarIcon,
@@ -118,10 +119,10 @@ const CourseDetail = () => {
     id: 1,
     title: 'Complete React Development Course - 2024',
     description: 'Master React from scratch to advanced concepts including Redux, Next.js, and deployment. This comprehensive course covers everything you need to become a professional React developer.',
-    instructor: {
+    trainer: {
       name: 'John Doe',
-      title: 'Senior React Developer & Instructor',
-      avatar: 'https://via.placeholder.com/80x80',
+      title: 'Senior React Developer & Trainer',
+      avatar: PLACEHOLDERS.AVATAR('john-doe'),
       bio: 'With over 10 years of experience in web development, John has worked with Fortune 500 companies and startups alike. He specializes in React, Node.js, and modern web technologies.',
       rating: 4.8,
       students: 45678,
@@ -133,7 +134,7 @@ const CourseDetail = () => {
     students: 15234,
     price: 89.99,
     originalPrice: 199.99,
-    image: 'https://via.placeholder.com/800x450',
+    image: PLACEHOLDERS.LARGE(),
     previewVideo: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     category: 'Development',
     level: 'Intermediate',
@@ -199,7 +200,7 @@ const CourseDetail = () => {
       {
         id: 1,
         user: 'Sarah Johnson',
-        avatar: 'https://via.placeholder.com/40x40',
+        avatar: PLACEHOLDERS.SMALL_AVATAR('sarah-johnson'),
         rating: 5,
         date: '2024-01-10',
         comment: 'Absolutely amazing course! John explains everything clearly and the projects are really practical. Highly recommend!'
@@ -207,7 +208,7 @@ const CourseDetail = () => {
       {
         id: 2,
         user: 'Mike Chen',
-        avatar: 'https://via.placeholder.com/40x40',
+        avatar: PLACEHOLDERS.SMALL_AVATAR('mike-chen'),
         rating: 4,
         date: '2024-01-05',
         comment: 'Great content and well-structured. Would love more advanced topics in future updates.'
@@ -215,7 +216,7 @@ const CourseDetail = () => {
       {
         id: 3,
         user: 'Emily Davis',
-        avatar: 'https://via.placeholder.com/40x40',
+        avatar: PLACEHOLDERS.SMALL_AVATAR('emily-davis'),
         rating: 5,
         date: '2023-12-28',
         comment: 'This course helped me land my first React developer job. Thank you John!'
@@ -225,7 +226,7 @@ const CourseDetail = () => {
       {
         id: 2,
         title: 'Advanced JavaScript Concepts & ES6+',
-        instructor: 'Jane Smith',
+        trainer: 'Jane Smith',
         rating: 4.9,
         students: 12456,
         price: 79.99,
@@ -234,7 +235,7 @@ const CourseDetail = () => {
       {
         id: 3,
         title: 'Node.js Backend Development',
-        instructor: 'Sarah Wilson',
+        trainer: 'Sarah Wilson',
         rating: 4.6,
         students: 9876,
         price: 94.99,
@@ -370,7 +371,7 @@ const CourseDetail = () => {
               Course ID: {id}<br/>
               User: {user?.name || 'Not logged in'}
             </div>
-          </div>}
+          </div>
 
           {/* Enrollment Button */}
           {enrollmentStatus === 'enrolled' ? (
@@ -502,17 +503,17 @@ const CourseDetail = () => {
 
               <CourseStats />
 
-              {/* Instructor Info */}
+              {/* Trainer Info */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
                 <img 
-                  src={course.instructor.avatar} 
-                  alt={course.instructor.name}
+                  src={course.trainer.avatar} 
+                  alt={course.trainer.name}
                   className="w-16 h-16 rounded-full"
                 />
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900">{course.instructor.name}</div>
-                  <div className="text-sm text-gray-600">{course.instructor.title}</div>
-                  {renderStars(course.instructor.rating)}
+                  <div className="font-semibold text-gray-900">{course.trainer.name}</div>
+                  <div className="text-sm text-gray-600">{course.trainer.title}</div>
+                  {renderStars(course.trainer.rating)}
                 </div>
                 <button className="btn-premium-outline">
                   View Profile
@@ -523,7 +524,7 @@ const CourseDetail = () => {
             {/* Tabs */}
             <div className="border-b border-gray-200">
               <nav className="flex space-x-8">
-                {['overview', 'curriculum', 'instructor', 'reviews'].map((tab) => (
+                {['overview', 'curriculum', 'trainer', 'reviews'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -664,7 +665,7 @@ const CourseDetail = () => {
                 </motion.div>
               )}
 
-              {activeTab === 'instructor' && (
+              {activeTab === 'trainer' && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -672,22 +673,22 @@ const CourseDetail = () => {
                 >
                   <div className="flex items-start gap-6">
                     <img 
-                      src={course.instructor.avatar} 
-                      alt={course.instructor.name}
+                      src={course.trainer.avatar} 
+                      alt={course.trainer.name}
                       className="w-24 h-24 rounded-full"
                     />
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">{course.instructor.name}</h2>
-                      <p className="text-gray-600 mb-4">{course.instructor.title}</p>
-                      {renderStars(course.instructor.rating)}
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">{course.trainer.name}</h2>
+                      <p className="text-gray-600 mb-4">{course.trainer.title}</p>
+                      {renderStars(course.trainer.rating)}
                       <div className="flex items-center gap-6 mt-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <UsersIcon className="h-4 w-4" />
-                          <span>{course.instructor.students.toLocaleString()} students</span>
+                          <span>{course.trainer.students.toLocaleString()} students</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <BookOpenIcon className="h-4 w-4" />
-                          <span>{course.instructor.courses} courses</span>
+                          <span>{course.trainer.courses} courses</span>
                         </div>
                       </div>
                     </div>
@@ -695,13 +696,13 @@ const CourseDetail = () => {
 
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">About</h3>
-                    <p className="text-gray-700">{course.instructor.bio}</p>
+                    <p className="text-gray-700">{course.trainer.bio}</p>
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Expertise</h3>
                     <div className="flex flex-wrap gap-2">
-                      {course.instructor.expertise.map((skill, index) => (
+                      {course.trainer.expertise.map((skill, index) => (
                         <span key={index} className="badge-info">
                           {skill}
                         </span>
@@ -775,7 +776,7 @@ const CourseDetail = () => {
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                         {relatedCourse.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-3">{relatedCourse.instructor}</p>
+                      <p className="text-sm text-gray-600 mb-3">{relatedCourse.trainer}</p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <StarIconSolid className="h-4 w-4 text-yellow-400" />

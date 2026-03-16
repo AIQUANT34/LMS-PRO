@@ -43,7 +43,7 @@ export class InstructorsService {
         experience: Math.floor(Math.random() * 10) + 1, // Mock data for now
         location: 'Remote', // Default location
         specialties: ['teaching', 'expertise'], // Default specialties
-        isVerified: instructor.isVerifiedInstructor || false,
+        isVerified: instructor.isVerifiedTrainer || false,
         email: instructor.email // Include email for debugging
       }));
     } catch (error) {
@@ -83,7 +83,7 @@ export class InstructorsService {
         experience: Math.floor(Math.random() * 10) + 1,
         location: 'Remote',
         specialties: ['teaching', 'expertise'],
-        isVerified: instructor.isVerifiedInstructor || false,
+        isVerified: instructor.isVerifiedTrainer || false,
         email: instructor.email
       };
     } catch (error) {

@@ -50,7 +50,7 @@
 
 ---
 
-## 📱 Frontend Components Ready
+## Frontend Components Ready
 
 All components in `frontend/src/components/learning/LearningComponents.jsx`:
 

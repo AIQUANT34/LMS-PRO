@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 import { 
   CurrencyDollarIcon,
   CalendarIcon,
@@ -19,92 +22,83 @@ const TrainerEarnings = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedPeriod, setSelectedPeriod] = useState('current');
+  const [error, setError] = useState(null);
 
-  // Mock data
-  const mockEarnings = {
-    overview: {
-      totalEarnings: 45678,
-      currentMonth: 12567,
-      lastMonth: 10890,
-      pendingEarnings: 2345,
-      withdrawnEarnings: 43333,
-      averageMonthly: 15226,
-      projectedAnnual: 182712
-    },
-    monthlyEarnings: [
-      { month: 'Jan', earnings: 12000, students: 234, courses: 8 },
-      { month: 'Feb', earnings: 15000, students: 289, courses: 8 },
-      { month: 'Mar', earnings: 13500, students: 267, courses: 8 },
-      { month: 'Apr', earnings: 18000, students: 345, courses: 8 },
-      { month: 'May', earnings: 22000, students: 412, courses: 8 },
-      { month: 'Jun', earnings: 25678, students: 456, courses: 8 }
-    ],
-    courseEarnings: [
-      {
-        id: 1,
-        title: 'Complete React Development Course',
-        earnings: 23456,
-        students: 1523,
-        price: 89.99,
-        growth: 12.5
-      },
-      {
-        id: 2,
-        title: 'Advanced React Development',
-        earnings: 15678,
-        students: 876,
-        price: 129.99,
-        growth: 8.3
-      },
-      {
-        id: 3,
-        title: 'Node.js Backend Development',
-        earnings: 8765,
-        students: 432,
-        price: 99.99,
-        growth: -2.1
-      }
-    ],
-    transactions: [
-      {
-        id: 1,
-        date: '2024-06-15',
-        type: 'course_sale',
-        amount: 89.99,
-        course: 'Complete React Development Course',
-        student: 'John Doe',
-        status: 'completed'
-      },
-      {
-        id: 2,
-        date: '2024-06-14',
-        type: 'course_sale',
-        amount: 129.99,
-        course: 'Advanced React Development',
-        student: 'Jane Smith',
-        status: 'completed'
-      },
-      {
-        id: 3,
-        date: '2024-06-13',
-        type: 'withdrawal',
-        amount: -5000,
-        description: 'Monthly withdrawal',
-        status: 'processing'
-      }
-    ],
-    paymentMethods: [
-      { method: 'Bank Transfer', percentage: 60, amount: 27407 },
-      { method: 'PayPal', percentage: 30, amount: 13703 },
-      { method: 'Credit Card', percentage: 10, amount: 4568 }
-    ]
-  };
-
+  // Fetch real earnings data
   useEffect(() => {
-    setTimeout(() => {
-      setEarnings(mockEarnings);
-      setLoading(false);
-    }, 500);
+    const fetchEarnings = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch instructor earnings from analytics
+        let earningsData = null;
+        try {
+          const response = await apiService.get(API_ENDPOINTS.ANALYTICS.TRAINER);
+          earningsData = response.data;
+        } catch (error) {
+          console.warn('Earnings data not available:', error);
+        }
+        
+        // Fetch instructor courses for course-specific earnings
+        let coursesData = [];
+        try {
+          const coursesResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
+          coursesData = coursesResponse.data?.courses || coursesResponse.courses || [];
+        } catch (coursesError) {
+          console.warn('Courses data not available:', coursesError);
+        }
+        
+        // Combine earnings data
+        const combinedEarnings = {
+          overview: {
+            totalEarnings: earningsData?.totalRevenue || 0,
+            currentMonth: earningsData?.thisMonthRevenue || 0,
+            lastMonth: earningsData?.lastMonthRevenue || 0,
+            pendingEarnings: earningsData?.pendingEarnings || 0,
+            withdrawnEarnings: earningsData?.withdrawnEarnings || 0,
+            averageMonthly: earningsData?.averageMonthlyRevenue || 0,
+            projectedAnnual: earningsData?.projectedAnnualRevenue || 0
+          },
+          monthlyEarnings: earningsData?.monthlyEarnings || [],
+          courseEarnings: coursesData.map(course => ({
+            id: course.id,
+            title: course.title,
+            earnings: course.totalRevenue || 0,
+            students: course.enrollmentCount || 0,
+            price: course.price || 0,
+            growth: 0
+          })),
+          transactions: earningsData?.transactions || []
+        };
+        
+        setEarnings(combinedEarnings);
+      } catch (error) {
+        console.error('Failed to fetch earnings:', error);
+        setError('Failed to load earnings data');
+        toast.error('Failed to load earnings data');
+        
+        // Set empty state on error
+        setEarnings({
+          overview: {
+            totalEarnings: 0,
+            currentMonth: 0,
+            lastMonth: 0,
+            pendingEarnings: 0,
+            withdrawnEarnings: 0,
+            averageMonthly: 0,
+            projectedAnnual: 0
+          },
+          monthlyEarnings: [],
+          courseEarnings: [],
+          transactions: []
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEarnings();
   }, []);
 
   if (loading) {

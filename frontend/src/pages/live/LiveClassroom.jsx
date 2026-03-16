@@ -40,17 +40,13 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CurrencyDollarIcon,
-  UsersIcon,
   BuildingOfficeIcon,
   TruckIcon,
-  CubeIcon,
   ClipboardDocumentListIcon,
-  XMarkIcon,
   ListBulletIcon,
   TableCellsIcon,
   ChartPieIcon,
   ChartBarIcon,
-  CubeIcon,
   CircleStackIcon,
   ArchiveBoxIcon,
   InboxIcon,
@@ -108,8 +104,8 @@ const LiveClassroom = () => {
     id: 1,
     title: 'Advanced React Patterns - Live Session',
     courseId: 1,
-    instructorId: 1,
-    instructor: {
+    trainerId: 1,
+    trainer: {
       id: 1,
       name: 'John Smith',
       email: 'john.smith@example.com',
@@ -152,7 +148,7 @@ const LiveClassroom = () => {
       id: 1,
       name: 'John Smith',
       email: 'john.smith@example.com',
-      role: 'instructor',
+      role: 'trainer',
       avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3EInstructor%3C/text%3E%3C/svg%3E',
       joinedAt: '2024-03-07T18:00:00Z',
       isMuted: false,
@@ -201,7 +197,7 @@ const LiveClassroom = () => {
       id: 1,
       senderId: 1,
       senderName: 'John Smith',
-      senderRole: 'instructor',
+      senderRole: 'trainer',
       message: 'Welcome everyone! Today we\'ll be covering advanced React patterns.',
       timestamp: '2024-03-07T18:00:30Z',
       type: 'text',
@@ -221,7 +217,7 @@ const LiveClassroom = () => {
       id: 3,
       senderId: 1,
       senderName: 'John Smith',
-      senderRole: 'instructor',
+      senderRole: 'trainer',
       message: 'Let\'s start with a quick poll to gauge everyone\'s experience level.',
       timestamp: '2024-03-07T18:02:00Z',
       type: 'poll',
@@ -358,7 +354,7 @@ const LiveClassroom = () => {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'instructor': return 'text-purple-600';
+      case 'trainer': return 'text-purple-600';
       case 'teaching_assistant': return 'text-blue-600';
       case 'student': return 'text-green-600';
       default: return 'text-gray-600';
@@ -367,7 +363,7 @@ const LiveClassroom = () => {
 
   const getRoleBg = (role) => {
     switch (role) {
-      case 'instructor': return 'bg-purple-100';
+      case 'trainer': return 'bg-purple-100';
       case 'teaching_assistant': return 'bg-blue-100';
       case 'student': return 'bg-green-100';
       default: return 'bg-gray-100';
@@ -807,7 +803,7 @@ const LiveClassroom = () => {
               <div className="text-center">
                 <UserIcon className="h-16 w-16 text-gray-600 mx-auto mb-4" />
                 <p className="text-white text-lg">John Smith</p>
-                <p className="text-gray-400 text-sm">Instructor</p>
+                <p className="text-gray-400 text-sm">Trainer</p>
               </div>
             </div>
             

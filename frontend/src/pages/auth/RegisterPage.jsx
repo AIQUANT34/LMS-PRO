@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ const RegisterPage = () => {
     setSuccess('');
 
     try {
-      const response = await apiService.post('/api/auth/register', formData);
+      const response = await apiService.post(API_ENDPOINTS.AUTH.REGISTER, formData);
       setSuccess('Registration successful! Redirecting to login...');
       
       // Store user data for potential auto-login

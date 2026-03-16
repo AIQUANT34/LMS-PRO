@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Placeholder Test</title>
+</head>
+<body>
+    <h1>Testing Placeholder Services</h1>
+    
+    <h2>Picsum Photos (New Service)</h2>
+    <img src="https://picsum.photos/400/225?random=1" alt="Test 1" style="border: 1px solid #ccc; margin: 10px;">
+    <img src="https://picsum.photos/100/100?random=2" alt="Avatar 1" style="border: 1px solid #ccc; margin: 10px;">
+    
+    <h2>DiceBear Avatars</h2>
+    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user1" alt="DiceBear 1" style="border: 1px solid #ccc; margin: 10px;">
+    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user2" alt="DiceBear 2" style="border: 1px solid #ccc; margin: 10px;">
+    
+    <h2>Original via.placeholder.com (Should Fail)</h2>
+    <img src="https://via.placeholder.com/400x225" alt="Original Fails" style="border: 1px solid #ccc; margin: 10px;" onerror="this.style.background='red'; this.alt='FAILED TO LOAD';">
+    
+    <script>
+        console.log('Testing placeholder services...');
+        
+        // Test each service
+        const tests = [
+            'https://picsum.photos/400/225?random=1',
+            'https://api.dicebear.com/7.x/avataaars/svg?seed=test',
+            'https://via.placeholder.com/400x225'
+        ];
+        
+        tests.forEach(url => {
+            fetch(url)
+                .then(response => console.log(`${url}: ${response.status}`))
+                .catch(error => console.log(`${url}: ERROR - ${error.message}`));
+        });
+    </script>
+</body>
+</html>

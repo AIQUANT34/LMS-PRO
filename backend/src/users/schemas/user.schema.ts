@@ -28,19 +28,19 @@ export class User {
   password: string;
 
   @Prop({
-    enum: ['student', 'instructor', 'admin'],
+    enum: ['student', 'trainer', 'admin'],
     default: 'student',
   })
   role: string;
 
   @Prop({ default: false })
-  isVerifiedInstructor: boolean;
+  isVerifiedTrainer: boolean;
 
   @Prop({
     enum: ['none', 'pending', 'approved', 'rejected'],
     default: 'none',
   })
-  instructorRequest: string;
+  trainerRequest: string;
 
   @Prop()
   avatar?: string;

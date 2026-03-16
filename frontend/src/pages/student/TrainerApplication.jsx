@@ -44,7 +44,7 @@ const WelcomeStep = ({ handleNext }) => (
         <AcademicCapIcon className="h-12 w-12 text-white" />
       </div>
       <h1 className="text-4xl font-bold text-gray-900 mb-4">
-        Become an Instructor
+        Become a Trainer
       </h1>
       <p className="text-xl text-gray-600 mb-8">
         Share your knowledge, inspire learners, and earn while doing what you love
@@ -105,7 +105,7 @@ const WelcomeStep = ({ handleNext }) => (
           <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5" />
           <div>
             <p className="font-medium text-gray-900">Community support</p>
-            <p className="text-sm text-gray-600">Connect with other instructors and share best practices</p>
+            <p className="text-sm text-gray-600">Connect with other Trainers and share best practices</p>
           </div>
         </div>
       </div>
@@ -614,7 +614,7 @@ const TeachingStep = ({ formData, setFormData, handleInputChange, errors, handle
           value={formData.motivation}
           onChange={handleInputChange}
           rows={4}
-          placeholder="Why do you want to become an instructor? What motivates you to teach?"
+          placeholder="Why do you want to become a trainer? What motivates you to teach?"
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
             errors.motivation ? 'border-red-500' : 'border-gray-300'
           }`}
@@ -769,7 +769,7 @@ const ReviewStep = ({ formData, handleInputChange, errors, teachingStyles }) => 
               className="mt-1"
             />
             <span className="text-sm text-gray-700">
-              I accept the instructor terms and conditions and understand the platform policies
+              I accept the trainer terms and conditions and understand the platform policies
             </span>
           </label>
           <label className="flex items-start space-x-3">
@@ -781,7 +781,7 @@ const ReviewStep = ({ formData, handleInputChange, errors, teachingStyles }) => 
               className="mt-1"
             />
             <span className="text-sm text-gray-700">
-              I consent to the processing of my personal data for instructor application purposes
+              I consent to the processing of my personal data for trainer application purposes
             </span>
           </label>
           <label className="flex items-start space-x-3">
@@ -793,7 +793,7 @@ const ReviewStep = ({ formData, handleInputChange, errors, teachingStyles }) => 
               className="mt-1"
             />
             <span className="text-sm text-gray-700">
-              I would like to receive marketing communications about instructor opportunities
+              I would like to receive marketing communications about trainer opportunities
             </span>
           </label>
         </div>
@@ -831,11 +831,11 @@ const StatusStep = ({ navigate, applicationStatus, existingApplication }) => {
   const getStatusMessage = () => {
     switch (applicationStatus) {
       case 'approved':
-        return 'Congratulations! Your instructor application has been approved. You can now start creating courses.';
+        return 'Congratulations! Your trainer application has been approved. You can now start creating courses.';
       case 'rejected':
         return 'We appreciate your interest. Unfortunately, your application was not approved at this time.';
       default:
-        return 'Your instructor application is being reviewed by our team';
+        return 'Your trainer application is being reviewed by our team';
     }
   };
 
@@ -898,7 +898,7 @@ const StatusStep = ({ navigate, applicationStatus, existingApplication }) => {
               <p>• Our team will carefully review your application and qualifications</p>
               <p>• We may contact you for additional information or a video interview</p>
               <p>• You'll receive an email with our decision within 5-7 business days</p>
-              <p>• If approved, you'll get access to instructor tools and resources</p>
+              <p>• If approved, you'll get access to trainer tools and resources</p>
             </div>
           </div>
         </>
@@ -909,19 +909,19 @@ const StatusStep = ({ navigate, applicationStatus, existingApplication }) => {
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Welcome Aboard!</h3>
             <div className="text-left space-y-3 text-sm text-gray-700">
-              <p>• You now have access to instructor dashboard and course creation tools</p>
+              <p>• You now have access to trainer dashboard and course creation tools</p>
               <p>• Start creating your first course and share your expertise with learners</p>
-              <p>• Join our instructor community and get support from fellow educators</p>
-              <p>• Access comprehensive resources to help you succeed as an instructor</p>
+              <p>• Join our trainer community and get support from fellow educators</p>
+              <p>• Access comprehensive resources to help you succeed as a trainer</p>
             </div>
           </div>
 
           <div className="flex justify-center space-x-4">
             <button
-              onClick={() => navigate('/instructor/dashboard')}
+              onClick={() => navigate('/trainer/dashboard')}
               className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105"
             >
-              Go to Instructor Dashboard
+              Go to Trainer Dashboard
               <ArrowRightIcon className="h-5 w-5 ml-2 inline" />
             </button>
             <button
@@ -945,7 +945,7 @@ const StatusStep = ({ navigate, applicationStatus, existingApplication }) => {
               </div>
             )}
             <div className="text-left space-y-3 text-sm text-gray-700">
-              <p>• We encourage you to review our instructor requirements</p>
+              <p>• We encourage you to review our trainer requirements</p>
               <p>• Consider gaining more experience in your area of expertise</p>
               <p>• You may reapply after 6 months with updated qualifications</p>
               <p>• Feel free to contact our support team for more guidance</p>
@@ -1008,7 +1008,7 @@ const StepIndicator = ({ currentStep, steps }) => (
   </div>
 );
 
-const InstructorApplication = () => {
+const TrainerApplication = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   
@@ -1101,7 +1101,7 @@ const InstructorApplication = () => {
 
   const checkExistingApplication = async () => {
     try {
-      const response = await apiService.get(`/users/instructor-application/${user.id}`);
+      const response = await apiService.get(`/users/trainer-application/${user.id}`);
       if (response && response._id) {
         setExistingApplication(response);
         setApplicationStatus(response.status);
@@ -1322,7 +1322,7 @@ const InstructorApplication = () => {
       // Remove file objects from data
       delete applicationData.teachingDemo;
       
-      const response = await apiService.post(API_ENDPOINTS.USERS.APPLY_INSTRUCTOR, applicationData);
+      const response = await apiService.post(API_ENDPOINTS.USERS.APPLY_TRAINER, applicationData);
       
       toast.success('Application submitted successfully! We\'ll review it within 5-7 business days.');
       setApplicationStatus('pending');
@@ -1374,7 +1374,7 @@ const InstructorApplication = () => {
               >
                 <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">Instructor Application</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Trainer Application</h1>
             </div>
             <div className="flex items-center space-x-2">
               <ShieldCheckIcon className="h-5 w-5 text-green-600" />
@@ -1440,4 +1440,4 @@ const InstructorApplication = () => {
   );
 };
 
-export default InstructorApplication;
+export default TrainerApplication;

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 import { 
   DocumentTextIcon,
   CheckCircleIcon,
@@ -35,100 +38,72 @@ const GradingSystem = () => {
   const [showGradingModal, setShowGradingModal] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Mock assignment data
-  const mockAssignment = {
-    id: assignmentId,
-    title: 'React Component Library Project',
-    courseName: 'Complete React Development Course - 2024',
-    dueDate: '2024-03-15',
-    totalPoints: 100,
-    rubric: [
-      { category: 'Component Quality', points: 30, description: 'Components are well-structured, reusable, and follow best practices' },
-      { category: 'TypeScript Implementation', points: 20, description: 'Proper TypeScript types and interfaces' },
-      { category: 'Documentation', points: 15, description: 'Comprehensive documentation and examples' },
-      { category: 'Testing', points: 20, description: 'Unit tests with good coverage' },
-      { category: 'Code Organization', points: 15, description: 'Clean, maintainable code structure' }
-    ]
-  };
-
-  // Mock submissions data
-  const mockSubmissions = [
-    {
-      id: 'sub-001',
-      studentName: 'John Doe',
-      studentEmail: 'john@example.com',
-      studentAvatar: 'https://via.placeholder.com/40x40',
-      submittedAt: '2024-03-10T14:30:00Z',
-      status: 'graded',
-      grade: 92,
-      text: 'I have created a comprehensive React component library with 12 components. Each component is fully typed with TypeScript and includes comprehensive documentation. I\'ve also created unit tests using Jest and React Testing Library, and set up Storybook for component visualization.',
-      files: [
-        { id: 1, name: 'react-components.zip', size: '8.5 MB', type: 'zip', url: '#' },
-        { id: 2, name: 'documentation.md', size: '245 KB', type: 'md', url: '#' }
-      ],
-      feedback: {
-        overall: 'Excellent work! Your component library demonstrates strong understanding of React patterns and TypeScript.',
-        strengths: ['Great TypeScript implementation', 'Comprehensive documentation', 'Well-structured components', 'Good test coverage'],
-        improvements: ['Consider adding more advanced hooks examples', 'Add accessibility testing', 'Include performance optimization examples'],
-        rubricScores: [
-          { category: 'Component Quality', score: 28, maxScore: 30 },
-          { category: 'TypeScript Implementation', score: 18, maxScore: 20 },
-          { category: 'Documentation', score: 14, maxScore: 15 },
-          { category: 'Testing', score: 18, maxScore: 20 },
-          { category: 'Code Organization', score: 14, maxScore: 15 }
-        ]
-      }
-    },
-    {
-      id: 'sub-002',
-      studentName: 'Jane Smith',
-      studentEmail: 'jane@example.com',
-      studentAvatar: 'https://via.placeholder.com/40x40',
-      submittedAt: '2024-03-11T16:45:00Z',
-      status: 'pending',
-      grade: null,
-      text: 'Here is my React component library submission. I focused on creating reusable UI components with proper TypeScript types and comprehensive documentation.',
-      files: [
-        { id: 3, name: 'ui-components.zip', size: '6.2 MB', type: 'zip', url: '#' },
-        { id: 4, name: 'README.md', size: '189 KB', type: 'md', url: '#' }
-      ],
-      feedback: null
-    },
-    {
-      id: 'sub-003',
-      studentName: 'Mike Johnson',
-      studentEmail: 'mike@example.com',
-      studentAvatar: 'https://via.placeholder.com/40x40',
-      submittedAt: '2024-03-12T09:20:00Z',
-      status: 'submitted',
-      grade: null,
-      text: 'I created a React component library with focus on accessibility and performance. All components are properly typed and tested.',
-      files: [
-        { id: 5, name: 'accessible-components.zip', size: '7.8 MB', type: 'zip', url: '#' }
-      ],
-      feedback: null
-    }
-  ];
-
-  // Mock stats data
-  const mockStats = {
-    totalSubmissions: mockSubmissions.length,
-    gradedSubmissions: mockSubmissions.filter(s => s.status === 'graded').length,
-    pendingSubmissions: mockSubmissions.filter(s => s.status === 'pending').length,
-    averageGrade: 88.5,
-    onTimeSubmissions: mockSubmissions.filter(s => new Date(s.submittedAt) <= new Date(mockAssignment.dueDate)).length,
-    lateSubmissions: mockSubmissions.filter(s => new Date(s.submittedAt) > new Date(mockAssignment.dueDate)).length
-  };
-
+  // Fetch real assignment and submissions data
   useEffect(() => {
-    // Simulate API call to get assignment data
-    setTimeout(() => {
-      setAssignment(mockAssignment);
-      setSubmissions(mockSubmissions);
-      setStats(mockStats);
-    }, 500);
-  }, []);
+    const fetchGradingData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch assignment details
+        let assignmentData = null;
+        try {
+          const assignmentResponse = await apiService.get(API_ENDPOINTS.TRAINER.ASSIGNMENTS.GET_BY_ID(assignmentId));
+          assignmentData = assignmentResponse.data;
+        } catch (assignmentError) {
+          console.warn('Assignment data not available:', assignmentError);
+        }
+        
+        // Fetch submissions for this assignment
+        let submissionsData = [];
+        try {
+          const submissionsResponse = await apiService.get(`/api/assignments/${assignmentId}/submissions`);
+          submissionsData = submissionsResponse.data?.submissions || [];
+        } catch (submissionsError) {
+          console.warn('Submissions data not available:', submissionsError);
+        }
+        
+        // Calculate stats from real data
+        const statsData = {
+          totalSubmissions: submissionsData.length,
+          gradedSubmissions: submissionsData.filter(s => s.status === 'graded').length,
+          pendingSubmissions: submissionsData.filter(s => s.status === 'pending').length,
+          averageGrade: submissionsData.filter(s => s.grade).reduce((sum, s) => sum + s.grade, 0) / submissionsData.filter(s => s.grade).length || 0,
+          onTimeSubmissions: submissionsData.filter(s => new Date(s.submittedAt) <= new Date(assignmentData?.dueDate)).length,
+          lateSubmissions: submissionsData.filter(s => new Date(s.submittedAt) > new Date(assignmentData?.dueDate)).length
+        };
+        
+        setAssignment(assignmentData);
+        setSubmissions(submissionsData);
+        setStats(statsData);
+      } catch (error) {
+        console.error('Failed to fetch grading data:', error);
+        setError('Failed to load grading data');
+        toast.error('Failed to load grading data');
+        
+        // Set empty state on error
+        setAssignment(null);
+        setSubmissions([]);
+        setStats({
+          totalSubmissions: 0,
+          gradedSubmissions: 0,
+          pendingSubmissions: 0,
+          averageGrade: 0,
+          onTimeSubmissions: 0,
+          lateSubmissions: 0
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (assignmentId) {
+      fetchGradingData();
+    }
+  }, [assignmentId]);
 
   const handleGradeSubmission = (submission) => {
     setSelectedSubmission(submission);

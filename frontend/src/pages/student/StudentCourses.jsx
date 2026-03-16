@@ -29,7 +29,7 @@ const StudentCourses = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await apiService.get('/api/enrollments/my-courses');
+      const response = await apiService.get('/enrollments/my-courses');
       setCourses(response.enrollments || []);
     } catch (error) {
       console.error('Error fetching courses:', error);

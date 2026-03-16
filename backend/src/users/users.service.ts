@@ -22,7 +22,7 @@ export class UsersService {
     return this.userModel.create(data);
   }
 
-  async applyInstructor(userId: string, applicationData: any) {
+  async applyTrainer(userId: string, applicationData: any) {
     const user = await this.userModel.findById(userId);
 
     if (!user) {
@@ -53,17 +53,17 @@ export class UsersService {
 
     await application.save();
 
-    // Update user's instructorRequest status
-    user.instructorRequest = 'pending';
+    // Update user's trainerRequest status
+    user.trainerRequest = 'pending';
     await user.save();
 
     return {
-      message: 'Instructor application submitted successfully! We\'ll review it within 5-7 business days.',
+      message: 'Trainer application submitted successfully! We\'ll review it within 5-7 business days.',
       applicationId: application._id,
     };
   }
 
-  async getInstructorApplication(userId: string, requestingUserId: string) {
+  async getTrainerApplication(userId: string, requestingUserId: string) {
     // Users can only view their own applications
     if (userId !== requestingUserId) {
       throw new Error('Unauthorized');
@@ -81,7 +81,7 @@ export class UsersService {
     return application;
   }
 
-  async reviewInstructorApplication(
+  async reviewTrainerApplication(
     applicationId: string,
     reviewData: { status: string; rejectionReason?: string; adminNotes?: any },
     adminId: string
@@ -114,13 +114,13 @@ export class UsersService {
     // Update user's role if approved
     if (reviewData.status === 'approved') {
       await this.userModel.findByIdAndUpdate(application.userId, {
-        role: 'instructor',
-        instructorRequest: 'approved',
-        isVerifiedInstructor: true,
+        role: 'trainer',
+        trainerRequest: 'approved',
+        isVerifiedTrainer: true,
       });
     } else if (reviewData.status === 'rejected') {
       await this.userModel.findByIdAndUpdate(application.userId, {
-        instructorRequest: 'rejected',
+        trainerRequest: 'rejected',
       });
     }
 
@@ -130,7 +130,7 @@ export class UsersService {
     };
   }
 
-  async getAllInstructorApplications() {
+  async getAllTrainerApplications() {
     return this.instructorApplicationModel
       .find()
       .populate('userId', 'name email')
@@ -198,10 +198,10 @@ export class UsersService {
     return password; // Placeholder - implement actual hashing
   }
 
-  async verifyInstructor(userId: string) {
+  async verifyTrainer(userId: string) {
     return this.userModel.findByIdAndUpdate(
       userId,
-      { isVerifiedInstructor: true },
+      { isVerifiedTrainer: true },
       { new: true },
     );
   }

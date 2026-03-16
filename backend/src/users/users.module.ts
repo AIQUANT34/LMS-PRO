@@ -16,6 +16,6 @@ import { InstructorApplication, InstructorApplicationSchema } from './schemas/in
   ],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [UsersService],
+  exports: [UsersService, MongooseModule], // Export MongooseModule to provide UserModel
 })
 export class UsersModule {}

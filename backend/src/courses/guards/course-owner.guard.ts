@@ -34,8 +34,8 @@ export class CourseOwnerGuard implements CanActivate {
       request.course = course;
       return true;
     }
-    //allow only instructor owner
-    if (course.instructorId.toString() !== user.userId) {
+    //allow only trainer owner
+    if (course.trainerId.toString() !== user.userId) {
       throw new ForbiddenException('only course owner can modify this course');
     }
     request.course = course;

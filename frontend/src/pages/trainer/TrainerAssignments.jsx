@@ -70,56 +70,16 @@ const TrainerAssignments = () => {
     } catch (error) {
       console.error('Failed to fetch assignments:', error);
       toast.error('Failed to load assignments');
-      // Fallback to mock data
-      const mockAssignments = [
-        {
-          id: 1,
-          title: 'React Component Building Exercise',
-          course: 'Complete React Development Course',
-          courseId: 1,
-          dueDate: '2024-01-25',
-          submissions: 45,
-          totalStudents: 152,
-          status: 'active',
-          type: 'coding',
-          description: 'Build a reusable React component with props and state management',
-          difficulty: 'intermediate',
-          estimatedTime: '2 hours',
-          points: 100
-        },
-        {
-          id: 2,
-          title: 'JavaScript Fundamentals Quiz',
-          course: 'Advanced React Development',
-          courseId: 2,
-          dueDate: '2024-01-22',
-          submissions: 67,
-          totalStudents: 87,
-          status: 'graded',
-          type: 'quiz',
-          description: 'Test knowledge of JavaScript core concepts and ES6+ features',
-          difficulty: 'beginner',
-          estimatedTime: '30 minutes',
-          points: 50
-        },
-        {
-          id: 3,
-          title: 'Node.js API Project',
-          course: 'Node.js Backend Development',
-          courseId: 3,
-          dueDate: '2024-01-28',
-          submissions: 12,
-          totalStudents: 45,
-          status: 'draft',
-          type: 'project',
-          description: 'Create a RESTful API using Node.js and Express with MongoDB',
-          difficulty: 'advanced',
-          estimatedTime: '4 hours',
-          points: 150
-        }
-      ];
-      setAssignments(mockAssignments);
-      calculateStats(mockAssignments);
+      // Set empty state on error
+      setAssignments([]);
+      setStats({
+        total: 0,
+        active: 0,
+        graded: 0,
+        draft: 0,
+        totalSubmissions: 0,
+        avgCompletion: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -132,11 +92,7 @@ const TrainerAssignments = () => {
     } catch (error) {
       console.error('Failed to fetch courses:', error);
       // Fallback mock courses
-      setCourses([
-        { id: 1, title: 'Complete React Development Course' },
-        { id: 2, title: 'Advanced React Development' },
-        { id: 3, title: 'Node.js Backend Development' }
-      ]);
+      setCourses([]);
     }
   };
 

@@ -219,7 +219,7 @@ if (loading || !dashboardData) {
               { key: 'overview', label: 'Overview', path: '/student/dashboard' },
               { key: 'courses', label: 'Courses', path: '/student/courses' },
               { key: 'achievements', label: 'Achievements', path: '/student/achievements' },
-              { key: 'instructor-application', label: 'Become Instructor', path: '/student/instructor-application' },
+              { key: 'trainer-application', label: 'Become Trainer', path: '/student/trainer-application' },
               { key: 'ai-assistant', label: 'AI Assistant', path: '/student/ai-assistant' }
             ].map((tab) => (
               <Link
@@ -248,7 +248,7 @@ if (loading || !dashboardData) {
                 { key: 'overview', label: 'Overview', path: '/student/dashboard' },
                 { key: 'courses', label: 'Courses', path: '/student/courses' },
                 { key: 'achievements', label: 'Achievements', path: '/student/achievements' },
-                { key: 'instructor-application', label: 'Become Instructor', path: '/student/instructor-application' },
+                { key: 'trainer-application', label: 'Become Trainer', path: '/student/trainer-application' },
                 { key: 'ai-assistant', label: 'AI Assistant', path: '/student/ai-assistant' }
               ].map((tab) => (
                 <Link
@@ -312,7 +312,7 @@ if (loading || !dashboardData) {
               ))}
             </div>
 
-            {/* Become Instructor Card */}
+            {/* Become Trainer Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -332,9 +332,9 @@ if (loading || !dashboardData) {
                       <AcademicCapIcon className="h-8 w-8 text-white" />
                       <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">New Opportunity</span>
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">Become an Instructor</h3>
+                    <h3 className="text-2xl font-bold mb-3">Become a Trainer</h3>
                     <p className="text-blue-100 mb-6 max-w-md">
-                      Share your expertise, inspire thousands of learners, and earn while doing what you love. Join our community of expert instructors.
+                      Share your expertise, inspire thousands of learners, and earn while doing what you love. Join our community of expert trainers.
                     </p>
                     <div className="flex items-center space-x-6 text-sm text-blue-100 mb-6">
                       <div className="flex items-center space-x-2">
@@ -347,7 +347,7 @@ if (loading || !dashboardData) {
                       </div>
                     </div>
                     <Link
-                      to="/student/instructor-application"
+                      to="/student/trainer-application"
                       className="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
                     >
                       Apply Now

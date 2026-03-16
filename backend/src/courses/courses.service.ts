@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Course, CourseDocument } from './schemas/course.schema';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/users/schemas/user.schema';
+import { User, UserSchema } from 'src/users/schemas/user.schema';
 import { CreateCourseDto, UpdateCourseDto } from './dto/course.dto';
 
 @Injectable()
@@ -16,15 +17,17 @@ export class CoursesService {
   constructor(
     @InjectModel(Course.name)
     private courseModel: Model<CourseDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
   ) {}
 
-  //instructor control logic: check if user is trainer for a course
-  async isInstructor(courseId: string, user: any): Promise<boolean> {
+  //trainer control logic: check if user is trainer for a course
+  async isTrainer(courseId: string, user: any): Promise<boolean> {
     const course = await this.courseModel.findById(courseId);
     if (!course || course.isDeleted) return false;
-    // For now, instructor is the trainer. Extend logic if needed.
+    // Trainer is the course owner
     return (
-      course.instructorId.toString() === user.userId || user.role === 'admin'
+      course.trainerId.toString() === user.userId || user.role === 'admin'
     );
   }
 
@@ -34,7 +37,7 @@ export class CoursesService {
       throw new NotFoundException('Course not found');
     }
     if (
-      course.instructorId.toString() !== user.userId &&
+      course.trainerId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
       throw new ForbiddenException(
@@ -55,14 +58,35 @@ export class CoursesService {
   }
 
   async createCourse(data: CreateCourseDto, user: any) {
-    //only instructor can create course
-    if (user.role !== 'instructor') {
-      throw new ForbiddenException('Only instructors can create courses');
+    console.log('=== COURSE CREATION DEBUG ===');
+    console.log('Request user:', user);
+    console.log('User role:', user?.role);
+    console.log('User userId:', user?.userId);
+    
+    // Fetch full user data to get verification fields
+    const fullUser = await this.userModel.findById(user.userId);
+    console.log('Full user from DB:', fullUser);
+    console.log('isVerifiedTrainer:', fullUser?.isVerifiedTrainer);
+    console.log('trainerRequest:', fullUser?.trainerRequest);
+    
+    if (!fullUser) {
+      throw new ForbiddenException('User not found');
+    }
+    
+    // Only verified trainers can create courses
+    if (fullUser.role !== 'trainer') {
+      throw new ForbiddenException('Only trainers can create courses');
+    }
+
+    // Check if trainer is verified
+    if (!fullUser.isVerifiedTrainer) {
+      console.log('TRAINER NOT VERIFIED - throwing error');
+      throw new ForbiddenException('Trainer account must be approved by admin before creating courses');
     }
 
     const course = await this.courseModel.create({
       ...data,
-      instructorId: user.userId,
+      trainerId: user.userId,
       status: 'draft',
     });
 
@@ -80,7 +104,7 @@ export class CoursesService {
     }
 
     if (
-      course.instructorId.toString() !== user.userId &&
+      course.trainerId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
       throw new ForbiddenException('You can only edit your own courses');
@@ -110,7 +134,7 @@ export class CoursesService {
       throw new NotFoundException('Course not found');
     }
 
-    if (course.instructorId.toString() !== user.userId) {
+    if (course.trainerId.toString() !== user.userId) {
       throw new ForbiddenException('You can only submit your own courses');
     }
 
@@ -162,12 +186,12 @@ export class CoursesService {
     };
   }
 
-  async getInstructorCourses(user: any) {
-    if (user.role !== 'instructor' && user.role !== 'admin') {
+  async getTrainerCourses(user: any) {
+    if (user.role !== 'trainer' && user.role !== 'admin') {
       throw new ForbiddenException('Access denied');
     }
 
-    const filter = user.role === 'admin' ? {} : { instructorId: user.userId };
+    const filter = user.role === 'admin' ? {} : { trainerId: user.userId };
 
     const courses = await this.courseModel
       .find({
@@ -198,7 +222,7 @@ export class CoursesService {
 
     const courses = await this.courseModel
       .find(filter)
-      .populate('instructorId', 'name email avatar') // Populate instructor fields
+      .populate('trainerId', 'name email avatar') // Populate trainer fields
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -224,7 +248,7 @@ export class CoursesService {
     }
 
     if (
-      course.instructorId.toString() !== user.userId &&
+      course.trainerId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
       throw new ForbiddenException('You can only archive your own courses');
@@ -242,7 +266,7 @@ export class CoursesService {
   async getCourseById(courseId: string, user?: any) {
     const course = await this.courseModel
       .findById(courseId)
-      .populate('instructorId', 'name email');
+      .populate('trainerId', 'name email');
 
     if (!course || course.isDeleted) {
       throw new NotFoundException('Course not found');
@@ -252,7 +276,7 @@ export class CoursesService {
     if (
       course.status !== 'published' &&
       (!user ||
-        (course.instructorId.toString() !== user.userId &&
+        (course.trainerId.toString() !== user.userId &&
           user.role !== 'admin'))
     ) {
       throw new ForbiddenException('Course not available');
@@ -268,7 +292,7 @@ export class CoursesService {
     }
 
     if (
-      course.instructorId.toString() !== user.userId &&
+      course.trainerId.toString() !== user.userId &&
       user.role !== 'admin'
     ) {
       throw new ForbiddenException('You can only delete your own courses');

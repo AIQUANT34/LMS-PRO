@@ -41,7 +41,7 @@ export class Lecture {
   courseId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  instructorId: Types.ObjectId;
+  trainerId: Types.ObjectId;
 
   // Video metadata
   @Prop({ type: Object })
@@ -87,6 +87,6 @@ export const LectureSchema = SchemaFactory.createForClass(Lecture);
 
 // Indexes for better performance
 LectureSchema.index({ courseId: 1, order: 1 });
-LectureSchema.index({ instructorId: 1 });
+LectureSchema.index({ trainerId: 1 });
 LectureSchema.index({ isPublished: 1 });
 LectureSchema.index({ isPreview: 1 });

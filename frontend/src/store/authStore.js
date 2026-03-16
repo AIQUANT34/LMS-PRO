@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { authAPI } from '../services/api/api';
+import apiService from '../services/apiService';
 
 const useAuthStore = create(
   persist(
@@ -21,11 +21,16 @@ const useAuthStore = create(
         login: async (credentials) => {
           set({ isLoading: true, error: null });
           try {
-            const response = await authAPI.login(credentials);
-            const { user, token } = response.data;
+            console.log('Frontend login attempt with credentials:', credentials);
+            const response = await apiService.login(credentials);
+            console.log('Frontend received response:', response);
+            const { user, token } = response;
+            console.log('Frontend extracted user data:', user);
+            console.log('Frontend extracted token:', token);
             
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
+            console.log('Frontend stored user in localStorage:', JSON.stringify(user));
             
             set({
               user,
@@ -37,6 +42,7 @@ const useAuthStore = create(
             
             return { success: true, user };
           } catch (error) {
+            console.error('Frontend login error:', error);
             const errorMessage = error.response?.data?.message || 'Login failed';
             set({
               isLoading: false,
@@ -52,8 +58,8 @@ const useAuthStore = create(
         register: async (userData) => {
           set({ isLoading: true, error: null });
           try {
-            const response = await authAPI.register(userData);
-            const { user, token } = response.data;
+            const response = await apiService.register(userData);
+            const { user, token } = response;
             
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
@@ -82,7 +88,7 @@ const useAuthStore = create(
 
         logout: async () => {
           try {
-            await authAPI.logout();
+            await apiService.logout();
           } catch (error) {
             console.error('Logout error:', error);
           } finally {
@@ -100,7 +106,7 @@ const useAuthStore = create(
         updateProfile: async (userData) => {
           set({ isLoading: true, error: null });
           try {
-            const response = await authAPI.updateProfile(userData);
+            const response = await apiService.updateProfile(userData);
             const updatedUser = response.data;
             
             set({
@@ -120,12 +126,32 @@ const useAuthStore = create(
           }
         },
 
+        // Refresh user data from server
+        refreshUserData: async () => {
+          try {
+            const response = await apiService.get('/auth/profile');
+            if (response.data) {
+              // Update both store and localStorage
+              localStorage.setItem('user', JSON.stringify(response.data));
+              set({
+                user: response.data,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null,
+              });
+              console.log('User data refreshed:', response.data);
+            }
+          } catch (error) {
+            console.error('Error refreshing user data:', error);
+          }
+        },
+
         clearError: () => set({ error: null }),
 
         // Check if user has specific role
         hasRole: (role) => {
           const { user } = get();
-          return user?.role === role || (role === 'employee' && user?.role === 'student');
+          return user?.role === role || (role === 'employee' && user?.role === 'student') || (role === 'trainer' && user?.role === 'student');
         },
 
         // Check if user has any of the specified roles
@@ -138,6 +164,18 @@ const useAuthStore = create(
         getUserRole: () => {
           const { user } = get();
           return user?.role;
+        },
+
+        // Check if user is verified trainer
+        isVerifiedTrainer: () => {
+          const { user } = get();
+          return user?.isVerifiedTrainer === true;
+        },
+
+        // Get trainer request status
+        getTrainerRequestStatus: () => {
+          const { user } = get();
+          return user?.trainerRequest || 'none';
         }
       };
     },

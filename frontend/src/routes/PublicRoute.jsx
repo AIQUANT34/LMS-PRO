@@ -10,8 +10,8 @@ const PublicRoute = ({ children }) => {
     switch (user?.role) {
       case 'student':
         return <Navigate to="/student/dashboard" replace />;
-      case 'instructor':
-        return <Navigate to="/instructor/dashboard" replace />;
+      case 'trainer':
+        return <Navigate to="/trainer/dashboard" replace />;
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
       default:

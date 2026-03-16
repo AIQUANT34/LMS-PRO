@@ -24,7 +24,7 @@ import { Link } from 'react-router-dom';
 const AboutPage = () => {
   const stats = [
     { value: '50K+', label: 'Active Students', icon: UsersIcon },
-    { value: '1000+', label: 'Expert Instructors', icon: AcademicCapIcon },
+    { value: '1000+', label: 'Expert Trainers', icon: AcademicCapIcon },
     { value: '500+', label: 'Premium Courses', icon: BookOpenIcon },
     { value: '98%', label: 'Success Rate', icon: TrophyIcon }
   ];
@@ -83,7 +83,7 @@ const AboutPage = () => {
     }
   ];
 
-  const instructors = [
+  const trainers = [
     {
       name: 'Dr. John Smith',
       title: 'Senior Software Engineer',
@@ -187,7 +187,7 @@ const AboutPage = () => {
               Why Choose ProTrain?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              We provide the best learning experience with expert instructors and comprehensive courses
+              We provide the best learning experience with expert trainers and comprehensive courses
             </p>
           </motion.div>
 
@@ -211,7 +211,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Instructors Section */}
+      {/* Trainers Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -224,12 +224,12 @@ const AboutPage = () => {
               Learn from Industry Experts
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our instructors are professionals with years of real-world experience
+              Our trainers are professionals with years of real-world experience
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {instructors.map((instructor, index) => (
+            {trainers.map((trainer, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -239,18 +239,18 @@ const AboutPage = () => {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <img
-                    src={instructor.avatar}
-                    alt={instructor.name}
+                    src={trainer.avatar}
+                    alt={trainer.name}
                     className="w-16 h-16 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{instructor.name}</h3>
-                    <p className="text-gray-600">{instructor.title}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{trainer.name}</h3>
+                    <p className="text-gray-600">{trainer.title}</p>
                   </div>
                 </div>
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-2">
-                    {instructor.expertise.split(', ').map((skill, idx) => (
+                    {trainer.expertise.split(', ').map((skill, idx) => (
                       <span
                         key={idx}
                         className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
@@ -261,12 +261,12 @@ const AboutPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>{instructor.courses} courses</span>
-                  <span>{instructor.students.toLocaleString()} students</span>
+                  <span>{trainer.courses} courses</span>
+                  <span>{trainer.students.toLocaleString()} students</span>
                 </div>
                 <div className="flex items-center gap-1 mt-2">
                   <StarIcon className="h-4 w-4 text-yellow-400" />
-                  <span className="text-sm font-medium">{instructor.rating}</span>
+                  <span className="text-sm font-medium">{trainer.rating}</span>
                 </div>
               </motion.div>
             ))}

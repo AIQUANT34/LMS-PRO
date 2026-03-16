@@ -12,41 +12,41 @@ import { Request } from 'express';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Patch('verify-instructor/:id')
+  @Patch('verify-trainer/:id')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
-  async verifyInstructor(@Param('id') id: string) {
-    return this.usersService.verifyInstructor(id);
+  async verifyTrainer(@Param('id') id: string) {
+    return this.usersService.verifyTrainer(id);
   }
 
-  @Post('apply-instructor')
+  @Post('apply-trainer')
   @UseGuards(JwtGuard)
-  async applyInstructor(@Req() req, @Body() applicationData: any) {
-    return this.usersService.applyInstructor(req.user.userId, applicationData);
+  async applyTrainer(@Req() req, @Body() applicationData: any) {
+    return this.usersService.applyTrainer(req.user.userId, applicationData);
   }
 
-  @Get('instructor-application/:userId')
+  @Get('trainer-application/:userId')
   @UseGuards(JwtGuard)
-  async getInstructorApplication(@Param('userId') userId: string, @Req() req) {
-    return this.usersService.getInstructorApplication(userId, req.user.userId);
+  async getTrainerApplication(@Param('userId') userId: string, @Req() req) {
+    return this.usersService.getTrainerApplication(userId, req.user.userId);
   }
 
-  @Patch('instructor-application/:id/review')
+  @Patch('trainer-application/:id/review')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
-  async reviewInstructorApplication(
+  async reviewTrainerApplication(
     @Param('id') id: string,
     @Body() reviewData: { status: string; rejectionReason?: string; adminNotes?: any },
     @Req() req
   ) {
-    return this.usersService.reviewInstructorApplication(id, reviewData, req.user.userId);
+    return this.usersService.reviewTrainerApplication(id, reviewData, req.user.userId);
   }
 
-  @Get('instructor-applications')
+  @Get('trainer-applications')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
-  async getAllInstructorApplications() {
-    return this.usersService.getAllInstructorApplications();
+  async getAllTrainerApplications() {
+    return this.usersService.getAllTrainerApplications();
   }
 
   @Get(':id')

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 import { 
   ChartBarIcon,
   TrendingUpIcon,
@@ -19,68 +22,81 @@ const TrainerAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
+  const [error, setError] = useState(null);
 
-  // Mock data
-  const mockAnalytics = {
-    overview: {
-      totalRevenue: 45678,
-      thisMonthRevenue: 12567,
-      totalStudents: 1234,
-      activeStudents: 892,
-      totalCourses: 8,
-      averageRating: 4.7,
-      completionRate: 78.5,
-      engagementRate: 85.2
-    },
-    revenueChart: [
-      { month: 'Jan', revenue: 12000, students: 234 },
-      { month: 'Feb', revenue: 15000, students: 289 },
-      { month: 'Mar', revenue: 13500, students: 267 },
-      { month: 'Apr', revenue: 18000, students: 345 },
-      { month: 'May', revenue: 22000, students: 412 },
-      { month: 'Jun', revenue: 25678, students: 456 }
-    ],
-    topCourses: [
-      {
-        id: 1,
-        title: 'Complete React Development Course',
-        students: 1523,
-        revenue: 23456,
-        rating: 4.8,
-        completionRate: 82.3,
-        growth: 12.5
-      },
-      {
-        id: 2,
-        title: 'Advanced React Development',
-        students: 876,
-        revenue: 15678,
-        rating: 4.9,
-        completionRate: 79.1,
-        growth: 8.3
-      },
-      {
-        id: 3,
-        title: 'Node.js Backend Development',
-        students: 432,
-        revenue: 8765,
-        rating: 4.6,
-        completionRate: 76.8,
-        growth: -2.1
-      }
-    ],
-    studentProgress: [
-      { course: 'React Development', completed: 456, inProgress: 234, notStarted: 89 },
-      { course: 'Advanced React', completed: 234, inProgress: 189, notStarted: 67 },
-      { course: 'Node.js Backend', completed: 123, inProgress: 145, notStarted: 34 }
-    ]
-  };
-
+  // Fetch real analytics data
   useEffect(() => {
-    setTimeout(() => {
-      setAnalytics(mockAnalytics);
-      setLoading(false);
-    }, 500);
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch instructor analytics
+        const response = await apiService.get(API_ENDPOINTS.ANALYTICS.TRAINER);
+        const analyticsData = response.data;
+        
+        // Fetch instructor courses for additional data
+        let coursesData = [];
+        try {
+          const coursesResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
+          coursesData = coursesResponse.data?.courses || coursesResponse.courses || [];
+        } catch (coursesError) {
+          console.warn('Courses data not available:', coursesError);
+        }
+        
+        // Combine analytics with course data
+        const combinedData = {
+          overview: {
+            totalRevenue: analyticsData.totalRevenue || 0,
+            thisMonthRevenue: analyticsData.thisMonthRevenue || 0,
+            totalStudents: analyticsData.totalStudents || 0,
+            activeStudents: analyticsData.activeStudents || 0,
+            totalCourses: coursesData.length || 0,
+            averageRating: analyticsData.averageRating || 0,
+            completionRate: analyticsData.completionRate || 0,
+            engagementRate: analyticsData.engagementRate || 0
+          },
+          revenueChart: analyticsData.revenueChart || [],
+          topCourses: analyticsData.topCourses || coursesData.slice(0, 5).map(course => ({
+            id: course.id,
+            title: course.title,
+            students: course.enrollmentCount || 0,
+            revenue: course.totalRevenue || 0,
+            rating: course.ratings?.average || 0,
+            completionRate: 0,
+            growth: 0
+          })),
+          studentProgress: analyticsData.studentProgress || []
+        };
+        
+        setAnalytics(combinedData);
+      } catch (error) {
+        console.error('Failed to fetch analytics:', error);
+        setError('Failed to load analytics');
+        toast.error('Failed to load analytics');
+        
+        // Set empty state on error
+        setAnalytics({
+          overview: {
+            totalRevenue: 0,
+            thisMonthRevenue: 0,
+            totalStudents: 0,
+            activeStudents: 0,
+            totalCourses: 0,
+            averageRating: 0,
+            completionRate: 0,
+            engagementRate: 0
+          },
+          revenueChart: [],
+          topCourses: [],
+          studentProgress: []
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
   }, []);
 
   if (loading) {

@@ -13,11 +13,11 @@ export const API_ENDPOINTS = {
   
   // User endpoints
   USERS: {
-    VERIFY_INSTRUCTOR: (id) => `/users/verify-instructor/${id}`,
-    APPLY_INSTRUCTOR: '/users/apply-instructor',
-    INSTRUCTOR_APPLICATIONS: '/users/instructor-applications',
-    INSTRUCTOR_APPLICATION: (userId) => `/users/instructor-application/${userId}`,
-    REVIEW_INSTRUCTOR_APPLICATION: (id) => `/users/instructor-application/${id}/review`,
+    VERIFY_TRAINER: (id) => `/users/verify-trainer/${id}`,
+    APPLY_TRAINER: '/users/apply-trainer',
+    TRAINER_APPLICATIONS: '/users/trainer-applications',
+    TRAINER_APPLICATION: (userId) => `/users/trainer-application/${userId}`,
+    REVIEW_TRAINER_APPLICATION: (id) => `/users/trainer-application/${id}/review`,
     GET_ALL: '/users', // Admin endpoint to get all users
     GET_PROFILE: (id) => `/users/${id}`, // Get user profile
     UPDATE: (id) => `/users/${id}`, // Admin endpoint to update user
@@ -27,29 +27,30 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: '/users/change-password', // Change password
   },
   
-  // Course endpoints
+  // Course endpoints (includes trainer operations)
   COURSES: {
     GET_ALL: '/courses/public',
-    GET_BY_ID: (id) => `/courses/${id}`,
-    CREATE: '/courses',
-    UPDATE: (id) => `/courses/${id}`,
-    DELETE: (id) => `/courses/${id}`,
-    GET_INSTRUCTOR_COURSES: '/courses/instructor',
+    GET_BY_ID: (id) => `/courses/${id}`, // Use general courses endpoint
+    CREATE: '/trainer/courses/create', // Fixed to match backend TrainerController route
+    UPDATE: (id) => `/trainer/courses/${id}`, // Use trainer endpoint for updates
+    DELETE: (id) => `/trainer/courses/${id}`, // Use trainer endpoint for deletion
+    GET_TRAINER_COURSES: '/trainer/courses', // Fixed route
     SUBMIT_REVIEW: (id) => `/courses/${id}/submit-review`,
     REVIEW: (id) => `/courses/${id}/review`,
     ARCHIVE: (id) => `/courses/${id}/archive`,
     MOVE_TO_DRAFT: (id) => `/courses/${id}/move-draft`,
   },
   
-  // Trainer endpoints
+  // Trainer endpoints (removed to avoid conflicts - use COURSES endpoints)
   TRAINER: {
-    CREATE_COURSE: '/trainer/courses/create',
-    GET_COURSES: '/trainer/courses',
-    UPDATE_COURSE: (id) => `/trainer/courses/${id}`,
-    DELETE_COURSE: (id) => `/trainer/courses/${id}`,
-    SUBMIT_REVIEW: (id) => `/trainer/courses/${id}/submit-review`,
-    ARCHIVE: (id) => `/trainer/courses/${id}/archive`,
-    MOVE_TO_DRAFT: (id) => `/trainer/courses/${id}/move-draft`,
+    // These endpoints now handled by CoursesModule to avoid route conflicts
+    CREATE_COURSE: '/trainer/courses/create', // Fixed to match backend TrainerController route
+    GET_COURSES: '/trainer/courses', // Fixed route
+    UPDATE_COURSE: (id) => `/trainer/courses/${id}`, // Use trainer endpoint
+    DELETE_COURSE: (id) => `/trainer/courses/${id}`, // Use trainer endpoint
+    SUBMIT_REVIEW: (id) => `/courses/${id}/submit-review`, // Use standard
+    ARCHIVE: (id) => `/courses/${id}/archive`, // Use standard
+    MOVE_TO_DRAFT: (id) => `/courses/${id}/move-draft`, // Use standard
     ASSIGNMENTS: {
       GET_ALL: '/trainer/assignments',
       CREATE: '/trainer/assignments',
@@ -114,7 +115,7 @@ export const API_ENDPOINTS = {
     REVENUE: '/analytics/revenue',
     COURSE: (courseId) => `/analytics/course/${courseId}`,
     STUDENT: '/analytics/student',
-    INSTRUCTOR: '/analytics/instructor',
+    TRAINER: '/analytics/trainer',
     LEARNING_PATH: '/analytics/learning-path',
   },
   

@@ -29,12 +29,12 @@ export class LearningController {
   // ======================== LESSON MANAGEMENT ========================
 
   /**
-   * Create a new lesson (Instructor only)
+   * Create a new lesson (Trainer only)
    * POST /learning/lessons/:courseId
    */
   @Post('lessons/:courseId')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor')
+  @Roles('trainer')
   async createLesson(
     @Param('courseId') courseId: string,
     @Body() data: CreateLessonDto,
@@ -55,7 +55,7 @@ export class LearningController {
 
   @Put('lessons/:lessonId')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor')
+  @Roles('trainer')
   async updateLesson(
     @Param('lessonId') lessonId: string,
     @Body() data: Partial<CreateLessonDto>,
@@ -66,7 +66,7 @@ export class LearningController {
 
   @Delete('lessons/:lessonId')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('instructor')
+  @Roles('trainer')
   async deleteLesson(@Param('lessonId') lessonId: string, @Req() req) {
     return this.learningService.deleteLesson(lessonId, req.user);
   }

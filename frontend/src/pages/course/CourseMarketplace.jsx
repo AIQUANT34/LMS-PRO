@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
 import {
   BookOpenIcon,
   PlayIcon,
@@ -60,7 +61,7 @@ const CourseMarketplace = () => {
         // Try to fetch from backend, fallback to mock data if API fails
         let response;
         try {
-          response = await apiService.get('/api/courses/public');
+          response = await apiService.get(API_ENDPOINTS.COURSES.GET_ALL);
         } catch (apiError) {
           console.log('Backend API not available, using mock data:', apiError.message);
           // Mock data for demonstration

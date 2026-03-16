@@ -15,16 +15,16 @@ import {
 import { apiService } from '../../services/apiService';
 import toast from 'react-hot-toast';
 
-const InstructorsPage = () => {
-  const [instructors, setInstructors] = useState([]);
+const TrainersPage = () => {
+  const [trainers, setTrainers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
 
-  // Fetch instructors
+  // Fetch trainers
   useEffect(() => {
-    const fetchInstructors = async () => {
+    const fetchTrainers = async () => {
       try {
         setLoading(true);
         
@@ -32,11 +32,11 @@ const InstructorsPage = () => {
         let response;
         try {
           // First try the test endpoint to verify server is working
-          const testResponse = await apiService.get('/test-instructors');
+          const testResponse = await apiService.get('/test-trainers');
           // Silent test - no console log to prevent HTML errors
           
-          // Then try the actual instructors endpoint
-          response = await apiService.get('/api/instructors/public');
+          // Then try the actual trainers endpoint
+          response = await apiService.get('/api/trainers/public');
           
           // Log successful API response for debugging
           console.log('API Response:', response);
@@ -45,7 +45,7 @@ const InstructorsPage = () => {
           // Mock data for demonstration
           response = {
             data: {
-              instructors: [
+              trainers: [
                 {
                   _id: '1',
                   name: 'John Smith',
@@ -107,31 +107,31 @@ const InstructorsPage = () => {
           };
         }
         
-        // Handle both API response formats: response.data.instructors or response.instructors
-        const instructorsData = response.data?.instructors || response.instructors || [];
-        console.log('Setting instructors:', instructorsData);
-        setInstructors(instructorsData);
+        // Handle both API response formats: response.data.trainers or response.trainers
+        const trainersData = response.data?.trainers || response.trainers || [];
+        console.log('Setting trainers:', trainersData);
+        setTrainers(trainersData);
         setLoading(false);
       } catch (error) {
-        console.error('Failed to load instructors:', error);
-        toast.error('Failed to load instructors');
+        console.error('Failed to load trainers:', error);
+        toast.error('Failed to load trainers');
         setLoading(false);
       }
     };
 
-    fetchInstructors();
+    fetchTrainers();
   }, []);
 
-  // Filter and sort instructors
-  const filteredInstructors = instructors
-    .filter(instructor => {
-      const matchesSearch = instructor.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           instructor.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           instructor.specialties?.some(specialty => 
+  // Filter and sort trainers
+  const filteredTrainers = trainers
+    .filter(trainer => {
+      const matchesSearch = trainer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           trainer.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           trainer.specialties?.some(specialty => 
                              specialty.toLowerCase().includes(searchQuery.toLowerCase())
                            );
       const matchesSpecialty = selectedSpecialty === 'all' || 
-                              instructor.specialties?.includes(selectedSpecialty);
+                              trainer.specialties?.includes(selectedSpecialty);
       return matchesSearch && matchesSpecialty;
     })
     .sort((a, b) => {
@@ -157,7 +157,7 @@ const InstructorsPage = () => {
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Expert Instructors</h1>
+            <h1 className="text-4xl font-bold mb-4">Expert Trainers</h1>
             <p className="text-xl text-indigo-100 max-w-3xl mx-auto">
               Learn from industry experts with real-world experience
             </p>
@@ -175,7 +175,7 @@ const InstructorsPage = () => {
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search instructors..."
+                  placeholder="Search trainers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -215,76 +215,76 @@ const InstructorsPage = () => {
         </div>
       </div>
 
-      {/* Instructors Grid */}
+      {/* Trainers Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
-        ) : filteredInstructors.length === 0 ? (
+        ) : filteredTrainers.length === 0 ? (
           <div className="text-center py-16">
             <UserGroupIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No instructors found</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No trainers found</h3>
             <p className="text-gray-600">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredInstructors.map((instructor, index) => (
+            {filteredTrainers.map((trainer, index) => (
               <motion.div
-                key={instructor._id}
+                key={trainer._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
               >
-                {/* Instructor Header */}
+                {/* Trainer Header */}
                 <div className="p-6">
                   <div className="flex items-center space-x-4 mb-4">
                     <div className="relative">
                       <img
-                        src={instructor.avatar || 'https://via.placeholder.com/80x80'}
-                        alt={instructor.name}
+                        src={trainer.avatar || 'https://via.placeholder.com/80x80'}
+                        alt={trainer.name}
                         className="w-20 h-20 rounded-full object-cover"
                       />
-                      {instructor.isVerified && (
+                      {trainer.isVerified && (
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                           <CheckCircleIcon className="h-4 w-4 text-white" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">{instructor.name}</h3>
-                      <p className="text-sm text-gray-600">{instructor.title}</p>
+                      <h3 className="text-lg font-semibold text-gray-900">{trainer.name}</h3>
+                      <p className="text-sm text-gray-600">{trainer.title}</p>
                     </div>
                   </div>
 
-                  {/* Instructor Stats */}
+                  {/* Trainer Stats */}
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
                       <div className="flex items-center justify-center space-x-1 mb-1">
                         <StarIcon className="h-4 w-4 text-yellow-400" />
-                        <span className="text-sm font-semibold text-gray-900">{instructor.rating?.toFixed(1) || '0.0'}</span>
+                        <span className="text-sm font-semibold text-gray-900">{trainer.rating?.toFixed(1) || '0.0'}</span>
                       </div>
                       <p className="text-xs text-gray-600">Rating</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-semibold text-gray-900">{instructor.totalStudents || 0}</div>
+                      <div className="text-lg font-semibold text-gray-900">{trainer.totalStudents || 0}</div>
                       <p className="text-xs text-gray-600">Students</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-semibold text-gray-900">{instructor.totalCourses || 0}</div>
+                      <div className="text-lg font-semibold text-gray-900">{trainer.totalCourses || 0}</div>
                       <p className="text-xs text-gray-600">Courses</p>
                     </div>
                   </div>
 
                   {/* Bio */}
                   <p className="text-sm text-gray-700 mb-4 line-clamp-3">
-                    {instructor.bio || 'Passionate instructor dedicated to helping students achieve their learning goals.'}
+                    {trainer.bio || 'Passionate trainer dedicated to helping students achieve their learning goals.'}
                   </p>
 
                   {/* Specialties */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {instructor.specialties?.slice(0, 3).map((specialty, idx) => (
+                    {trainer.specialties?.slice(0, 3).map((specialty, idx) => (
                       <span
                         key={idx}
                         className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full"
@@ -298,11 +298,11 @@ const InstructorsPage = () => {
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                     <div className="flex items-center space-x-1">
                       <ClockIcon className="h-4 w-4" />
-                      <span>{instructor.experience || 0} years exp</span>
+                      <span>{trainer.experience || 0} years exp</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <MapPinIcon className="h-4 w-4" />
-                      <span>{instructor.location || 'Remote'}</span>
+                      <span>{trainer.location || 'Remote'}</span>
                     </div>
                   </div>
 
@@ -325,4 +325,4 @@ const InstructorsPage = () => {
   );
 };
 
-export default InstructorsPage;
+export default TrainersPage;
