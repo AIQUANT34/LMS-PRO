@@ -14,6 +14,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
+import toast from 'react-hot-toast';
 
 const StudentCourses = () => {
   const { user } = useAuthStore();
@@ -29,18 +31,47 @@ const StudentCourses = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await apiService.get('/enrollments/my-courses');
-      setCourses(response.enrollments || []);
+      setLoading(true);
+      
+      const response = await apiService.get(API_ENDPOINTS.ENROLLMENTS.MY_COURSES);
+      
+      //FIX: The enrollment data is directly in response.data, not nested
+      const coursesData = response.data || [];
+      
+      setCourses(coursesData);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error('🔍 Error fetching courses:', error);
+      toast.error('Failed to load enrolled courses');
     } finally {
       setLoading(false);
     }
   };
 
+  // Update last accessed when course is clicked
+  const handleCourseClick = async (course) => {
+    try {
+      //  Use configured endpoint instead of hardcoded
+      await apiService.post(API_ENDPOINTS.ENROLLMENTS.UPDATE_LAST_ACCESSED(course.courseId), {
+        courseId: course.courseId
+      });
+      
+      // Navigate to course
+      navigate(`/student/courses/${course.courseId}`);
+    } catch (error) {
+      //  Better error handling with user feedback
+      toast.error('Failed to update course access');
+      console.error('Failed to update last accessed:', error);
+      // Still navigate even if update fails
+      navigate(`/student/courses/${course.courseId}`);
+    }
+  };
+
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.courseId?.title?.toLowerCase().includes(searchTerm.toLowerCase());
+    // FIX: Course data is flat, not nested - use course directly
+    const courseTitle = course?.title?.toLowerCase() || '';
+    const matchesSearch = courseTitle.includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || course.status === filterStatus;
+    
     return matchesSearch && matchesFilter;
   });
 
@@ -75,6 +106,18 @@ const StudentCourses = () => {
         </button>
       </div>
 
+      {/* Debug Info */}
+      {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <h3 className="text-sm font-semibold text-blue-800 mb-2">Debug Information</h3>
+        <div className="text-xs text-blue-600 space-y-1">
+          <p>Loading: {loading ? 'Yes' : 'No'}</p>
+          <p>Total Courses: {courses.length}</p>
+          <p>Filtered Courses: {filteredCourses.length}</p>
+          <p>Search Term: "{searchTerm}"</p>
+          <p>Filter Status: {filterStatus}</p>
+        </div>
+      </div> */}
+
       {/* Search and Filter */}
       <div className="card-premium p-6">
         <div className="flex flex-col md:flex-row gap-4">
@@ -86,17 +129,25 @@ const StudentCourses = () => {
                 placeholder="Search your courses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2 top-1/2 p-1 text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center">
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="all">All Courses</option>
+              <option value="all">All Status</option>
               <option value="active">In Progress</option>
               <option value="completed">Completed</option>
               <option value="paused">Paused</option>
@@ -128,17 +179,17 @@ const StudentCourses = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course, index) => (
             <motion.div
-              key={course.id}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="card-premium overflow-hidden hover:shadow-premium-lg cursor-pointer"
-              onClick={() => navigate(`/student/courses/${course.courseId._id}`)}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              onClick={() => handleCourseClick(course)}
+              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
             >
               <div className="relative">
                 <img 
-                  src={course.courseId?.thumbnail || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"%3E%3Crect fill="%23f3f4f6" width="300" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3ECourse%3C/text%3E%3C/svg%3E'} 
-                  alt={course.courseId?.title}
+                  src={course.thumbnail || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"%3E%3Crect fill="%23f3f4f6" width="300" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="14" font-family="Arial"%3ECourse%3C/text%3E%3C/svg%3E'} 
+                  alt={course.title || 'untitled course'}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-2 right-2">
@@ -148,13 +199,22 @@ const StudentCourses = () => {
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{course.courseId?.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">Instructor: {course.courseId?.instructorId?.name || 'Unknown'}</p>
+                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                  {course.title || 'Untitled Course'}
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Trainer: {course.trainerName || 'Unknown'}
+                </p>
                 
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                  <span>{course.completedLessons || 0}/{course.courseId?.totalLessons || 0} lessons</span>
+                  <span>
+                    {course.completedLessons || 0}/
+                    {course.totalLessons || 0} lessons
+                  </span>
                   <span>Progress: {course.progress || 0}%</span>
-                  <span>Last accessed: {course.lastAccessed ? new Date(course.lastAccessed).toLocaleDateString() : 'Never'}</span>
+                  <span>
+                    Last accessed: {course.lastAccessed ? new Date(course.lastAccessed).toLocaleDateString() : 'Never'}
+                  </span>
                 </div>
                 
                 <div className="w-full bg-gray-200 rounded-full mb-3">
@@ -169,7 +229,7 @@ const StudentCourses = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center text-sm text-gray-600">
                     <ClockIcon className="h-4 w-4 mr-1" />
-                    <span>{course.courseId?.duration || 'Self-paced'}</span>
+                    <span>{course.duration || 'Self-paced'}</span>
                   </div>
                   {course.status === 'completed' && (
                     <div className="flex items-center text-green-600">
@@ -179,9 +239,16 @@ const StudentCourses = () => {
                   )}
                 </div>
                 
-                <button className="w-full btn-premium-outline text-sm mt-3">
+                <Link 
+                  to={`/student/courses/${course.courseId}/lesson`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent parent click
+                    handleCourseClick(course);
+                  }}
+                  className="w-full btn-premium-outline text-sm mt-3 block text-center"
+                >
                   {course.status === 'completed' ? 'Review Course' : 'Continue Learning'}
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}

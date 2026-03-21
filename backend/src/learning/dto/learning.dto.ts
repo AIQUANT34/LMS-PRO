@@ -52,6 +52,11 @@ export class CreateLessonDto {
   @IsOptional()
   @IsArray()
   resources?: { title: string; url: string }[];
+
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean
+
 }
 
 export class UpdateProgressDto {

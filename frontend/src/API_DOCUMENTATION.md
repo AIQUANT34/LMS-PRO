@@ -131,7 +131,7 @@ All API calls are wrapped in try-catch blocks with:
 {
   _id: course._id,
   title: course.title,
-  trainer: course.instructorId?.name,
+  trainer: course.trainerId?.name,
   rating: course.ratings.average,
   employees: course.enrollmentCount,
   // ... other mappings

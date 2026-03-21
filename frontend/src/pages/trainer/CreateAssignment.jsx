@@ -631,7 +631,6 @@ const CreateAssignment = () => {
       const response = await apiService.get(API_ENDPOINTS.TRAINER.GET_COURSES);
       setCourses(response.data?.courses || []);
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
       // Fallback mock courses
       setCourses([
         { id: 1, title: 'Complete React Development Course' },
@@ -664,7 +663,6 @@ const CreateAssignment = () => {
       setAutoSaveStatus('saved');
     } catch (error) {
       setAutoSaveStatus('error');
-      console.error('Auto-save failed:', error);
     }
   }, []); // Remove formData dependency to prevent re-renders
 
@@ -813,7 +811,6 @@ const CreateAssignment = () => {
   }, [handleInputChange]);
 
   const handleSubmit = useCallback(async (e) => {
-    console.log("Form submitted")
     e.preventDefault();
     e.stopPropagation(); // Prevent event bubbling
     
@@ -839,7 +836,6 @@ const CreateAssignment = () => {
       toast.success('Assignment created successfully!');
       navigate('/trainer/assignments');
     } catch (error) {
-      console.error('Failed to create assignment:', error);
       const errorMessage = error.response?.data?.message || 'Failed to create assignment';
       toast.error(errorMessage);
     } finally {
@@ -914,7 +910,6 @@ const CreateAssignment = () => {
         setFormData(parsedDraft);
       }
     } catch (error) {
-      console.error('Failed to load draft:', error);
     }
   }, []);
 

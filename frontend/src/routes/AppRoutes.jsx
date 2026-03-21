@@ -18,9 +18,10 @@ const StudentDashboard = lazy(() => import('../pages/student/StudentDashboard'))
 const StudentCourses = lazy(() => import('../pages/student/StudentCourses'));
 const StudentProfile = lazy(() => import('../pages/student/StudentProfile'));
 const StudentAchievements = lazy(() => import('../pages/student/StudentAchievements'));
-const CoursePlayer = lazy(() => import('../pages/student/CoursePlayer'));
+const EnhancedCoursePlayer = lazy(() => import('../pages/student/EnhancedCoursePlayer'));
 const QuizSystem = lazy(() => import('../pages/student/QuizSystem'));
 const CertificatePage = lazy(() => import('../pages/student/CertificatePage'));
+const StudentCertificates = lazy(() => import('../pages/student/StudentCertificates'));
 const AssignmentSystem = lazy(() => import('../pages/student/AssignmentSystem'));
 const LiveClassroom = lazy(() => import('../pages/live/LiveClassroom'));
 const AIAssistant = lazy(() => import('../pages/ai/AIAssistant'));
@@ -40,6 +41,8 @@ const TrainerAssignments = lazy(() => import('../pages/trainer/TrainerAssignment
 const CreateAssignment = lazy(() => import('../pages/trainer/CreateAssignment'));
 const TrainerAnalytics = lazy(() => import('../pages/trainer/TrainerAnalytics'));
 const TrainerEarnings = lazy(() => import('../pages/trainer/TrainerEarnings'));
+const CourseView = lazy(() => import('../pages/trainer/CourseView'));
+const CreateLesson = lazy(() => import('../pages/trainer/CreateLesson'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
@@ -47,6 +50,7 @@ const UserManagement = lazy(() => import('../pages/admin/UserManagement'));
 const CourseManagement = lazy(() => import('../pages/admin/CourseManagement'));
 const TrainerApproval = lazy(() => import('../pages/admin/TrainerApproval'));
 const AdminProfile = lazy(() => import('../pages/admin/AdminProfile'));
+const AIReviewDashboard = lazy(() => import('../pages/admin/AIReviewDashboard'));
 
 // Common Pages
 const HomePage = lazy(() => import('../pages/common/HomePage'));
@@ -62,6 +66,7 @@ const DocumentationPage = lazy(() => import('../pages/common/DocumentationPage')
 const CommunityPage = lazy(() => import('../pages/common/CommunityPage'));
 const SystemStatusPage = lazy(() => import('../pages/common/SystemStatusPage'));
 const TrainersPage = lazy(() => import('../pages/common/TrainersPage'));
+const CertificateVerification = lazy(() => import('../pages/public/CertificateVerification'));
 
 // Course Pages
 const CourseMarketplace = lazy(() => import('../pages/course/CourseMarketplace'));
@@ -114,11 +119,14 @@ const AppRoutes = () => {
           <Route path="courses" element={<StudentCourses />} />
           <Route path="achievements" element={<StudentAchievements />} />
           <Route path="trainer-application" element={<TrainerApplication />} />
-          <Route path="courses/:courseId/lesson/:lessonId" element={<CoursePlayer />} />
+          <Route path="courses/:courseId" element={<StudentCourses />} />
+          <Route path="courses/:courseId/lesson" element={<EnhancedCoursePlayer />} />
+          <Route path="courses/:courseId/lesson/:lessonId" element={<EnhancedCoursePlayer />} />
           <Route path="courses/:courseId/progress" element={<CourseProgress />} />
-          <Route path="courses/:id/quiz/:quizId" element={<QuizSystem />} />
+          <Route path="courses/:courseId/certificate" element={<CertificatePage />} />
+          <Route path="courses/:courseId/quiz/:quizId" element={<QuizSystem />} />
           <Route path="courses/:id/assignment/:assignmentId" element={<AssignmentSystem />} />
-          <Route path="courses/:id/certificate" element={<CertificatePage />} />
+          <Route path="certificates" element={<StudentCertificates />} />
           <Route path="live/:sessionId" element={<LiveClassroom />} />
           <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="gamification" element={<GamificationSystem />} />
@@ -133,6 +141,8 @@ const AppRoutes = () => {
           <Route path="courses/create" element={<CreateCourse />} />
           <Route path="courses/:id/builder" element={<CourseBuilder />} />
           <Route path="courses/:id/edit" element={<EditCourse />} />
+          <Route path="courses/:courseId/view" element={<CourseView />} />
+          <Route path="courses/:courseId/lessons/create" element={<CreateLesson />} />
           <Route path="courses/:id/analytics" element={<CourseAnalytics />} />
           <Route path="courses/:id/grading/:assignmentId" element={<GradingSystem />} />
           <Route path="assignments" element={<TrainerAssignments />} />
@@ -149,8 +159,12 @@ const AppRoutes = () => {
           <Route path="users" element={<UserManagement />} />
           <Route path="courses" element={<CourseManagement />} />
           <Route path="trainers" element={<TrainerApproval />} />
+          <Route path="ai-review" element={<AIReviewDashboard />} />
           <Route path="profile" element={<AdminProfile />} />
         </Route>
+
+        {/* Public Routes */}
+        <Route path="/verify-certificate/:reference" element={<CertificateVerification />} />
 
         {/* Error Pages */}
         <Route path="/unauthorized" element={<UnauthorizedPage />} />

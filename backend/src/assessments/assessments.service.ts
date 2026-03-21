@@ -130,9 +130,9 @@ export class AssessmentsService {
 
     const assessment: any = submission.assessmentId;
 
-    // Only instructor of the course can review
-    if (assessment.instructorId.toString() !== user.userId) {
-      throw new ForbiddenException('Only instructor can review submissions');
+    // Only trainer of the course can review
+    if (assessment.trainerId.toString() !== user.userId) {
+      throw new ForbiddenException('Only trainer can review submissions');
     }
 
     if (submission.status === 'graded') {
@@ -164,9 +164,9 @@ export class AssessmentsService {
       throw new NotFoundException('Assessment not found');
     }
 
-    // Only instructor can view submissions
-    if (assessment.instructorId.toString() !== user.userId) {
-      throw new ForbiddenException('Only instructor can view submissions');
+    // Only trainer can view submissions
+    if (assessment.trainerId.toString() !== user.userId) {
+      throw new ForbiddenException('Only trainer can view submissions');
     }
 
     const submissions = await this.submissionModel

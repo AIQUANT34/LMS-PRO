@@ -91,14 +91,50 @@ export class LearningController {
   @UseGuards(JwtGuard)
   async markLessonComplete(
     @Param('lessonId') lessonId: string,
-    @Query('enrollmentId') enrollmentId: string,
     @Req() req,
+    @Query('enrollmentId') enrollmentId?: string,
   ) {
     return this.learningService.markLessonComplete(
       lessonId,
       enrollmentId,
       req.user,
     );
+  }
+
+  /**
+   * Update video progress (for frontend video tracking)
+   * POST /learning/video/:lessonId/progress
+   */
+  @Post('video/:lessonId/progress')
+  @UseGuards(JwtGuard)
+  async updateVideoProgress(
+    @Param('lessonId') lessonId: string,
+    @Body() progressData: any,
+    @Req() req,
+  ) {
+    return this.learningService.updateVideoProgress(lessonId, progressData, req.user);
+  }
+
+  /**
+   * Get student completions for trainer dashboard
+   * GET /learning/videohistory/student-completions
+   */
+  @Get('videohistory/student-completions')
+  @UseGuards(JwtGuard)
+  @Roles('trainer')
+  async getStudentCompletions(@Req() req) {
+    console.log("🎯 CONTROLLER - Request user:", req.user);
+    console.log("🎯 CONTROLLER - User ID:", req.user?.userId);
+    console.log("🎯 CONTROLLER - User roles:", req.user?.roles);
+    
+    const result = await this.learningService.getStudentCompletions(req.user);
+    
+    // Ensure proper JSON serialization
+    return {
+      success: true,
+      data: result,
+      message: 'Student completions retrieved successfully'
+    };
   }
 
   @Put('progress/incomplete/:lessonId')
@@ -114,16 +150,29 @@ export class LearningController {
       req.user,
     );
   }
+
   /**
-   * Get course progress
+   * Get course progress for a user
    * GET /learning/progress/course/:courseId
    */
   @Get('progress/course/:courseId')
   @UseGuards(JwtGuard)
-  async getCourseProgress(@Param('courseId') courseId: string, @Req() req) {
+  async getCourseProgress(
+    @Param('courseId') courseId: string,
+    @Req() req,
+  ) {
     return this.learningService.getCourseProgress(courseId, req.user);
   }
 
+  /**
+   * Get completed courses for a student
+   * GET /learning/videohistory/completed-courses
+   */
+  @Get('videohistory/completed-courses')
+  @UseGuards(JwtGuard)
+  async getCompletedCourses(@Req() req) {
+    return this.learningService.getCompletedCourses(req.user);
+  }
   // ======================== VIDEO PLAYBACK ========================
 
   /**
@@ -154,40 +203,6 @@ export class LearningController {
   @UseGuards(JwtGuard)
   async getVideoProgress(@Param('lessonId') lessonId: string, @Req() req) {
     return this.learningService.getVideoProgress(lessonId, req.user);
-  }
-
-  // ======================== QUIZ & ASSESSMENT ========================
-
-  /**
-   * Submit quiz
-   * POST /learning/quiz/:lessonId/submit
-   */
-  @Post('quiz/:lessonId/submit')
-  @UseGuards(JwtGuard)
-  async submitQuiz(
-    @Param('lessonId') lessonId: string,
-    @Query('enrollmentId') enrollmentId: string,
-    @Body() data: CompleteQuizDto,
-    @Req() req,
-  ) {
-    return this.learningService.submitQuiz(
-      lessonId,
-      enrollmentId,
-      data,
-      req.user,
-    );
-  }
-
-  // ======================== CERTIFICATE ========================
-
-  /**
-   * Get certificate
-   * GET /learning/certificate/:courseId
-   */
-  @Get('certificate/:courseId')
-  @UseGuards(JwtGuard)
-  async getCertificate(@Param('courseId') courseId: string, @Req() req) {
-    return this.learningService.getCertificate(courseId, req.user);
   }
 
   // ======================== DASHBOARD ========================

@@ -21,6 +21,27 @@ export class EnrollmentsController {
     this.logger.log('EnrollmentsController initialized');
   }
 
+  // Debug endpoint to see all enrollments
+  @Get('debug/all')
+  @UseGuards(JwtGuard)
+  async debugAllEnrollments() {
+    try {
+      this.logger.log('Fetching all enrollments for debugging');
+      const result = await this.enrollmentsService.debugAllEnrollments();
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      this.logger.error(`Debug endpoint failed: ${error.message}`);
+      throw new HttpException(
+        'Debug endpoint failed',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   // Test endpoint to verify service works
   @Get('test')
   async testEnrollments() {
@@ -95,9 +116,13 @@ export class EnrollmentsController {
   @UseGuards(JwtGuard)
   async enrollWithBody(@Body('courseId') courseId: string, @Req() req) {
     try {
-      this.logger.log(`Enrollment request received for course: ${courseId}`);
+      this.logger.log(`🔍 Backend Debug - Enrollment request received for course: ${courseId}`);
+      this.logger.log(`🔍 Backend Debug - courseId type: ${typeof courseId}`);
+      this.logger.log(`🔍 Backend Debug - courseId length: ${courseId?.length}`);
       
       const userId = req.user?.userId || req.user?.sub;
+      this.logger.log(`🔍 Backend Debug - User ID: ${userId}`);
+      
       if (!userId) {
         this.logger.warn('User ID not found in token');
         return {
@@ -116,16 +141,17 @@ export class EnrollmentsController {
         };
       }
 
-      this.logger.log(`Processing enrollment for user ${userId} in course ${courseId}`);
+      this.logger.log(`🔍 Backend Debug - Processing enrollment for user ${userId} in course ${courseId}`);
       
       const result = await this.enrollmentsService.enrollCourse(userId, courseId);
+      this.logger.log(`🔍 Backend Debug - Enrollment result:`, result);
       
       return {
         success: true,
         ...result
       };
     } catch (error) {
-      this.logger.error(`Enrollment failed: ${error.message}`, error.stack);
+      this.logger.error(`🔍 Backend Debug - Enrollment failed: ${error.message}`, error.stack);
       
       // Never return 500 - always return proper JSON response
       return {
@@ -171,6 +197,37 @@ export class EnrollmentsController {
         data: [],
         count: 0,
         message: 'Failed to fetch enrollments',
+        error: error.message
+      };
+    }
+  }
+
+  // 🔥 NEW: Update last accessed endpoint
+  @Post('update-last-accessed')
+  async updateLastAccessed(@Req() req: any) {
+    try {
+      const { courseId } = req.body;
+      const userId = req.user.userId;
+
+      if (!courseId) {
+        return {
+          success: false,
+          message: 'Course ID is required'
+        };
+      }
+
+      await this.enrollmentsService.updateLastAccessed(userId, courseId);
+      
+      return {
+        success: true,
+        message: 'Last accessed updated successfully'
+      };
+    } catch (error) {
+      this.logger.error(`Failed to update last accessed: ${error.message}`);
+      
+      return {
+        success: false,
+        message: 'Failed to update last accessed',
         error: error.message
       };
     }

@@ -78,7 +78,7 @@ export class AssessmentsController {
     return this.assessmentsService.getMySubmission(quizId, req.user);
   }
 
-  // Instructor reviews submission
+  // Trainer reviews submission
   @UseGuards(JwtGuard)
   @Post('submission/:submissionId/review')
   async reviewSubmission(

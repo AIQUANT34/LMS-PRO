@@ -77,6 +77,10 @@ export const useEnrollmentStore = create((set, get) => ({
   },
 
   enroll: async (courseId, courseTitle) => {
+    console.log('🔍 Store Debug - courseId:', courseId);
+    console.log('🔍 Store Debug - courseTitle:', courseTitle);
+    console.log('🔍 Store Debug - typeof courseId:', typeof courseId);
+    
     const currentState = get();
     
     // Prevent double enrollment
@@ -95,11 +99,17 @@ export const useEnrollmentStore = create((set, get) => ({
       }));
 
       const response = await enrollmentService.enroll(courseId);
+      console.log('🔍 Store Debug - API Response:', response);
+      console.log('🔍 Store Debug - Response structure:', {
+        hasData: !!response.data,
+        dataKeys: response.data ? Object.keys(response.data) : 'no data',
+        responseKeys: Object.keys(response)
+      });
       
-      if (response.data.status === 'enrolled_successfully') {
-        // Optimistic update
+      // Handle different response structures
+      if (response.success === true) {
+        // Success case - backend returns { success: true, ... }
         set(state => ({
-          enrolledCourses: [...state.enrolledCourses, response.data.enrollment],
           enrollmentStatus: { ...state.enrollmentStatus, [courseId]: 'enrolled' }
         }));
         
@@ -108,14 +118,12 @@ export const useEnrollmentStore = create((set, get) => ({
         // Refetch all enrollments to ensure consistency
         get().fetchEnrollments();
         
-      } else if (response.data.status === 'already_enrolled') {
-        set(state => ({
-          enrollmentStatus: { ...state.enrollmentStatus, [courseId]: 'enrolled' }
-        }));
-        toast.info('You are already enrolled in this course');
+      } else {
+        // Error case - backend returns { success: false, message: ... }
+        throw new Error(response.message || 'Failed to enroll');
       }
       
-      return response.data;
+      return response;
       
     } catch (error) {
       set(state => ({

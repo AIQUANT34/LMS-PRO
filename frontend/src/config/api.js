@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
     ENROLL: (courseId) => `/enrollments/${courseId}`,
     COMPLETE: '/enrollments/complete',
     MY_COURSES: '/enrollments/my-courses',
+    UPDATE_LAST_ACCESSED: (courseId) => `/enrollments/update-last-accessed`,
   },
   
   // Learning endpoints
@@ -84,6 +85,8 @@ export const API_ENDPOINTS = {
       GET_COURSE_PROGRESS: (courseId) => `/learning/progress/course/${courseId}`,
       VIDEO_PLAYBACK: (lessonId) => `/learning/video/${lessonId}/playback`,
       VIDEO_PROGRESS: (lessonId) => `/learning/video/${lessonId}/progress`,
+      UPDATE_VIDEO_PROGRESS: (lessonId) => `/learning/video/${lessonId}/progress`,
+      STUDENT_COMPLETIONS: '/learning/videohistory/student-completions',
     },
     QUIZ: {
       SUBMIT: (lessonId) => `/learning/quiz/${lessonId}/submit`,
@@ -104,8 +107,14 @@ export const API_ENDPOINTS = {
   
   // Certificate endpoints
   CERTIFICATES: {
+    MY: '/certificates/my',
+    GET: (id) => `/certificates/${id}`,
+    DOWNLOAD: (id) => `/certificates/${id}/download`,
+    SHARE: (id) => `/certificates/${id}/share`,
     APPROVE: (id) => `/certificates/approve/${id}`,
     VERIFY: (reference) => `/certificates/verify/${reference}`,
+    PENDING_APPROVALS: '/certificates/pending-approvals',
+    GENERATE: '/certificates/generate',
   },
   
   // Analytics endpoints

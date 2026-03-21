@@ -75,7 +75,7 @@ export class LectureService {
     }
 
     const updatedLecture = await this.lectureModel
-      .findByIdAndUpdate(id, updateLectureDto, { new: true })
+      .findByIdAndUpdate(id, updateLectureDto, { returnDocument: 'after' })
       .exec();
       
     if (!updatedLecture) {
@@ -153,7 +153,7 @@ export class LectureService {
           resourceFiles: resourceFile,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     ).exec() as Promise<Lecture>;
   }
 
@@ -174,7 +174,7 @@ export class LectureService {
             resourceFiles: { url: fileUrl },
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).exec() as Promise<Lecture>;
   }
 
@@ -193,7 +193,7 @@ export class LectureService {
             'metrics.averageWatchTime': metrics.averageWatchTime,
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       ).exec() as Promise<Lecture>;
   }
 

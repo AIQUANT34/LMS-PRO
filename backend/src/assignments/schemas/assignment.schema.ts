@@ -13,7 +13,7 @@ export class Assignment {
   courseId: string;
 
   @Prop()
-  instructorId: string;
+  trainerId: string;
 
   @Prop()
   dueDate: Date;

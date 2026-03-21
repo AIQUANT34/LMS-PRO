@@ -26,6 +26,9 @@ export class VideoHistory {
   @Prop({ default: false })
   isCompleted: boolean;
 
+  @Prop({ type: Date })
+  completedAt: Date;
+
   @Prop({ default: 'auto' })
   quality: string; // 480p, 720p, 1080p
 

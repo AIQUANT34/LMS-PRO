@@ -53,8 +53,8 @@ export class SubmissionService {
       throw new NotFoundException('Submission not found');
     }
 
-    // Check if user is authorized to grade (instructor or admin)
-    // This would require checking if user is instructor of the course
+    // Check if user is authorized to grade (trainer or admin)
+    // This would require checking if user is trainer of the course
 
     const gradedSubmission = await this.submissionModel.findByIdAndUpdate(
       submissionId,
@@ -64,7 +64,7 @@ export class SubmissionService {
         reviewedAt: new Date(),
         status: 'reviewed',
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     return gradedSubmission;
@@ -84,7 +84,7 @@ export class SubmissionService {
 
     // Check if user is authorized to view this submission
     // Student can only view their own submissions
-    // Instructor can view submissions for their courses
+    // Trainer can view submissions for their courses
 
     return submission;
   }
@@ -103,7 +103,7 @@ export class SubmissionService {
     const updatedSubmission = await this.submissionModel.findByIdAndUpdate(
       submissionId,
       { ...updateData, updatedAt: new Date() },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     return updatedSubmission;

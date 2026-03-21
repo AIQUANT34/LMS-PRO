@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^6.1.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -32,12 +33,15 @@
     "aws-sdk": "^2.1693.0",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
+    "bip39": "^3.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "fs-extra": "^11.3.3",
+    "lucid": "^2.21.0",
+    "lucid-cardano": "^0.10.11",
     "mongoose": "^9.2.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",

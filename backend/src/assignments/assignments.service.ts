@@ -18,7 +18,7 @@ export class AssignmentsService {
     const assignment = await this.assignmentModel
       .findById(assignmentId)
       .populate('courseId', 'title')
-      .populate('instructorId', 'name')
+      .populate('trainerId', 'name')
       .exec();
 
     if (!assignment) {
@@ -31,7 +31,7 @@ export class AssignmentsService {
   async createAssignment(assignmentData: any, user: any) {
     const assignment = await this.assignmentModel.create({
       ...assignmentData,
-      instructorId: user.userId,
+      trainerId: user.userId,
       createdAt: new Date(),
     });
 
@@ -41,7 +41,7 @@ export class AssignmentsService {
   async getCourseAssignments(courseId: string, user: any) {
     const assignments = await this.assignmentModel
       .find({ courseId })
-      .populate('instructorId', 'name')
+      .populate('trainerId', 'name')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -50,7 +50,7 @@ export class AssignmentsService {
 
   async getTrainerAssignments(user: any) {
     const assignments = await this.assignmentModel
-      .find({ instructorId: user.userId })
+      .find({ trainerId: user.userId })
       .populate('courseId', 'title')
       .sort({ createdAt: -1 })
       .exec();
@@ -68,14 +68,14 @@ export class AssignmentsService {
       throw new NotFoundException('Assignment not found');
     }
 
-    if (assignment.instructorId.toString() !== user.userId) {
+    if (assignment.trainerId.toString() !== user.userId) {
       throw new ForbiddenException('Not authorized to update this assignment');
     }
 
     const updatedAssignment = await this.assignmentModel.findByIdAndUpdate(
       assignmentId,
       { ...updateData, updatedAt: new Date() },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     return updatedAssignment;
@@ -88,7 +88,7 @@ export class AssignmentsService {
       throw new NotFoundException('Assignment not found');
     }
 
-    if (assignment.instructorId.toString() !== user.userId) {
+    if (assignment.trainerId.toString() !== user.userId) {
       throw new ForbiddenException('Not authorized to delete this assignment');
     }
 

@@ -24,7 +24,7 @@ export class Certificate {
   completionDate: Date;
 
   @Prop({ required: true })
-  InstructorName: string;
+  trainerName: string;
 
   @Prop()
   certificateUrl: string;
@@ -38,11 +38,18 @@ export class Certificate {
   @Prop({ default: false })
   isApproved: boolean;
 
-  @Prop()
-  blockchainTxId: string;
+  @Prop({ type: String, default: null })
+  blockchainTxId: string | null;
 
   @Prop()
   completionHash: string;
+
+  @Prop({
+    type: String,
+    enum: ['active', 'expired'],
+    default: 'active'
+  })
+  status:string;
 }
 
 export const CertificateSchema = SchemaFactory.createForClass(Certificate);

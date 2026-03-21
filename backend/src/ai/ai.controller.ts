@@ -37,13 +37,33 @@ export class AiController {
 
         Provide a clear, helpful explanation with corporate training focus.
         `;
-    return this.aiService.askGemini(prompt);
+    const aiResponse = await this.aiService.askGemini(prompt, {
+      userId: req.user.userId,
+      userType: req.user.role,
+      aiFeature: 'tutor',
+      courseId: body.courseId,
+      sessionId: `${req.user.userId}-${body.courseId}`,
+    });
+
+    return {
+      success: true,
+      data: {
+        response: aiResponse,
+        suggestions: [
+          'Tell me more about this topic',
+          'Show me practical examples',
+          'Explain this differently',
+          'Create practice exercises'
+        ]
+      }
+    };
   }
 
   @Post('generate-quiz')
   @UseGuards(JwtGuard)
   async generateQuiz(
     @Body() body: { courseName: string; topic: string; context?: string },
+    @Req() req,
   ) {
     const prompt = `
         You are an LMS quiz generator for Corporate Training.
@@ -55,7 +75,12 @@ export class AiController {
         Generate 3 multiple choice questions with 4 options each.
         Format as JSON: { questions: [{ question, options: [A, B, C, D], correctAnswer }] }
         `;
-    return this.aiService.askGemini(prompt);
+    return this.aiService.askGemini(prompt, {
+      userId: req.user.userId,
+      userType: req.user.role,
+      aiFeature: 'quiz',
+      sessionId: `quiz-${req.user.userId}-${Date.now()}`,
+    });
   }
 
   @Post('progress-summary/:employeeId/:courseId')

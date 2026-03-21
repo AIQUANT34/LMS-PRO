@@ -9,9 +9,12 @@ import {
   Req,
   Res,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CertificatesService } from './certificates.service';
 import { JwtGuard } from '../auth/jwt/jwt.guard';
+import { RolesGuard } from '../auth/roles/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator';
 import type { Response } from 'express';
 
 @Controller('certificates')
@@ -22,6 +25,22 @@ export class CertificatesController {
   @UseGuards(JwtGuard)
   async getMyCertificates(@Req() req) {
     return this.certificatesService.getUserCertificates(req.user.userId);
+  }
+
+  @Get('pending-approvals')
+  @UseGuards(JwtGuard)
+  @Roles('trainer', 'admin')
+  async getPendingApprovals(@Req() req) {
+    return this.certificatesService.getPendingApprovals(req.user.userId);
+  }
+
+  @Post('generate')
+  @UseGuards(JwtGuard)
+  async generateCertificate(@Body() data: any, @Req() req) {
+    return this.certificatesService.generateCertificate({
+      ...data,
+      userId: req.user.userId,
+    });
   }
 
   @Get(':id')
@@ -49,8 +68,17 @@ export class CertificatesController {
   }
 
   @Patch('approve/:id')
-  async approveCertificate(@Param('id') id: string) {
-    return this.certificatesService.approveCertificate(id);
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('trainer', 'admin')
+  async approveCertificate(@Param('id') id: string, @Req() req) {
+    return this.certificatesService.approveCertificate(id, req.user.userId);
+  }
+
+  @Post(':id/regenerate')
+  @UseGuards(JwtGuard)
+  @Roles('trainer', 'admin')
+  async regenerateCertificate(@Param('id') id: string) {
+    return this.certificatesService.regenerateCertificatePDF(id);
   }
 
   @Get('verify/:reference')

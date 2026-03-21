@@ -27,6 +27,8 @@ const useAuthStore = create(
             const { user, token } = response;
             console.log('Frontend extracted user data:', user);
             console.log('Frontend extracted token:', token);
+            console.log('Frontend isVerifiedTrainer:', user.isVerifiedTrainer);
+            console.log('Frontend trainerRequest:', user.trainerRequest);
             
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));

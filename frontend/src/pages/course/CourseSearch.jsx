@@ -36,7 +36,6 @@ import {
   TableCellsIcon,
   ChartPieIcon,
   ChartBarIcon,
-  CubeIcon,
   CircleStackIcon,
   ArchiveBoxIcon,
   InboxIcon,
@@ -84,7 +83,7 @@ const CourseSearch = () => {
       id: 1,
       title: 'Advanced React Patterns',
       description: 'Master advanced React patterns and techniques for building scalable applications',
-      instructor: {
+      trainer: {
         id: 1,
         name: 'John Smith',
         email: 'john.smith@example.com',
@@ -112,7 +111,7 @@ const CourseSearch = () => {
       id: 2,
       title: 'UI/UX Design Fundamentals',
       description: 'Learn the fundamentals of user interface and user experience design',
-      instructor: {
+      trainer: {
         id: 2,
         name: 'Sarah Johnson',
         email: 'sarah.johnson@example.com',
@@ -140,7 +139,7 @@ const CourseSearch = () => {
       id: 3,
       title: 'Digital Marketing Mastery',
       description: 'Complete guide to digital marketing strategies and techniques',
-      instructor: {
+      trainer: {
         id: 3,
         name: 'Mike Wilson',
         email: 'mike.wilson@example.com',
@@ -174,7 +173,7 @@ const CourseSearch = () => {
         const results = mockCourses.filter(course =>
           course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.instructor.name.toLowerCase().includes(searchQuery.toLowerCase())
+          course.trainer.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setSearchResults(results);
         setIsLoading(false);

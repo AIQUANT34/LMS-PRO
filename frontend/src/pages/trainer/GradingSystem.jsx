@@ -54,7 +54,6 @@ const GradingSystem = () => {
           const assignmentResponse = await apiService.get(API_ENDPOINTS.TRAINER.ASSIGNMENTS.GET_BY_ID(assignmentId));
           assignmentData = assignmentResponse.data;
         } catch (assignmentError) {
-          console.warn('Assignment data not available:', assignmentError);
         }
         
         // Fetch submissions for this assignment
@@ -63,7 +62,6 @@ const GradingSystem = () => {
           const submissionsResponse = await apiService.get(`/api/assignments/${assignmentId}/submissions`);
           submissionsData = submissionsResponse.data?.submissions || [];
         } catch (submissionsError) {
-          console.warn('Submissions data not available:', submissionsError);
         }
         
         // Calculate stats from real data
@@ -80,7 +78,6 @@ const GradingSystem = () => {
         setSubmissions(submissionsData);
         setStats(statsData);
       } catch (error) {
-        console.error('Failed to fetch grading data:', error);
         setError('Failed to load grading data');
         toast.error('Failed to load grading data');
         

@@ -18,7 +18,7 @@ async function migrateTrainerFields() {
       console.log(`\nProcessing user: ${user.email}`);
       console.log('Current fields:', {
         isVerifiedTrainer: user.isVerifiedTrainer,
-        isVerifiedInstructor: user.isVerifiedInstructor,
+        isVerifiedTrainer: user.isVerifiedInstructor,
         trainerRequest: user.trainerRequest,
         instructorRequest: user.instructorRequest
       });
@@ -28,7 +28,7 @@ async function migrateTrainerFields() {
       // Migrate from old field names if they exist
       if (user.isVerifiedInstructor !== undefined && user.isVerifiedTrainer === undefined) {
         updateData.isVerifiedTrainer = user.isVerifiedInstructor;
-        updateData.$unset = { isVerifiedInstructor: 1 };
+        updateData.$unset = { isVerifiedTrainer: 1 };
         console.log(`Migrating isVerifiedInstructor (${user.isVerifiedInstructor}) -> isVerifiedTrainer`);
       }
 

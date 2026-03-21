@@ -22,13 +22,11 @@ import {
   VideoCameraIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
-
+import { useAuthStore } from '../../store/authStore';
+import { useEnrollmentStore } from '../../store/enrollmentStore';
 import {
   StarIcon as StarIconSolid
 } from '@heroicons/react/24/solid';
-import { useAuthStore } from '../../store/authStore';
-import { useEnrollmentStore } from '../../store/enrollmentStore';
-import { API_ENDPOINTS } from '../../config/api';
 import toast from 'react-hot-toast';
 
 const CourseMarketplace = () => {
@@ -40,9 +38,7 @@ const CourseMarketplace = () => {
     isLoading,
     enrolledCourses 
   } = useEnrollmentStore();
-  const [programs, setPrograms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
@@ -51,139 +47,112 @@ const CourseMarketplace = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [wishlist, setWishlist] = useState(new Set());
   const [enrollingPrograms, setEnrollingPrograms] = useState(new Set());
+  const [programs, setPrograms] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   // Fetch training programs from API
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
         setLoading(true);
         
-        // Try to fetch from backend, fallback to mock data if API fails
-        let response;
-        try {
-          response = await apiService.get(API_ENDPOINTS.COURSES.GET_ALL);
-        } catch (apiError) {
-          console.log('Backend API not available, using mock data:', apiError.message);
-          // Mock data for demonstration
-          response = {
-            courses: [
-              {
-                _id: '1',
-                title: 'Complete React Developer Course',
-                description: 'Master React from basics to advanced concepts including hooks, context, and best practices.',
-                category: 'development',
-                level: 'intermediate',
-                instructorId: { 
-                  name: 'John Smith',
-                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EJS%3C/text%3E%3C/svg%3E'
-                },
-                ratings: { average: 4.8, count: 1250 },
-                enrollmentCount: 1250,
-                originalPrice: 89.99,
-                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EReact Course%3C/text%3E%3C/svg%3E',
-                duration: '12 hours',
-                totalLessons: 48,
-                updatedAt: '2024-03-01'
-              },
-              {
-                _id: '2',
-                title: 'UI/UX Design Fundamentals',
-                description: 'Learn the principles of user interface and user experience design from scratch.',
-                category: 'design',
-                level: 'beginner',
-                instructorId: { 
-                  name: 'Sarah Johnson',
-                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EUX%3C/text%3E%3C/svg%3E'
-                },
-                ratings: { average: 4.9, count: 890 },
-                enrollmentCount: 890,
-                originalPrice: 69.99,
-                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EUI/UX Design%3C/text%3E%3C/svg%3E',
-                duration: '8 hours',
-                totalLessons: 32,
-                updatedAt: '2024-03-05'
-              },
-              {
-                _id: '3',
-                title: 'Node.js Backend Development',
-                description: 'Build scalable backend applications with Node.js, Express, and MongoDB.',
-                category: 'development',
-                level: 'advanced',
-                instructorId: { 
-                  name: 'Michael Chen',
-                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3ENode%3C/text%3E%3C/svg%3E'
-                },
-                ratings: { average: 4.7, count: 650 },
-                enrollmentCount: 650,
-                originalPrice: 99.99,
-                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3ENode.js Backend%3C/text%3E%3C/svg%3E',
-                duration: '16 hours',
-                totalLessons: 64,
-                updatedAt: '2024-03-10'
-              },
-              {
-                _id: '4',
-                title: 'Digital Marketing Mastery',
-                description: 'Complete guide to digital marketing including SEO, social media, and content strategy.',
-                category: 'marketing',
-                level: 'intermediate',
-                instructorId: { 
-                  name: 'Emily Davis',
-                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EMKT%3C/text%3E%3C/svg%3E'
-                },
-                ratings: { average: 4.6, count: 430 },
-                enrollmentCount: 430,
-                originalPrice: 79.99,
-                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EDigital Marketing%3C/text%3E%3C/svg%3E',
-                duration: '10 hours',
-                totalLessons: 40,
-                updatedAt: '2024-03-08'
-              },
-              {
-                _id: '5',
-                title: 'Python for Data Science',
-                description: 'Learn Python programming with focus on data analysis, machine learning, and visualization.',
-                category: 'data-science',
-                level: 'intermediate',
-                instructorId: { 
-                  name: 'Dr. Robert Kim',
-                  avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Crect fill="%23e5e7eb" width="40" height="40"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="10" font-family="Arial"%3EPY%3C/text%3E%3C/svg%3E'
-                },
-                ratings: { average: 4.9, count: 780 },
-                enrollmentCount: 780,
-                originalPrice: 119.99,
-                thumbnail: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"%3E%3Crect fill="%23f3f4f6" width="400" height="250"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="16" font-family="Arial"%3EPython Data Science%3C/text%3E%3C/svg%3E',
-                duration: '20 hours',
-                totalLessons: 80,
-                updatedAt: '2024-03-12'
-              }
-            ]
-          };
+        // Fetch real courses data from backend
+        const response = await apiService.get(API_ENDPOINTS.COURSES.GET_ALL);
+        
+        if (!response || !response.courses) {
+          throw new Error('Invalid response from courses API');
         }
         
-        // Transform backend data to frontend format
-        const transformedPrograms = (response.courses || []).map(course => ({
-          id: course._id,
-          title: course.title,
-          description: course.description,
-          category: course.category,
-          level: course.level,
-          trainer: course.instructorId?.name || 'Expert Instructor',
-          trainerAvatar: course.instructorId?.avatar || 'https://via.placeholder.com/40x40',
-          rating: course.ratings?.average || 0,
-          reviews: course.ratings?.count || 0,
-          employees: course.enrollmentCount || 0,
-          price: course.originalPrice || 0,
-          originalPrice: course.originalPrice || 0,
-          image: course.thumbnail || 'https://via.placeholder.com/400x250',
-          duration: course.duration || '10 hours',
-          lessons: course.totalLessons || 0,
-          language: 'English',
-          lastUpdated: course.updatedAt,
-          bestseller: course.enrollmentCount > 100,
-          hot: course.enrollmentCount > 50,
-          featured: course.enrollmentCount > 200
-        }));
+        // Transform backend data to frontend format with lesson fetching
+        const transformedPrograms = await Promise.all(
+          (response.courses || []).map(async (course) => {
+            console.log('🔍 CourseMarketplace Debug - Processing course:', {
+              _id: course._id,
+              title: course.title,
+              typeof_id: typeof course._id
+            });
+            
+            try {
+              // Fetch actual lessons data for accurate lesson count
+              const lessonsResponse = await apiService.get(API_ENDPOINTS.LEARNING.LESSONS.GET_BY_COURSE(course._id));
+              const lessons = lessonsResponse?.data?.lessons || lessonsResponse?.lessons || [];
+              
+              // Calculate actual lesson count
+              const lessonCount = lessons.length;
+              
+              const transformedCourse = {
+                id: course._id,
+                title: course.title,
+                description: course.description,
+                category: course.category,
+                level: course.level,
+                trainer: course.trainerId?.name || 'Expert Instructor',
+                trainerAvatar: course.trainerId?.avatar || 'https://via.placeholder.com/40x40',
+                rating: course.ratings?.average || 0,
+                reviews: course.ratings?.count || 0,
+                employees: course.enrollmentCount || 0,
+                price: course.originalPrice || 0,
+                originalPrice: course.originalPrice || 0,
+                image: course.thumbnail || 'https://via.placeholder.com/400x250',
+                duration: course.duration || '10 hours',
+                lessons: lessonCount, // Use actual lesson count
+                language: 'English',
+                lastUpdated: course.updatedAt,
+                bestseller: course.enrollmentCount > 100,
+                hot: course.enrollmentCount > 50,
+                featured: course.enrollmentCount > 200
+              };
+              
+              console.log('🔍 CourseMarketplace Debug - Transformed course:', {
+                id: transformedCourse.id,
+                typeof_id: typeof transformedCourse.id,
+                title: transformedCourse.title
+              });
+              
+              return transformedCourse;
+            } catch (lessonError) {
+              console.log('🔍 CourseMarketplace Debug - Lesson fetch failed for course:', course._id);
+              
+              // Fallback to course.totalLessons if lesson fetching fails
+              const fallbackCourse = {
+                id: course._id,
+                title: course.title,
+                description: course.description,
+                category: course.category,
+                level: course.level,
+                trainer: course.  trainerId?.name || 'Expert Instructor',
+                trainerAvatar: course.trainerId?.avatar || 'https://via.placeholder.com/40x40',
+                rating: course.ratings?.average || 0,
+                reviews: course.ratings?.count || 0,
+                employees: course.enrollmentCount || 0,
+                price: course.originalPrice || 0,
+                originalPrice: course.originalPrice || 0,
+                image: course.thumbnail || 'https://via.placeholder.com/400x250',
+                duration: course.duration || '10 hours',
+                lessons: course.totalLessons || 0, // Fallback to totalLessons
+                language: 'English',
+                lastUpdated: course.updatedAt,
+                bestseller: course.enrollmentCount > 100,
+                hot: course.enrollmentCount > 50,
+                featured: course.enrollmentCount > 200
+              };
+              
+              console.log('🔍 CourseMarketplace Debug - Fallback course:', {
+                id: fallbackCourse.id,
+                typeof_id: typeof fallbackCourse.id,
+                title: fallbackCourse.title
+              });
+              
+              return fallbackCourse;
+            }
+          })
+        );
+        console.log('🔍 CourseMarketplace Debug - Final programs array:', transformedPrograms.map(p => ({
+          id: p.id,
+          typeof_id: typeof p.id,
+          title: p.title
+        })));
         setPrograms(transformedPrograms);
         setLoading(false);
         
@@ -198,8 +167,12 @@ const CourseMarketplace = () => {
         }
       } catch (err) {
         console.error('Failed to load courses:', err);
-        setError('Failed to load courses');
+        setError('Failed to load courses. Please try again later.');
+        toast.error('Failed to load courses');
         setLoading(false);
+        
+        // Set empty state on error
+        setPrograms([]);
       }
     };
 
@@ -254,6 +227,10 @@ const CourseMarketplace = () => {
   };
 
   const handleEnrollProgram = async (programId, programTitle) => {
+    console.log('🔍 Enrollment Debug - programId:', programId);
+    console.log('🔍 Enrollment Debug - programTitle:', programTitle);
+    console.log('🔍 Enrollment Debug - typeof programId:', typeof programId);
+    
     if (!isAuthenticated) {
       toast.error('Please login to enroll in programs');
       return;
@@ -261,13 +238,21 @@ const CourseMarketplace = () => {
 
     try {
       await enroll(programId, programTitle);
+      toast.success('Enrolled successfully!');
       
       // Optimistic UI update - button will automatically update via store
       
     } catch (error) {
       console.error('Enrollment error:', error);
+      toast.error('Enrollment failed!');
       // Error handling is done in the store
     }
+  };
+
+  const handleContinueLearning = (courseId) => {
+    console.log('🔍 Continue Learning - courseId:', courseId);
+    // Navigate to the student course learning page
+    navigate(`/student/courses/${courseId}/lesson`);
   };
 
   const filteredPrograms = programs.filter(program => {
@@ -414,32 +399,33 @@ const CourseMarketplace = () => {
               ${program.price}
             </span>
           </div>
-          <button 
-            onClick={() => handleEnrollProgram(program.id, program.title)}
-            disabled={isLoading(program.id)}
-            className={`btn-premium text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
-              isEnrolled(program.id) 
-                ? 'bg-green-600 hover:bg-green-700' 
-                : 'bg-purple-600 hover:bg-purple-700'
-            }`}
-          >
-            {isLoading(program.id) ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Enrolling...
-              </span>
-            ) : isEnrolled(program.id) ? (
-              <span className="flex items-center">
-                <CheckCircleIcon className="w-4 h-4 mr-2" />
-                Continue Learning
-              </span>
-            ) : (
-              'Enroll Now'
-            )}
-          </button>
+          {isEnrolled(program.id) ? (
+            <button 
+              onClick={() => handleContinueLearning(program.id)}
+              className="btn-premium text-sm bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircleIcon className="w-4 h-4 mr-2" />
+              Continue Learning
+            </button>
+          ) : (
+            <button 
+              onClick={() => handleEnrollProgram(program.id, program.title)}
+              disabled={isLoading(program.id)}
+              className="btn-premium text-sm bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading(program.id) ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Enrolling...
+                </span>
+              ) : (
+                'Enroll Now'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
@@ -587,14 +573,32 @@ const CourseMarketplace = () => {
               </div>
             </div>
 
-            {/* Program Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedPrograms.map((program, index) => (
-                <ProgramCard key={program.id} program={program} index={index} />
-              ))}
-            </div>
+            {/* Error Display */}
+            {error && (
+              <div className="text-center py-12">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                  <h3 className="text-lg font-semibold text-red-900 mb-2">Error Loading Courses</h3>
+                  <p className="text-red-700 mb-4">{error}</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="btn-premium"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
 
-            {sortedPrograms.length === 0 && (
+            {/* Program Grid */}
+            {!error && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedPrograms.map((program, index) => (
+                  <ProgramCard key={program.id} program={program} index={index} />
+                ))}
+              </div>
+            )}
+
+            {!error && sortedPrograms.length === 0 && (
               <div className="text-center py-12">
                 <BookOpenIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">

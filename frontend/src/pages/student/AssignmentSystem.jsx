@@ -139,7 +139,7 @@ const StudentAssignmentSystem = () => {
                 </div>
                 <div className="flex items-center text-gray-600">
                   <UserIcon className="h-5 w-5 mr-2" />
-                  <span>Instructor: {assignment?.instructorName || course?.instructorId?.name || 'Not specified'}</span>
+                  <span>Trainer: {assignment?.instructorName || course?.trainerId?.name || 'Not specified'}</span>
                 </div>
               </div>
             </div>

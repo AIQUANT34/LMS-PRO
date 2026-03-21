@@ -10,6 +10,7 @@ import { Course, CourseDocument } from './schemas/course.schema';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
+import { Lesson, LessonDocument } from '../learning/schemas/lesson.schema';
 import { CreateCourseDto, UpdateCourseDto } from './dto/course.dto';
 
 @Injectable()
@@ -19,7 +20,10 @@ export class CoursesService {
     private courseModel: Model<CourseDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Lesson.name)
+    private lessonModel: Model<LessonDocument>,
   ) {}
+
 
   //trainer control logic: check if user is trainer for a course
   async isTrainer(courseId: string, user: any): Promise<boolean> {
@@ -118,7 +122,7 @@ export class CoursesService {
     const updatedCourse = await this.courseModel.findByIdAndUpdate(
       courseId,
       { ...data },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     return {
@@ -264,6 +268,17 @@ export class CoursesService {
   }
 
   async getCourseById(courseId: string, user?: any) {
+    // 🔥 FIX: Validate courseId before database query
+    if (!courseId || courseId === 'undefined' || courseId === 'null') {
+      throw new BadRequestException('Invalid course ID provided');
+    }
+
+    // Validate ObjectId format
+    const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!objectIdRegex.test(courseId)) {
+      throw new BadRequestException('Invalid course ID format');
+    }
+
     const course = await this.courseModel
       .findById(courseId)
       .populate('trainerId', 'name email');
@@ -305,4 +320,34 @@ export class CoursesService {
       message: 'Course deleted successfully',
     };
   }
+
+  async publishCourse(courseId: string, user: any) {
+  const course = await this.courseModel.findById(courseId);
+
+  if (!course) {
+    throw new NotFoundException('Course not found');
+  }
+
+  // Only trainer or admin can publish
+  if (
+    course.trainerId.toString() !== user.userId &&
+    user.role !== 'admin'
+  ) {
+    throw new ForbiddenException('You can only publish your own courses');
+  }
+
+  course.status = 'published'; // or isPublished = true (based on your schema)
+
+  await course.save();
+
+  await this.lessonModel.updateMany(
+    { courseId },
+    { isPublished: true }
+  )
+
+  return {
+    message: 'Course published successfully',
+    course,
+  };
+}
 }

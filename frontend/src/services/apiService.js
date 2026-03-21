@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: getAuthHeaders(),
 });
+console.log('API_BASE_URL:', API_BASE_URL);
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
@@ -73,8 +74,37 @@ export const apiService = {
       console.log('Config:', config);
       
       const response = await api.post(endpoint, data, config);
-      console.log('Response:', response.data);
-      return response.data;
+      console.log('Raw axios response:', response);
+      console.log('Response status:', response.status);
+      console.log('Response data:', response.data);
+      console.log('Response headers:', response.headers);
+      
+      // Handle different response structures
+      if (response.data) {
+        console.log('Returning response.data:', response.data);
+        return response.data;
+      } else if (response) {
+        console.log('Returning raw response:', response);
+        // If response is a string, wrap it in the expected format
+        if (typeof response === 'string') {
+          return {
+            success: true,
+            data: {
+              response: response,
+              suggestions: [
+                'Tell me more about this topic',
+                'Show me practical examples',
+                'Explain this differently',
+                'Create practice exercises'
+              ]
+            }
+          };
+        }
+        return response;
+      } else {
+        console.log('No response data available');
+        return null;
+      }
     } catch (error) {
       console.error(`POST Error for ${endpoint}:`, error);
       throw error;
@@ -124,18 +154,6 @@ export const apiService = {
       throw error;
     }
   },
-
-  // POST request
-  post: async (url, data = {}, config = {}) => {
-    try {
-      const response = await api.post(url, data, config);
-      return response.data;
-    } catch (error) {
-      console.error('POST Error:', error);
-      throw error;
-    }
-  },
-
   // PUT request
   put: async (url, data = {}, config = {}) => {
     try {

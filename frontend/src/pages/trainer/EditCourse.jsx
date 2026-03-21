@@ -288,16 +288,10 @@ const EditCourse = () => {
 
   // Fetch course data on component mount
   useEffect(() => {
-    console.log('🚀 EDIT COURSE COMPONENT MOUNTED');
-    console.log('📍 Course ID from params:', courseId);
-    console.log('🔍 API_ENDPOINTS available:', API_ENDPOINTS);
-    console.log('📡 GET_TRAINER_COURSES endpoint:', API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
 
     const fetchCourseData = async () => {
-      console.log('📥 STARTING FETCH COURSE DATA');
       
       if (!courseId) {
-        console.error('❌ No course ID provided');
         toast.error('No course ID provided');
         navigate('/trainer/courses', { state: { refresh: true } });
         return;
@@ -305,96 +299,55 @@ const EditCourse = () => {
 
       try {
         setIsLoading(true);
-        console.log('⏳ Loading state set to true');
         
         // Method 1: Try trainer courses list first (most reliable)
         let course = null;
-        console.log('🔄 Method 1: Trying trainer courses list');
         
         try {
-          console.log('📡 Making API call to:', API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
           const trainerResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
-          console.log('✅ Trainer API response received:', trainerResponse);
-          console.log('📊 Full response structure:', JSON.stringify(trainerResponse, null, 2));
           
           // Handle different response structures (same as MyCourses)
           let coursesData = [];
           if (trainerResponse && trainerResponse.data && trainerResponse.data.courses) {
             coursesData = trainerResponse.data.courses;
-            console.log('� Using response.data.courses');
           } else if (trainerResponse && trainerResponse.courses) {
             coursesData = trainerResponse.courses;
-            console.log('📋 Using response.courses');
           } else if (trainerResponse && Array.isArray(trainerResponse.data)) {
             coursesData = trainerResponse.data;
-            console.log('📋 Using response.data as array');
           } else if (Array.isArray(trainerResponse)) {
             coursesData = trainerResponse;
-            console.log('📋 Using response as array');
           } else {
-            console.warn('⚠️ Unexpected response structure:', trainerResponse);
             coursesData = [];
           }
           
-          console.log('📚 Final courses data:', coursesData);
-          console.log('📊 Courses data length:', coursesData.length);
           
           if (coursesData.length > 0) {
-            console.log('🔍 Searching for course with ID:', courseId);
-            console.log('📋 Available courses:', coursesData.map(c => ({
-              _id: c._id,
-              id: c.id,
-              title: c.title
-            })));
             
             course = coursesData.find(c => 
               c._id === courseId || c.id === courseId
             );
-            console.log('🎯 Course found in trainer list:', course);
           } else {
-            console.log('⚠️ No courses found in trainer response');
           }
         } catch (trainerError) {
-          console.error('❌ Trainer courses endpoint failed:', trainerError);
-          console.error('🔍 Error details:', {
-            message: trainerError.message,
-            status: trainerError.response?.status,
-            statusText: trainerError.response?.statusText,
-            data: trainerError.response?.data
-          });
         }
 
         // Method 2: Fallback to direct course endpoint
         if (!course) {
-          console.log('🔄 Method 2: Trying direct course endpoint');
-          console.log('📡 Making API call to:', API_ENDPOINTS.COURSES.GET_BY_ID(courseId));
           
           try {
             const directResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_BY_ID(courseId));
-            console.log('✅ Direct API response received:', directResponse);
             course = directResponse?.data?.course || directResponse?.data;
-            console.log('🎯 Course found via direct endpoint:', course);
           } catch (directError) {
-            console.error('❌ Direct endpoint failed:', directError);
-            console.error('🔍 Error details:', {
-              message: directError.message,
-              status: directError.response?.status,
-              statusText: directError.response?.statusText,
-              data: directError.response?.data
-            });
           }
         }
 
-        console.log('🏁 Final course data:', course);
 
         if (!course) {
-          console.error('❌ No course data found with any method');
           toast.error('Course not found or access denied');
           navigate('/trainer/courses', { state: { refresh: true } });
           return;
         }
 
-        console.log('✅ Course data loaded successfully');
         setCourseData(course);
         
         // Set form data with course values
@@ -412,19 +365,15 @@ const EditCourse = () => {
           isPublic: course.isPublic !== false
         };
         
-        console.log('📝 Setting form data:', formDataToSet);
         setFormData(formDataToSet);
 
         // Set modules if available
         if (course.modules && Array.isArray(course.modules)) {
-          console.log('📚 Setting modules from course data:', course.modules);
           setModules(course.modules);
         } else {
           // Try to fetch curriculum data separately
           try {
-            console.log('🔄 Fetching curriculum data separately...');
             const curriculumResponse = await apiService.get(API_ENDPOINTS.LEARNING.LESSONS.GET_BY_COURSE(courseId));
-            console.log('📚 Curriculum response:', curriculumResponse);
             
             if (curriculumResponse.data && curriculumResponse.data.lessons) {
               // Group lessons by modules and clean them
@@ -453,21 +402,17 @@ const EditCourse = () => {
               });
               
               const fetchedModules = Object.values(lessonsByModule);
-              console.log('📚 Processed modules from lessons:', fetchedModules);
               setModules(fetchedModules);
             }
           } catch (curriculumError) {
-            console.log('📚 No curriculum data found, starting with empty modules');
             setModules([]);
           }
         }
 
       } catch (error) {
-        console.error('💥 Fatal error in fetchCourseData:', error);
         toast.error('Failed to load course data');
         navigate('/trainer/courses', { state: { refresh: true } });
       } finally {
-        console.log('🏁 Loading state set to false');
         setIsLoading(false);
       }
     };
@@ -519,18 +464,13 @@ const EditCourse = () => {
         // Remove isPublic and modules as backend doesn't expect them
       };
 
-      console.log('💾 Saving course data (cleaned):', courseDataToSave);
-      console.log('📡 API endpoint:', API_ENDPOINTS.COURSES.UPDATE(courseId));
-      console.log('🔗 Course ID being used:', courseId);
 
       const response = await apiService.put(API_ENDPOINTS.COURSES.UPDATE(courseId), courseDataToSave);
       
-      console.log('✅ Course data saved:', response);
       
       // Step 2: Save curriculum data (modules and lessons)
       if (modules && modules.length > 0) {
         try {
-          console.log('📚 Saving curriculum data:', modules);
           
           // Check if there are any lessons with actual content
           const lessonsWithContent = modules.flatMap(module => 
@@ -538,14 +478,12 @@ const EditCourse = () => {
           );
           
           if (lessonsWithContent.length === 0) {
-            console.log('⚠️ No lessons with content found, skipping lesson saving');
             toast.warning('Course saved, but no lessons to save. Please add lesson content before publishing.');
             return;
           }
           
           // Skip course update with lessons (backend rejects modules field)
           // Go directly to individual lesson creation
-          console.log('🔄 Creating lessons individually...');
           
           // Try individual lesson endpoints
           let lessonSaveSuccess = true;
@@ -560,14 +498,11 @@ const EditCourse = () => {
                 moduleId: module.id || 'default_module'
               }, status);
               
-              console.log('📝 Sending cleaned lesson data:', lessonData);
               
               try {
                 if (lesson.id.startsWith('lesson_')) {
                   // This is a new lesson created in frontend - create new lesson
-                  console.log('Creating new lesson:', lesson.title);
                   const response = await apiService.post(API_ENDPOINTS.LEARNING.LESSONS.CREATE(courseId), lessonData);
-                  console.log('Lesson created successfully:', response);
                   
                   // Update the lesson ID with the backend-generated ID
                   let newLessonId = null;
@@ -587,7 +522,6 @@ const EditCourse = () => {
                   
                   if (newLessonId && isValidObjectId(newLessonId)) {
                     lesson.id = newLessonId;
-                    console.log('Updated lesson ID to:', newLessonId);
                     savedLessons++;
                     
                     // Update the lesson in the local state to reflect the backend changes
@@ -606,29 +540,17 @@ const EditCourse = () => {
                       )
                     );
                   } else {
-                    console.warn('Invalid lesson ID received from backend:', newLessonId);
-                    // Still count as success since lesson was created, even if we can't get the ID
                     savedLessons++;
                   }
                 } else if (isValidObjectId(lesson.id)) {
                   // This is an existing lesson with valid MongoDB ObjectId - update it
-                  console.log('Updating existing lesson:', lesson.id);
                   await apiService.put(API_ENDPOINTS.LEARNING.LESSONS.UPDATE(lesson.id), lessonData);
-                  console.log('Lesson updated successfully');
                   savedLessons++;
                 } else {
                   // Invalid ID format, skip this lesson
-                  console.warn('Skipping lesson with invalid ID format:', lesson.id);
                   failedLessons++;
                 }
               } catch (lessonError) {
-                console.error('Failed to save lesson:', lessonError);
-                console.error('Lesson data that failed:', lessonData);
-                console.error('Error details:', {
-                  status: lessonError.response?.status,
-                  statusText: lessonError.response?.statusText,
-                  data: lessonError.response?.data
-                });
                 toast.error(`Failed to save lesson: ${lesson.title || 'Untitled'}`);
                 lessonSaveSuccess = false;
                 failedLessons++;
@@ -638,26 +560,16 @@ const EditCourse = () => {
           }
           
           if (lessonSaveSuccess && savedLessons > 0) {
-            console.log('✅ Curriculum data saved successfully');
             toast.success(`Successfully saved ${savedLessons} lesson${savedLessons > 1 ? 's' : ''}`);
           } else if (savedLessons > 0 && failedLessons > 0) {
-            console.log('⚠️ Some lessons saved, some failed');
             toast.warning(`Saved ${savedLessons} lesson${savedLessons > 1 ? 's' : ''}, ${failedLessons} failed`);
           } else {
-            console.log('❌ No lessons were saved');
             toast.error('Failed to save any lessons');
           }
         } catch (curriculumError) {
-          console.error('Curriculum save failed:', curriculumError);
-          console.error('Curriculum error details:', {
-            status: curriculumError.response?.status,
-            statusText: curriculumError.response?.statusText,
-            data: curriculumError.response?.data
-          });
           
           // Check if it's a 500 error (server issue) or 404 (endpoint not found)
           if (curriculumError.response?.status >= 500 || curriculumError.response?.status === 404) {
-            console.warn('Backend lesson endpoint not available, saving course only');
             toast.warning('Course saved successfully! However, lesson saving failed due to server issues. You can add lessons later when the backend is available.', {
               duration: 5000
             });
@@ -666,7 +578,6 @@ const EditCourse = () => {
           }
         }
       } else {
-        console.log('ℹ️ No modules to save');
         toast.success('Course saved successfully!');
       }
       
@@ -688,30 +599,6 @@ const EditCourse = () => {
       }
       
     } catch (error) {
-      console.error('💥 Failed to save course:', error);
-      console.error('🔍 Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
-      });
-      
-      // Log the actual error response data
-      if (error.response?.data) {
-        console.error('🚫 Backend error message:', JSON.stringify(error.response.data, null, 2));
-        console.error('📝 Full error object:', error.response.data);
-        
-        // Check for specific error fields
-        if (error.response.data.message) {
-          console.error('💬 Error message:', error.response.data.message);
-        }
-        if (error.response.data.error) {
-          console.error('⚠️ Error details:', error.response.data.error);
-        }
-        if (error.response.data.validationErrors) {
-          console.error('🔍 Validation errors:', error.response.data.validationErrors);
-        }
-      }
       toast.error('Failed to save course');
     } finally {
       setIsSaving(false);
@@ -763,16 +650,33 @@ const EditCourse = () => {
     };
   };
 
-  const handlePublish = async () => {
-    const validation = getPublishValidationStatus();
-    
-    if (!validation.isReady) {
-      toast.error('Please fix all issues before publishing');
-      return;
-    }
-    
-    await handleSave('published');
-  };
+ const handlePublish = async () => {
+  const validation = getPublishValidationStatus();
+
+  if (!validation.isReady) {
+    toast.error('Please fix all issues before publishing');
+    return;
+  }
+
+  try {
+    setIsSaving(true);
+
+    // Step 1: Save everything first
+    await handleSave();
+
+    // Step 2: Call publish API
+    await apiService.patch(
+      `/courses/${courseId}/publish`
+    );
+
+    toast.success('Course published successfully 🚀');
+
+  } catch (error) {
+    toast.error('Failed to publish course');
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   if (isLoading) {
     return (

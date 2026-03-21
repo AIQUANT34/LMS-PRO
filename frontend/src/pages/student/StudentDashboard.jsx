@@ -24,12 +24,15 @@ import {
   StarIcon,
   CurrencyDollarIcon,
   UsersIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  ArrowDownTrayIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import { useEnrollmentStore } from '../../store/enrollmentStore';
 import { apiService } from '../../services/apiService';
 import { aiService } from '../../services/aiService';
+import { API_ENDPOINTS } from '../../config/api';
 import ProfilePictureUpload from '../../components/common/ProfilePictureUpload';
 
 const StudentDashboard = () => {
@@ -48,6 +51,7 @@ const StudentDashboard = () => {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiResponse, setAiResponse] = useState('');
+  const [downloadingCertificate, setDownloadingCertificate] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [progressSummary, setProgressSummary] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,7 +61,9 @@ const StudentDashboard = () => {
     const path = location.pathname;
     if (path.includes('/student/dashboard')) return 'overview';
     if (path.includes('/student/courses')) return 'courses';
+    if (path.includes('/student/certificates')) return 'certificates';
     if (path.includes('/student/achievements')) return 'achievements';
+    if (path.includes('/student/trainer-application')) return 'trainer-application';
     if (path.includes('/student/ai-assistant')) return 'ai-assistant';
     return 'overview';
   };
@@ -73,12 +79,67 @@ const StudentDashboard = () => {
       // Fetch real data using enrollment store
       await fetchEnrollments();
       
-      // Don't calculate stats here - wait for enrolledCourses to update
-      // The stats will be calculated in the useEffect below
+      // Load completed courses from videohistory database
+      await loadCompletedCoursesFromVideoHistory();
+      
       setLoading(false);
     } catch (err) {
       setError('Failed to load dashboard data');
       setLoading(false);
+    }
+  };
+
+  // Load completed courses from videohistory database
+  const loadCompletedCoursesFromVideoHistory = async () => {
+    try {
+      console.log('🎯 Loading completed courses from videohistory database');
+      
+      // Try to fetch from backend API
+      try {
+        const response = await apiService.get('/learning/videohistory/completed-courses');
+        console.log('🎯 Completed courses from backend:', response.data);
+        
+        if (response.data && response.data.completedCourses) {
+          // Update enrolled courses with completion data
+          const updatedCourses = enrolledCourses.map(course => {
+            const completionData = response.data.completedCourses.find(c => c.courseId === course._id);
+            return {
+              ...course,
+              progress: completionData?.courseProgress || course.progress || 0,
+              isCompleted: completionData?.isCourseCompleted || course.progress >= 100,
+              completedAt: completionData?.lastCompletedAt || course.completedAt,
+              completedLessons: completionData?.completedLessons || course.completedLessons || []
+            };
+          });
+          
+          // Update the enrollment store with completed courses
+          // This would require updating the store, for now we'll use localStorage
+          localStorage.setItem('completedCourses', JSON.stringify(response.data.completedCourses));
+        }
+      } catch (apiError) {
+        console.log('🎯 Backend API not available, loading from localStorage');
+        
+        // Fallback to localStorage
+        const savedCompletedCourses = localStorage.getItem('completedCourses');
+        if (savedCompletedCourses) {
+          const completedCourses = JSON.parse(savedCompletedCourses);
+          console.log('🎯 Loaded completed courses from localStorage:', completedCourses);
+          
+          // Update enrolled courses with completion data
+          const updatedCourses = enrolledCourses.map(course => {
+            const completionData = completedCourses.find(c => c.courseId === course._id);
+            return {
+              ...course,
+              progress: completionData?.courseProgress || course.progress || 0,
+              isCompleted: completionData?.isCourseCompleted || course.progress >= 100,
+              completedAt: completionData?.lastCompletedAt || course.completedAt,
+              completedLessons: completionData?.completedLessons || course.completedLessons || []
+            };
+          });
+        }
+      }
+    } catch (error) {
+      console.error('🎯 Failed to load completed courses:', error);
     }
   };
 
@@ -108,6 +169,85 @@ const StudentDashboard = () => {
       .filter(date => (today - date) / (1000 * 60 * 60 * 24) <= 7);
     
     return lastWeek.length;
+  };
+
+  const downloadCertificate = async (courseId, courseTitle) => {
+    try {
+      setDownloadingCertificate(courseId);
+      
+      console.log('🎓 Starting certificate download for course:', courseId);
+      
+      // Get student's certificates to find the one for this course
+      const certificatesRes = await apiService.get(API_ENDPOINTS.CERTIFICATES.MY);
+      const certificates = certificatesRes.data || [];
+      
+      // Find the certificate for this course
+      const certificate = certificates.find(cert => 
+        cert.courseId === courseId || 
+        (cert.courseId && cert.courseId._id === courseId)
+      );
+      
+      if (!certificate) {
+        throw new Error('Certificate not found for this course');
+      }
+      
+      // Use the download endpoint
+      const downloadUrl = API_ENDPOINTS.CERTIFICATES.DOWNLOAD(certificate._id || certificate.id);
+      console.log('🎓 Download URL:', downloadUrl);
+      
+      // Get auth token for authenticated download
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      // Fetch the PDF file
+      const response = await fetch(`http://localhost:3001${downloadUrl}`, { headers });
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      }
+      
+      // Get the blob
+      const blob = await response.blob();
+      console.log('🎓 PDF blob size:', blob.size);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${courseTitle.replace(/\s+/g, '_')}_Certificate.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      
+      alert(`🎉 ${courseTitle} certificate downloaded successfully!`);
+    } catch (error) {
+      console.error('🎓 Download failed:', error);
+      alert(`Download failed: ${error.message}`);
+    } finally {
+      setDownloadingCertificate(null);
+    }
+  };
+
+  // Helper function to get the correct course ID
+  const getCourseId = (course) => {
+    console.log('🔍 Course object structure:', course);
+    console.log('🔍 course.courseId:', course.courseId);
+    console.log('🔍 course.courseId?._id:', course.courseId?._id);
+    console.log('🔍 course.id:', course.id);
+    console.log('🔍 course._id:', course._id);
+    
+    const courseId = course.courseId?._id || course.courseId || course.id || course._id;
+    console.log('🔍 Extracted course ID:', courseId);
+    
+    if (!courseId) {
+      console.error('🚨 No course ID found in course object!');
+      console.log('🔍 Available keys:', Object.keys(course));
+    }
+    
+    return courseId;
   };
 
   useEffect(() => {
@@ -218,6 +358,7 @@ if (loading || !dashboardData) {
             {[
               { key: 'overview', label: 'Overview', path: '/student/dashboard' },
               { key: 'courses', label: 'Courses', path: '/student/courses' },
+              { key: 'certificates', label: 'Certificates', path: '/student/certificates' },
               { key: 'achievements', label: 'Achievements', path: '/student/achievements' },
               { key: 'trainer-application', label: 'Become Trainer', path: '/student/trainer-application' },
               { key: 'ai-assistant', label: 'AI Assistant', path: '/student/ai-assistant' }
@@ -247,6 +388,7 @@ if (loading || !dashboardData) {
               {[
                 { key: 'overview', label: 'Overview', path: '/student/dashboard' },
                 { key: 'courses', label: 'Courses', path: '/student/courses' },
+                { key: 'certificates', label: 'Certificates', path: '/student/certificates' },
                 { key: 'achievements', label: 'Achievements', path: '/student/achievements' },
                 { key: 'trainer-application', label: 'Become Trainer', path: '/student/trainer-application' },
                 { key: 'ai-assistant', label: 'AI Assistant', path: '/student/ai-assistant' }
@@ -367,13 +509,20 @@ if (loading || !dashboardData) {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Continue Learning</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {enrolledCourses.slice(0, 3).map((course) => (
-                  <motion.div
-                    key={course.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="border border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden group cursor-pointer"
-                  >
+                {enrolledCourses.map((course, index) => {
+                  console.log(`🔍 Processing course ${index}:`, course);
+                  const courseId = getCourseId(course);
+                  console.log(`🔍 Course ${index} ID:`, courseId);
+                  
+                  return (
+                <motion.div
+                  key={course.id || course.courseId || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  <div className="relative">
                     {/* Premium gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/3 to-pink-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     
@@ -400,17 +549,57 @@ if (loading || !dashboardData) {
                           <span className="relative z-10">{course.progress || 0}%</span>
                         </div>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate(`/student/courses/${course.id}`)}
-                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-2xl hover:shadow-lg transition-all duration-300 text-base font-semibold"
-                      >
-                        Continue
-                      </motion.button>
+                      
+                      {/* Show different buttons based on completion status */}
+                      {course.progress >= 100 ? (
+                        <div className="space-y-2">
+                          {/* Certificate Download Button */}
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => downloadCertificate(getCourseId(course), course.courseId?.title || course.title)}
+                            disabled={downloadingCertificate === getCourseId(course)}
+                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-2xl hover:shadow-lg transition-all duration-300 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                          >
+                            {downloadingCertificate === getCourseId(course) ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                                Download Certificate
+                              </>
+                            )}
+                          </motion.button>
+                          
+                          {/* View Certificate Button */}
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate(`/student/courses/${getCourseId(course)}/certificate`)}
+                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-2xl hover:shadow-lg transition-all duration-300 text-base font-semibold flex items-center justify-center"
+                          >
+                            <ShieldCheckIcon className="h-5 w-5 mr-2" />
+                            View Certificate
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate(`/student/courses/${getCourseId(course)}`)}
+                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-2xl hover:shadow-lg transition-all duration-300 text-base font-semibold"
+                        >
+                          Continue Learning
+                        </motion.button>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
+                  </div>
+                </motion.div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

@@ -3,11 +3,13 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 
+
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   //whenever we use constructor
   //ensure u import ConfigModule in auth.module.ts file
-  //to save from DI error
+  //to save from Dependency Injection error
   constructor(config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -21,6 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: payload.sub,
       email: payload.email,
       role: payload.role,
-    }; //attached to req.user
+    }; 
+    //after return nest js attaches this to req.user
+    //so then controller can access via: req.user.userId
   }
 }

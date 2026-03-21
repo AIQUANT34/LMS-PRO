@@ -155,7 +155,7 @@ export class UsersService {
     return this.userModel.findByIdAndUpdate(
       userId,
       { avatar: profilePictureUrl },
-      { new: true }
+      { returnDocument: 'after' }
     ).select('-password').exec();
   }
 
@@ -181,7 +181,7 @@ export class UsersService {
         password: hashedNewPassword,
         lastPasswordChange: new Date()
       },
-      { new: true }
+      { returnDocument: 'after' }
     ).select('-password').exec();
   }
 
@@ -202,7 +202,7 @@ export class UsersService {
     return this.userModel.findByIdAndUpdate(
       userId,
       { isVerifiedTrainer: true },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 }

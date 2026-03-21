@@ -11,6 +11,7 @@ import {
   Progress,
   ProgressDocument,
 } from '../learning/schemas/progress.schema';
+import { AIReviewService } from './ai-review.service';
 
 @Injectable()
 export class AiService {
@@ -23,27 +24,75 @@ export class AiService {
 
     @InjectModel(Progress.name)
     private progressModel: Model<ProgressDocument>,
+    
+    private readonly aiReviewService: AIReviewService,
   ) {}
 
-  async askGemini(question: string) {
-    const apiKey = process.env.GEMINI_API_KEY;
+  async askGemini(question: string, context?: {
+    userId?: string;
+    userType?: 'student' | 'trainer' | 'admin';
+    aiFeature?: 'tutor' | 'quiz' | 'summary' | 'other';
+    courseId?: string;
+    sessionId?: string;
+  }) {
+    const startTime = Date.now();
+    
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
 
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        contents: [
-          {
-            parts: [{ text: question }],
-          },
-        ],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        {
+          contents: [
+            {
+              parts: [{ text: question }],
+            },
+          ],
         },
-      },
-    );
-    return response.data.candidates[0].content.parts[0].text;
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      
+      const aiResponse = response.data.candidates[0].content.parts[0].text;
+      const responseTime = Math.round((Date.now() - startTime) / 1000);
+      
+      // Log AI interaction for review
+      if (context?.userId) {
+        await this.aiReviewService.logAIInteraction(
+          context.userId,
+          context.userType || 'student',
+          context.aiFeature || 'other',
+          question,
+          aiResponse,
+          context.courseId,
+          context.sessionId,
+          responseTime
+        );
+      }
+      
+      return aiResponse;
+    } catch (error) {
+      const responseTime = Math.round((Date.now() - startTime) / 1000);
+      
+      // Log failed AI interaction
+      if (context?.userId) {
+        await this.aiReviewService.logAIInteraction(
+          context.userId,
+          context.userType || 'student',
+          context.aiFeature || 'other',
+          question,
+          `Error: ${error.message}`,
+          context.courseId,
+          context.sessionId,
+          responseTime
+        );
+      }
+      
+      throw error;
+    }
   }
 
   async generateStudentSummary(studentId: string, courseId: string) {
@@ -80,7 +129,12 @@ export class AiService {
   - Recommendation
   `;
 
-    return this.askGemini(prompt);
+    return this.askGemini(prompt, {
+      userId: studentId,
+      userType: 'trainer',
+      aiFeature: 'summary',
+      courseId,
+    });
   }
 
   async generateLearningRecommendations(studentId: string, courseId: string) {
@@ -108,6 +162,11 @@ export class AiService {
   Keep it professional and structured.
   `;
 
-    return this.askGemini(prompt);
+    return this.askGemini(prompt, {
+      userId: studentId,
+      userType: 'trainer',
+      aiFeature: 'summary',
+      courseId,
+    });
   }
 }

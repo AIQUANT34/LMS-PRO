@@ -42,7 +42,7 @@ export class SearchService {
 
     const courses = await this.courseModel
       .find(searchQuery)
-      .populate('instructorId', 'name email')
+      .populate('trainerId', 'name email')
       .sort({
         ...(filters.sortBy
           ? { [filters.sortBy]: filters.sortOrder || -1 }

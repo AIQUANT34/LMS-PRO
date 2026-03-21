@@ -117,10 +117,10 @@ const CourseManagement = () => {
         level: course.level || 'beginner',
         status: course.isPublished ? 'published' : 'draft',
         trainer: {
-          id: course.instructorId?._id || course.instructorId || course.trainer?.id,
-          name: course.instructorId?.name || course.trainer?.name || 'Unknown Trainer',
-          email: course.instructorId?.email || course.trainer?.email || '',
-          avatar: course.instructorId?.avatar || course.trainer?.avatar || 'https://via.placeholder.com/100x100'
+          id: course.trainerId?._id || course.trainerId || course.trainer?.id,
+          name: course.trainerId?.name || course.trainer?.name || 'Unknown Trainer',
+          email: course.trainerId?.email || course.trainer?.email || '',
+          avatar: course.trainerId?.avatar || course.trainer?.avatar || 'https://via.placeholder.com/100x100'
         },
         price: course.price || 0,
         currency: course.currency || 'USD',

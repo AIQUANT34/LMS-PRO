@@ -36,7 +36,7 @@ export class SubmissionController {
     return this.submissionService.getMySubmission(assignmentId, req.user);
   }
 
-  // Get all submissions for a course (instructor view)
+  // Get all submissions for a course (trainer view)
   @UseGuards(JwtGuard)
   @Get('course/:courseId')
   async getCourseSubmissions(
@@ -112,7 +112,7 @@ export class SubmissionController {
     return this.submissionService.getMySubmission(assessmentId, req.user);
   }
 
-  // Instructor reviews submission
+  // Trainer reviews submission
   @UseGuards(JwtGuard)
   @Post('assessment/submission/:submissionId/review')
   async reviewSubmission(

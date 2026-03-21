@@ -28,7 +28,7 @@ export class Assessment {
   status: string;
 
   @Prop({ type: Types.ObjectId, required: true })
-  instructorId: Types.ObjectId;
+  trainerId: Types.ObjectId;
 }
 
 export const AssessmentSchema = SchemaFactory.createForClass(Assessment);

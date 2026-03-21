@@ -11,6 +11,7 @@ import { CourseOwnerGuard } from './guards/course-owner.guard';
 import { UploadModule } from '../upload/upload.module';
 import { AssignmentsModule } from '../assignments/assignments.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { LessonSchema } from '../learning/schemas/lesson.schema';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
       { name: 'Course', schema: CourseSchema },
       { name: 'Lecture', schema: LectureSchema },
       { name: 'User', schema: UserSchema }, // Add UserModel for CoursesService
+      { name: 'Lesson', schema: LessonSchema }, // Add LessonModel for CoursesService
     ]),
     UploadModule,
     AssignmentsModule,

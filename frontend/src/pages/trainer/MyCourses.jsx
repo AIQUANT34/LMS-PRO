@@ -5,6 +5,7 @@ import { apiService } from '../../services/apiService';
 import { API_ENDPOINTS } from '../../config/api';
 import toast from 'react-hot-toast';
 import { PLACEHOLDERS } from '../../utils/placeholders';
+import { useLocation } from 'react-router-dom';
 import {
   BookOpenIcon,
   ArrowDownTrayIcon,
@@ -54,7 +55,9 @@ import {
 
 } from '@heroicons/react/24/outline';
 
+
 const MyCourses = () => {
+  const location = useLocation();
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,56 +138,45 @@ const MyCourses = () => {
   };
 
   // Fetch real courses data
-  useEffect(() => {
-    const fetchCourses = async () => {
+
+   const fetchCourses = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
         let response;
-        console.log('=== MY COURSES DEBUG ===');
         
         // Try trainer endpoint first (for users with 'trainer' role)
         try {
-          console.log('Trying trainer endpoint:', API_ENDPOINTS.TRAINER.GET_COURSES);
           response = await apiService.get(API_ENDPOINTS.TRAINER.GET_COURSES);
-          console.log('Trainer endpoint response:', response);
         } catch (trainerError) {
           // If trainer endpoint fails, try instructor endpoint (backward compatibility)
-          console.log('Trainer endpoint failed, trying instructor endpoint:', trainerError.message);
-          console.log('Trying instructor endpoint:', API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
           response = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
-          console.log('Instructor endpoint response:', response);
         }
         
         // Handle different response structures
         let coursesData = [];
         if (response && response.data && response.data.courses) {
           coursesData = response.data.courses;
-          console.log('Using response.data.courses');
         } else if (response && response.courses) {
           coursesData = response.courses;
-          console.log('Using response.courses');
         } else if (response && Array.isArray(response.data)) {
           coursesData = response.data;
-          console.log('Using response.data as array');
         } else if (Array.isArray(response)) {
           coursesData = response;
-          console.log('Using response as array');
         } else {
-          console.warn('Unexpected response structure:', response);
           coursesData = [];
         }
         
-        console.log('Final courses data:', coursesData);
-        console.log('Courses data length:', coursesData.length);
         
         // Fetch lessons data for each course to get accurate status and lesson count
         const coursesWithLessons = await Promise.all(
           coursesData.map(async (course) => {
             try {
               const lessonsResponse = await apiService.get(API_ENDPOINTS.LEARNING.LESSONS.GET_BY_COURSE(course._id || course.id));
-              const lessons = lessonsResponse.data || lessonsResponse.lessons || [];
+              const lessons =
+               lessonsResponse?.data?.lessons || 
+               lessonsResponse?.lessons || [];
               
               // Calculate actual lesson count and determine status based on lessons
               const lessonCount = lessons.length;
@@ -196,12 +188,11 @@ const MyCourses = () => {
                 lessons: lessonCount,
                 lessonsData: lessons,
                 // Update status based on actual lesson data
-                status: hasLessons ? (publishedLessons === lessonCount ? 'published' : 'draft') : 'draft',
+                status: course.status,
                 lessonCount,
                 publishedLessons
               };
             } catch (lessonError) {
-              console.warn(`Failed to fetch lessons for course ${course._id || course.id}:`, lessonError);
               return {
                 ...course,
                 lessons: course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0,
@@ -215,7 +206,6 @@ const MyCourses = () => {
         setCourses(coursesWithLessons);
         setFilteredCourses(coursesWithLessons);
       } catch (error) {
-        console.error('Failed to fetch courses:', error);
         setError('Failed to load courses');
         toast.error('Failed to load courses');
         
@@ -227,8 +217,16 @@ const MyCourses = () => {
       }
     };
 
-    fetchCourses();
+  //intial load  
+  useEffect(() => {
+    fetchCourses(); //always load on first render
   }, []);
+
+  //refresh after edit
+  useEffect(() => {
+    if(location.state?.refresh)
+     fetchCourses();
+  }, [location.state]);
 
   useEffect(() => {
     // Filter and sort courses using utility functions
@@ -306,18 +304,18 @@ const MyCourses = () => {
             onClick={(e) => e.stopPropagation()}
             className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
           />
-          <img 
-            src={course.thumbnail || null} 
+          {/* <img 
+            // src={course.thumbnail || null} 
             alt={course.title}
             className="w-16 h-12 rounded-lg object-cover"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
-            }}
-          />
+            }} */}
+          {/* /> */}
           <div 
-            className="w-16 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white"
-            style={{ display: course.thumbnail ? 'none' : 'flex' }}
+            // className="w-16 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white"
+            // style={{ display: course.thumbnail ? 'none' : 'flex' }}
           >
             <BookOpenIcon className="h-6 w-6" />
           </div>
@@ -377,7 +375,7 @@ const MyCourses = () => {
         </div>
         <div>
           <div className="text-sm text-gray-600">Lessons</div>
-          <div className="font-medium text-gray-900 text-sm">{course.lessons || course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0}</div>
+          <div className="font-medium text-gray-900 text-sm">{course.lessonsCount || course.lessons || 0}</div>
         </div>
         <div>
           <div className="text-sm text-gray-600">Rating</div>
@@ -407,7 +405,7 @@ const MyCourses = () => {
         
         <div className="flex items-center gap-2">
           <Link
-            to={`/trainer/courses/${getCourseId(course)}/player`}
+            to={`/trainer/courses/${getCourseId(course)}/view`}
             className="btn-premium-outline text-sm"
             onClick={(e) => e.stopPropagation()}
           >
@@ -419,8 +417,6 @@ const MyCourses = () => {
             className="btn-premium-outline text-sm"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Edit button clicked for course:', getCourseId(course));
-              console.log('Navigating to:', `/trainer/courses/${getCourseId(course)}/edit`);
             }}
           >
             <PencilIcon className="h-4 w-4 mr-1" />

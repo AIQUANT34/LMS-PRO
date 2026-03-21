@@ -37,7 +37,6 @@ const TrainerEarnings = () => {
           const response = await apiService.get(API_ENDPOINTS.ANALYTICS.TRAINER);
           earningsData = response.data;
         } catch (error) {
-          console.warn('Earnings data not available:', error);
         }
         
         // Fetch instructor courses for course-specific earnings
@@ -46,7 +45,6 @@ const TrainerEarnings = () => {
           const coursesResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
           coursesData = coursesResponse.data?.courses || coursesResponse.courses || [];
         } catch (coursesError) {
-          console.warn('Courses data not available:', coursesError);
         }
         
         // Combine earnings data
@@ -74,7 +72,6 @@ const TrainerEarnings = () => {
         
         setEarnings(combinedEarnings);
       } catch (error) {
-        console.error('Failed to fetch earnings:', error);
         setError('Failed to load earnings data');
         toast.error('Failed to load earnings data');
         

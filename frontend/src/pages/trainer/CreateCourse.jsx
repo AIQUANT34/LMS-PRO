@@ -105,50 +105,6 @@ const LANGUAGES = [
   { id: 'arabic', name: 'Arabic' }
 ];
 
-// Step Indicator Component
-const StepIndicator = ({ currentStep, steps, onStepClick }) => (
-  <div className="mb-8">
-    <div className="flex items-center justify-between">
-      {steps.map((step, index) => (
-        <div
-          key={step.id}
-          className={`flex items-center flex-1 ${index === steps.length - 1 ? '' : 'mr-2'}`}
-        >
-          <button
-            onClick={() => onStepClick && onStepClick(step.id)}
-            className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
-              currentStep >= step.id
-                ? 'border-blue-600 bg-blue-600 text-white'
-                : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
-            }`}
-          >
-            {currentStep > step.id ? (
-              <CheckCircleIcon className="w-5 h-5" />
-            ) : (
-              <span className="text-sm font-medium">{step.id}</span>
-            )}
-          </button>
-          {index < steps.length - 1 && (
-            <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep > step.id ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
-            />
-          )}
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <span className={`text-xs font-medium ${
-              currentStep >= step.id ? 'text-blue-600' : 'text-gray-500'
-            }`}>
-              {step.name}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-    <div className="mt-8 h-6"></div>
-  </div>
-);
-
 // Basic Information Step
 const BasicInfoStep = ({ formData, handleInputChange, errors, setFormData }) => {
   const [tagInput, setTagInput] = useState('');
@@ -417,16 +373,6 @@ const ContentStep = ({ formData, handleInputChange, errors, setFormData }) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200">
-        <div className="flex items-center mb-4">
-          <RocketLaunchIcon className="h-6 w-6 text-green-600 mr-2" />
-          <h3 className="text-lg font-semibold text-green-900">Course Content</h3>
-        </div>
-        <p className="text-green-800">
-          Define what students will learn and what they need to know before starting.
-        </p>
-      </div>
-
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -1037,7 +983,7 @@ const ReviewStep = ({ formData, errors, isSubmitting }) => {
 // Main Component
 const CreateCourse = () => {
   const navigate = useNavigate();
-  const { user, setUser, refreshUserData, isVerifiedInstructor, getInstructorRequestStatus } = useAuthStore(); // Get all auth store functions
+  const { user, setUser, refreshUserData, isVerifiedTrainer, getTrainerRequestStatus } = useAuthStore(); // Get all auth store functions
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState('saved');
@@ -1050,7 +996,6 @@ const CreateCourse = () => {
   
   // Manual refresh function for debugging
   const handleRefreshUserData = async () => {
-    console.log('Manually refreshing user data...');
     await refreshUserData();
   };
   
@@ -1104,10 +1049,17 @@ const CreateCourse = () => {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        setFormData(parsedDraft);
+        // Clean the draft data to remove any unwanted fields
+        const cleanedDraft = {
+          ...parsedDraft,
+          status: 'draft' // Ensure status is always draft
+        };
+        delete cleanedDraft.isPublished;
+        delete cleanedDraft.previewVideo;
+        delete cleanedDraft.discount;
+        setFormData(cleanedDraft);
         setLastSaved(new Date(parsedDraft.lastSaved));
       } catch (error) {
-        console.error('Failed to load draft:', error);
       }
     }
   }, []);
@@ -1219,21 +1171,7 @@ const CreateCourse = () => {
     if (!validateStep(5)) {
       return;
     }
-
-    // Debug: Check user role before submission
-    console.log('Current user:', user);
-    console.log('User role:', user?.role);
-    console.log('Is verified trainer:', user?.isVerifiedTrainer);
-    console.log('Trainer request status:', user?.trainerRequest);
-    console.log('Can create course:', user?.role === 'trainer' && user?.isVerifiedTrainer === true);
     
-    if (!user) {
-      toast.error('Please login to create a course');
-      navigate('/login');
-      return;
-    }
-
-    // Check if user is verified trainer
     if (user?.role === 'trainer' && !user?.isVerifiedTrainer) {
       toast.error('Your trainer account must be approved by admin before creating courses. Please wait for admin approval.');
       return;
@@ -1249,39 +1187,72 @@ const CreateCourse = () => {
         objectives: formData.objectives.length > 0 ? formData.objectives : ['Learn the fundamentals'],
         requirements: formData.requirements.length > 0 ? formData.requirements : ['Basic computer skills'],
         tags: formData.tags.length > 0 ? formData.tags : ['beginner-friendly'],
-        duration: formData.duration || '10 hours',
-        lectures: formData.lectures || '20 lectures'
+        duration: formData.duration || 10, // Send as number
+        lectures: formData.lectures || 20 // Send as number
       };
 
-      // Only include fields that the backend accepts
+      // Only include fields that the backend accepts based on schema
       const finalData = {
         title: submissionData.title,
         description: submissionData.description,
         category: submissionData.category,
         level: submissionData.level,
         language: submissionData.language,
-        duration: submissionData.duration,
-        tags: submissionData.tags,
-        ...(submissionData.isFree ? {} : { price: submissionData.price })
+        duration: submissionData.duration, // in minutes as per schema
+        originalPrice: submissionData.price || 0, // mapped to originalPrice
+        // Don't send status - backend will set default 'draft'
+        // Don't send tags - not in backend schema
+        // Don't send lectures - not in backend schema
       };
 
-      console.log('Submitting course data...');
-      console.log('Final data:', JSON.stringify(finalData, null, 2));
+      // Remove any unwanted properties that might cause backend errors
+      delete finalData.isPublished;
+      delete finalData.previewVideo;
+      delete finalData.discount;
+      delete finalData.lessons;
       
+      // Recursively clean any nested objects that might contain isPublished
+      const cleanNestedObjects = (obj) => {
+        if (typeof obj !== 'object' || obj === null) {
+          return obj;
+        }
+        const cleaned = {};
+        for (const key in obj) {
+          if (key === 'isPublished') continue;
+          if (typeof obj[key] === 'object' && obj[key] !== null) {
+            cleaned[key] = cleanNestedObjects(obj[key]);
+          } else {
+            cleaned[key] = obj[key];
+          }
+        }
+        return cleaned;
+      };
+      
+      const cleanFinalData = cleanNestedObjects(finalData);
+      
+      // Debug: Log the final data being sent
+      console.log('🔍 CreateCourse Debug - Final data being sent:', cleanFinalData);
+      console.log('🔍 CreateCourse Debug - Data types:', Object.keys(cleanFinalData).map(key => ({
+        field: key,
+        type: typeof cleanFinalData[key],
+        value: cleanFinalData[key],
+        isArray: Array.isArray(cleanFinalData[key])
+      })));
+
       // Determine the correct endpoint based on user role
       const endpoint = user?.role === 'trainer' 
         ? API_ENDPOINTS.TRAINER.CREATE_COURSE
         : API_ENDPOINTS.COURSES.CREATE;
       
-      console.log('Using endpoint:', endpoint);
+      console.log('🔍 CreateCourse Debug - Using endpoint:', endpoint);
       
-      const response = await apiService.post(endpoint, finalData, {
+      
+      const response = await apiService.post(endpoint, cleanFinalData, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      console.log('Course created successfully:', response.data);
 
       // Clear draft after successful submission
       localStorage.removeItem('courseDraft');
@@ -1289,15 +1260,6 @@ const CreateCourse = () => {
       toast.success('Course created successfully!');
       navigate('/trainer/courses');
     } catch (error) {
-      console.error('Error creating course:', error);
-      
-      // Log detailed error response
-      if (error.response) {
-        console.error('Complete error response:', JSON.stringify(error.response.data, null, 2));
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Error response headers:', error.response.headers);
-      }
       
       toast.error(error.response?.data?.message || 'Failed to create course');
       setErrors({ submit: error.response?.data?.message || 'Failed to create course' });
@@ -1377,13 +1339,6 @@ const CreateCourse = () => {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit}>
-          {/* Step Indicator */}
-          <StepIndicator
-            currentStep={currentStep}
-            steps={steps}
-            onStepClick={handleStepClick}
-          />
-
           {/* Step Content */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
             <AnimatePresence mode="wait">

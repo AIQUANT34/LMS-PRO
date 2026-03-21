@@ -41,7 +41,6 @@ const TrainerAnalytics = () => {
           const coursesResponse = await apiService.get(API_ENDPOINTS.COURSES.GET_TRAINER_COURSES);
           coursesData = coursesResponse.data?.courses || coursesResponse.courses || [];
         } catch (coursesError) {
-          console.warn('Courses data not available:', coursesError);
         }
         
         // Combine analytics with course data
@@ -71,7 +70,6 @@ const TrainerAnalytics = () => {
         
         setAnalytics(combinedData);
       } catch (error) {
-        console.error('Failed to fetch analytics:', error);
         setError('Failed to load analytics');
         toast.error('Failed to load analytics');
         

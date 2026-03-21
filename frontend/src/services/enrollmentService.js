@@ -1,4 +1,5 @@
 import { apiService } from './apiService';
+import { API_ENDPOINTS } from '../config/api';
 
 export const enrollmentService = {
   // Test enrollment service
@@ -8,7 +9,24 @@ export const enrollmentService = {
 
   // Enroll in a course
   enroll: async (courseId) => {
-    return await apiService.post('/enrollments/enroll', { courseId });
+    console.log('🔍 Service Debug - courseId being sent to API:', courseId);
+    console.log('🔍 Service Debug - typeof courseId:', typeof courseId);
+    
+    try {
+      const response = await apiService.post(API_ENDPOINTS.ENROLLMENTS.ENROLL(courseId));
+      console.log('🔍 Service Debug - Full API response:', response);
+      console.log('🔍 Service Debug - response.data:', response.data);
+      console.log('🔍 Service Debug - response.status:', response.status);
+      return response;
+    } catch (error) {
+      console.log('🔍 Service Debug - API Error:', error);
+      console.log('🔍 Service Debug - Error response:', error.response);
+      console.log('🔍 Service Debug - Error response data:', error.response?.data);
+      console.log('🔍 Service Debug - Error message:', error.response?.data?.message);
+      console.log('🔍 Service Debug - Error error:', error.response?.data?.error);
+      console.log('🔍 Service Debug - Full error object:', JSON.stringify(error.response?.data, null, 2));
+      throw error;
+    }
   },
 
   // Get user's enrolled courses

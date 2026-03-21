@@ -1,3 +1,4 @@
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LearningService } from './learning.service';
@@ -12,6 +13,8 @@ import { Certificate, CertificateSchema } from './schemas/certificate.schema';
 import { EnrollmentsModule } from '../enrollments/enrollments.module';
 import { CoursesModule } from '../courses/courses.module';
 import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
+import { UsersModule } from 'src/users/users.module';
+import { User, UserSchema } from 'src/users/schemas/user.schema';
 
 @Module({
   imports: [
@@ -21,9 +24,11 @@ import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
       { name: VideoHistory.name, schema: VideoHistorySchema },
       { name: Certificate.name, schema: CertificateSchema },
       { name: Course.name, schema: CourseSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     EnrollmentsModule,
     CoursesModule,
+    UsersModule,
   ],
   controllers: [LearningController],
   providers: [LearningService],

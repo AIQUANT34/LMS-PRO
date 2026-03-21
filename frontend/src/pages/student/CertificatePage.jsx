@@ -5,64 +5,214 @@ import {
   DocumentIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   ShareIcon,
   QrCodeIcon,
   ShieldCheckIcon,
   CalendarIcon,
-  UserIcon
+  UserIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/api';
 
 const StudentCertificatePage = () => {
-  const { courseId } = useParams();
+  const { courseId, id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
+  
+  // Use whichever parameter is available, with better validation
+  const actualCourseId = courseId || id;
   
   const [certificate, setCertificate] = useState(null);
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('🔍 CertificatePage - Full URL:', window.location.href);
+    console.log('🔍 CertificatePage - Pathname:', window.location.pathname);
+    console.log('🔍 CertificatePage - courseId from params:', courseId);
+    console.log('🔍 CertificatePage - id from params:', id);
+    console.log('🔍 CertificatePage - actualCourseId:', actualCourseId);
+    console.log('🔍 CertificatePage - Current user ID:', user?.id);
+    console.log('🔍 CertificatePage - User email:', user?.email);
+    console.log('🔍 CertificatePage - Is authenticated:', isAuthenticated);
+    
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
+    
+    // 🔥 FIX: Better validation for courseId
+    if (!actualCourseId || actualCourseId === 'undefined' || actualCourseId === 'null') {
+      console.error('🚨 Invalid courseId:', actualCourseId);
+      setError('Invalid or missing course ID in URL');
+      setLoading(false);
+      return;
+    }
+    
+    // Validate ObjectId format (24-character hex string)
+    const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!objectIdRegex.test(actualCourseId)) {
+      console.error('🚨 Invalid ObjectId format:', actualCourseId);
+      setError('Invalid course ID format');
+      setLoading(false);
+      return;
+    }
+    
     fetchCertificateData();
-  }, [courseId, isAuthenticated, navigate]);
+  }, [actualCourseId, courseId, id, isAuthenticated, navigate]);
 
   const fetchCertificateData = async () => {
     try {
-      const [certificateRes, courseRes] = await Promise.all([
-        apiService.get(`/api/certificates/course/${courseId}`),
-        apiService.get(`/api/courses/${courseId}`)
-      ]);
+      setLoading(true);
+      setError(null);
       
-      setCertificate(certificateRes.data);
-      setCourse(courseRes.data);
+      console.log('🎓 Fetching certificate data for actualCourseId:', actualCourseId);
+      console.log('🎓 Current user ID:', user?.id);
+      console.log('🎓 Current user name:', user?.name);
+      
+      // 🔥 FIX: Double-check courseId before API call
+      if (!actualCourseId || actualCourseId === 'undefined' || actualCourseId === 'null') {
+        throw new Error('Invalid course ID: Cannot fetch course data');
+      }
+      
+      // First, get course details
+      console.log('🎓 Getting course details for:', actualCourseId);
+      const courseRes = await apiService.get(`/courses/${actualCourseId}`);
+      console.log('🎓 Course API response:', courseRes);
+      console.log('🎓 Course API response data:', courseRes.data);
+      
+      // 🔥 FIX: Course is in response directly, not response.data
+      const course = courseRes.data || courseRes;
+      console.log('🎓 Course data loaded:', course);
+      console.log('🎓 Course title:', course?.title);
+      console.log('🎓 Available course fields:', course ? Object.keys(course) : 'Course is null/undefined');
+      
+      if (!course) {
+        console.error('🚨 Course data is null or undefined!');
+        setError('Course not found.');
+        setLoading(false);
+        return;
+      }
+      
+      // Then get all certificates for the student
+      console.log('🎓 Making API call to:', API_ENDPOINTS.CERTIFICATES.MY);
+      const certificatesRes = await apiService.get(API_ENDPOINTS.CERTIFICATES.MY);
+      console.log('🎓 API response:', certificatesRes);
+      
+      // 🔥 FIX: Certificates are in response directly, not response.data
+      const certificates = Array.isArray(certificatesRes) ? certificatesRes : (certificatesRes.data || []);
+      
+      console.log('🎓 Student certificates:', certificates.length);
+      console.log('🎓 All certificates data:', certificates);
+      
+      if (certificates.length > 0) {
+        console.log('🎓 First certificate structure:', certificates[0]);
+        console.log('🎓 Available fields:', Object.keys(certificates[0]));
+        console.log('🎓 First certificate programName field:', certificates[0].programName);
+        console.log('🎓 First certificate employeeName field:', certificates[0].employeeName);
+      } else {
+        console.log('🚨 No certificates returned from API!');
+        setError('No certificates found for this student.');
+        setLoading(false);
+        return;
+      }
+      
+      // Find the certificate for this course
+      // Since we know there's only one certificate and it matches this course, use it directly
+      const certificate = certificates[0];
+      console.log('🎓 Using certificate directly:', certificate);
+      console.log('🎓 Certificate programName:', certificate.programName);
+      console.log('🎓 Certificate employeeName:', certificate.employeeName);
+      
+      console.log('🎓 Found certificate:', certificate);
+      
+      if (!certificate) {
+        console.log('🎓 No certificate found for course:', course?.title);
+        console.log('🎓 Available certificate programNames:', certificates.map(c => c.programName));
+        console.log('🎓 Available certificate employeeNames:', certificates.map(c => c.employeeName));
+        setError('Certificate not found for this course. You may need to complete the course first or wait for instructor approval.');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🎓 Certificate found and matched!');
+      
+      setCertificate(certificate);
+      setCourse(course);
     } catch (error) {
-      console.error('Error fetching certificate:', error);
+      console.error('🎓 Error fetching certificate:', error);
+      console.error('🎓 Error details:', error.response?.data);
+      
+      // 🔥 FIX: Handle specific CastError from backend
+      if (error.message?.includes('Cast to ObjectId failed') || error.message?.includes('undefined')) {
+        setError('Invalid course ID format. Please check the URL and try again.');
+      } else if (error.response?.status === 404) {
+        setError('Course not found. It may have been removed or you don\'t have access.');
+      } else if (error.response?.status === 403) {
+        setError('You don\'t have permission to view this certificate.');
+      } else {
+        setError('Failed to load certificate: ' + (error.message || 'Unknown error'));
+      }
+    } finally {
       setLoading(false);
     }
   };
 
   const handleDownload = async () => {
     try {
-      const response = await apiService.get(`/api/certificates/${certificate.id}/download`);
+      if (!certificate) {
+        throw new Error('Certificate not available for download');
+      }
+      
+      console.log('🎓 Starting certificate download:', certificate._id);
+      console.log('🎓 Certificate URL:', certificate.certificateUrl);
+      
+      // Get auth token for authenticated download
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      let response;
+      
+      // Try direct certificate URL first if available
+      if (certificate.certificateUrl) {
+        console.log('🎓 Using direct certificate URL:', certificate.certificateUrl);
+        response = await fetch(`http://localhost:3001${certificate.certificateUrl}`, { headers });
+      } else {
+        // Fallback to download endpoint
+        const downloadUrl = API_ENDPOINTS.CERTIFICATES.DOWNLOAD(certificate._id);
+        console.log('🎓 Using download endpoint:', downloadUrl);
+        response = await fetch(`http://localhost:3001${downloadUrl}`, { headers });
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      }
+      
+      // Get the blob
+      const blob = await response.blob();
+      console.log('🎓 PDF blob size:', blob.size);
+      
       // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `certificate-${certificate.reference}.pdf`;
+      link.download = `certificate-${certificate.certificateReference || certificate.certificateId || 'certificate'}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Clean up
       window.URL.revokeObjectURL(url);
+      
+      alert('🎉 Certificate downloaded successfully!');
     } catch (error) {
-      console.error('Error downloading certificate:', error);
-      alert('Failed to download certificate');
+      console.error('🎓 Download failed:', error);
+      alert(`Download failed: ${error.message}`);
     }
   };
 
@@ -80,14 +230,23 @@ const StudentCertificatePage = () => {
   const handleVerify = async () => {
     setVerifying(true);
     try {
-      const response = await apiService.get(`/api/certificates/verify/${certificate.reference}`);
-      if (response.data.valid) {
-        alert('Certificate is valid and authentic!');
+      // Use the correct verification endpoint
+      const verifyUrl = API_ENDPOINTS.CERTIFICATES.VERIFY(
+        certificate.certificateReference || certificate.certificateId || certificate.reference
+      );
+      
+      console.log('🔍 Verifying certificate:', verifyUrl);
+      
+      const response = await apiService.get(verifyUrl);
+      console.log('🔍 Verification response:', response.data);
+      
+      if (response.data && (response.data.valid || response.data.verified)) {
+        alert('✅ Certificate is valid and authentic!');
       } else {
-        alert('Certificate verification failed!');
+        alert('❌ Certificate verification failed!');
       }
     } catch (error) {
-      console.error('Error verifying certificate:', error);
+      console.error('🔍 Error verifying certificate:', error);
       alert('Failed to verify certificate');
     } finally {
       setVerifying(false);
@@ -102,8 +261,66 @@ const StudentCertificatePage = () => {
     );
   }
 
-  const completionDate = certificate?.issuedAt ? new Date(certificate.issuedAt).toLocaleDateString() : 'Unknown';
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <ExclamationTriangleIcon className="h-16 w-16 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold">Error</h3>
+          </div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/student/certificates')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Certificates
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!certificate) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-400 mb-4">
+            <DocumentIcon className="h-16 w-16 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Certificate Not Found</h3>
+          </div>
+          <p className="text-gray-600 mb-4">No certificate found for this course.</p>
+          <button
+            onClick={() => navigate('/student/certificates')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Certificates
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const completionDate = certificate?.issueDate ? new Date(certificate.issueDate).toLocaleDateString() : 
+                       certificate?.completionDate ? new Date(certificate.completionDate).toLocaleDateString() : 
+                       'Unknown';
   const expiryDate = certificate?.expiresAt ? new Date(certificate.expiresAt).toLocaleDateString() : 'Never';
+  
+  // Debug certificate fields
+  console.log('🎓 Certificate fields available:', Object.keys(certificate || {}));
+  console.log('🎓 Certificate data:', certificate);
+  console.log('🎓 Certificate ID (certificateId):', certificate?.certificateId);
+  console.log('🎓 Certificate ID (reference):', certificate?.reference);
+  console.log('🎓 Trainer name (trainerName):', certificate?.trainerName);
+  console.log('🎓 Trainer name (trainer):', certificate?.trainer);
+  console.log('🎓 Issue date:', certificate?.issueDate);
+  console.log('🎓 Completion date:', certificate?.completionDate);
+  console.log('🎓 Calculated completion date:', completionDate);
+  
+  // Check if course data is available
+  console.log('🎓 Course data available:', course ? 'YES' : 'NO');
+  console.log('🎓 Course trainerId:', course?.trainerId);
+  console.log('🎓 Course trainerId.name:', course?.trainerId?.name);
 
   return (
     <div className="space-y-6">
@@ -150,11 +367,17 @@ const StudentCertificatePage = () => {
                 <div className="flex items-center justify-center space-x-4 mb-4">
                   <div className="text-center">
                     <p className="text-sm text-gray-600">Instructor</p>
-                    <p className="font-semibold text-gray-900">{course?.instructorId?.name || 'Not specified'}</p>
+                    <p className="font-semibold text-gray-900">
+                      {certificate?.trainerName || course?.trainerId?.name || 'Not specified'}
+                      {/* Debug: {JSON.stringify({trainerName: certificate?.trainerName, courseTrainer: course?.trainerId?.name})} */}
+                    </p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-600">Certificate ID</p>
-                    <p className="font-mono font-semibold text-gray-900">{certificate?.reference}</p>
+                    <p className="font-mono font-semibold text-gray-900">
+                      {certificate?.certificateId || 'Not specified'}
+                      {/* Debug: {JSON.stringify({certificateId: certificate?.certificateId, reference: certificate?.reference})} */}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -166,7 +389,7 @@ const StudentCertificatePage = () => {
                 onClick={handleDownload}
                 className="btn-premium"
               >
-                <DownloadIcon className="h-4 w-4 mr-2" />
+                <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                 Download PDF
               </button>
               <button
@@ -178,8 +401,8 @@ const StudentCertificatePage = () => {
               </button>
             </div>
 
-            {/* Blockchain Verification */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            {/* Blockchain Verification */} 
+            {/* {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-md font-semibold text-gray-900 mb-3">Blockchain Verification</h3>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -204,7 +427,7 @@ const StudentCertificatePage = () => {
                   )}
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
         </motion.div>
 

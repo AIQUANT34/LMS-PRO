@@ -97,7 +97,6 @@ const CourseAnalytics = () => {
           const analyticsResponse = await apiService.get(API_ENDPOINTS.ANALYTICS.COURSE(courseId));
           analyticsData = analyticsResponse.data;
         } catch (analyticsError) {
-          console.warn('Analytics data not available:', analyticsError);
           // Create basic analytics from course data
           analyticsData = {
             overview: {
@@ -122,7 +121,6 @@ const CourseAnalytics = () => {
         setCourseData(courseData);
         setAnalyticsData(analyticsData);
       } catch (error) {
-        console.error('Failed to fetch course data:', error);
         setError('Failed to load course analytics');
         toast.error('Failed to load course analytics');
       } finally {

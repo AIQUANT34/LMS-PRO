@@ -68,7 +68,6 @@ const TrainerAssignments = () => {
       setAssignments(assignmentsData);
       calculateStats(assignmentsData);
     } catch (error) {
-      console.error('Failed to fetch assignments:', error);
       toast.error('Failed to load assignments');
       // Set empty state on error
       setAssignments([]);
@@ -90,7 +89,6 @@ const TrainerAssignments = () => {
       const response = await apiService.get(API_ENDPOINTS.TRAINER.GET_COURSES);
       setCourses(response.data?.courses || []);
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
       // Fallback mock courses
       setCourses([]);
     }
@@ -203,7 +201,6 @@ const TrainerAssignments = () => {
       setSelectedAssignments([]);
       fetchAssignments(); // Refresh data
     } catch (error) {
-      console.error('Bulk action failed:', error);
       toast.error(`Failed to ${action} assignments`);
     } finally {
       setLoading(false);
@@ -220,7 +217,6 @@ const TrainerAssignments = () => {
       toast.success('Assignment deleted successfully');
       fetchAssignments();
     } catch (error) {
-      console.error('Delete failed:', error);
       toast.error('Failed to delete assignment');
     }
   }, []);
@@ -231,7 +227,6 @@ const TrainerAssignments = () => {
       toast.success('Assignment duplicated successfully');
       fetchAssignments();
     } catch (error) {
-      console.error('Duplicate failed:', error);
       toast.error('Failed to duplicate assignment');
     }
   }, []);

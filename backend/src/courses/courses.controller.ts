@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, Req, UseGuards, UseInterceptors, UploadedFile, UploadedFiles, ParseFilePipeBuilder, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post,Patch,Put, Delete, Param, Query, Body, Req, UseGuards, UseInterceptors, UploadedFile, UploadedFiles, ParseFilePipeBuilder, HttpStatus } from '@nestjs/common';
 import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CoursesService } from './courses.service';
 import { JwtGuard } from 'src/auth/jwt/jwt.guard';
@@ -140,4 +140,16 @@ export class CoursesController {
     // For now, return basic course info
     return this.coursesService.getCourseById(courseId, user);
   }
+
+  @Patch(':id/publish')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('trainer', 'admin')
+  publishCourse(
+    @Param('id') courseId: string,
+    @Req() req: any,
+  ) {
+    return this.coursesService.publishCourse(courseId, req.user);
+  }
+
+
 }
